@@ -61,7 +61,7 @@ The following arguments are supported:
 
 * `name` - (Required) The name of the NetApp_GCP volume.
 * `region` - (Required) The region where the NetApp_GCP volume to be created.
-* `protocol_types` - (Required) The protocol_type of the volume. For NFS use 'NFSv3' or 'NFSv4 and for SMB use 'CIFS'
+* `protocol_types` - (Required) The protocol_type of the volume. For NFS use 'NFSv3' or 'NFSv4' and for SMB use 'CIFS' or 'SMB'
 * `network` - (Required) The network VPC of the volume.
 * `size` - (Required) The size of volume is between 1024 GiB to 102400 GiB inclusive.
 * `service_level` - (Optional) The performance of the service level of volume. Must be one of "low", "medium", "high", default is "medium".

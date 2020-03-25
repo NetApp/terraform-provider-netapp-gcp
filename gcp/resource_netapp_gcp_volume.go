@@ -216,7 +216,11 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	volume.Network = d.Get("network").(string)
 	protocols := d.Get("protocol_types")
 	for _, protocol := range protocols.([]interface{}) {
-		volume.ProtocolTypes = append(volume.ProtocolTypes, protocol.(string))
+		if protocol.(string) == "SMB" {
+			volume.ProtocolTypes = append(volume.ProtocolTypes, "CIFS")
+		} else {
+			volume.ProtocolTypes = append(volume.ProtocolTypes, protocol.(string))
+		}
 	}
 	// size in 1 GiB increments, api takes in bytes only
 	volume.Size = d.Get("size").(int) * GiBToBytes

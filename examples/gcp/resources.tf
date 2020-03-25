@@ -4,9 +4,9 @@ resource "netapp-gcp_volume" "gcp-volume" {
   provider = netapp-gcp
   name = "deleteme_asapGO"
   region = "us-west2"
-  protocol_types = ["NFSv3","CIFS"]
+  protocol_types = ["NFSv3","SMB"]
   network = "cvs-terraform-vpc"
-  size = 2
+  size = 1024
   service_level = "medium"
 }
 
