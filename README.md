@@ -237,3 +237,5 @@ The build step will install the provider in the $GOPATH/bin directory.
 cd examples/gcp/
 terraform init
 ```
+
+Should do nothing but indicate that `Terraform has been successfully initialized!`
