@@ -1,0 +1,32 @@
+<% wrap_layout :inner do %>
+  <% content_for :sidebar do %>
+    <div class="docs-sidebar hidden-print affix-top" role="complementary">
+      <ul class="nav docs-sidenav">
+        <li<%= sidebar_current("docs-home") %>>
+          <a href="/docs/providers/index.html">All Providers</a>
+        </li>
+
+        <li<%= sidebar_current("docs-netapp-gcp-index") %>>
+          <a href="/docs/providers/netapp/netapp-gcp/index.html">NetApp GCP Provider</a>
+        </li>
+
+        <li<%= sidebar_current("docs-netapp-gcp-resource") %>>
+          <a href="#">Resources</a>
+          <ul class="nav nav-visible">
+            <li<%= sidebar_current("docs-netapp-gcp-resource-active-directory") %>>
+              <a href="/docs/providers/netapp/netapp-gcp/r/active_directory.html">netapp_gcp_active_directory</a>
+            </li>
+            <li<%= sidebar_current("docs-netapp-gcp-resource-volume") %>>
+              <a href="/docs/providers/netapp/netapp-gcp/r/volume.html">netapp_gcp_volume</a>
+            </li>
+            <li<%= sidebar_current("docs-netapp-gcp-resource-snapshot") %>>
+              <a href="/docs/providers/netapp/netapp-gcp/r/snapshot.html">netapp_gcp_snapshot</a>
+            </li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= yield %>
+<% end %>

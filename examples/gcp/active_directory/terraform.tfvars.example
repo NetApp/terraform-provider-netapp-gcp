@@ -1,0 +1,8 @@
+# edit the `terraform.tfvars.example` file, populating the fields with the
+relevant values, and then rename it to `terraform.tfvars`.
+
+
+gcp_project = "********"
+
+gcp_service_account = "/Users/********/Downloads/cvs-terraform-dev-********.json"
+
