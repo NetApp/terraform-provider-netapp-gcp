@@ -3,15 +3,13 @@ layout: "netapp_gcp"
 page_title: "Provider: NetApp_GCP"
 sidebar_current: "docs-netapp-gcp-index"
 description: |-
-  The NetApp_GCP provider is used to interact with the NetApp CVS resources supported by
-  NetApp in GCP. The provider needs to be configured with the proper credentials
+  The NetApp_GCP provider is used to interact with the NetApp Cloud Volumes Service for Google Cloud resources. The provider needs to be configured with the proper credentials
   before it can be used.
 ---
 
 # NetApp_GCP Provider
 
-The NetApp_GCP provider is used to interact with the NetApp CVS resources supported by
-NetApp in GCP.
+The NetApp_GCP provider is used to interact with the NetApp Cloud Volumes Service for Google Cloud resources.
 The provider needs to be configured with the proper credentials before it can be used.
 
 Use the navigation to the left to read about the available resources.
