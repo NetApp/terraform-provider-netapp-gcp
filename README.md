@@ -1,7 +1,7 @@
-# Terraform NetApp GCP CVS Provider
+# Terraform Provider for NetApp Cloud Volumes Service for Google Cloud 
 
-This is the repository for the Terraform NetApp GCP CVS Provider, which can be used
-with Terraform to work with GCP CVS resources.
+This is the repository for the Terraform Provider for NetApp Cloud Volumes Service (CVS) for Google Cloud.  The Provider can be used
+with Terraform to work with Cloud Volumes Service for Google Cloud resources.
 
 For general information about Terraform, visit the [official
 website][tf-website] and the [GitHub project page][tf-github].
@@ -13,7 +13,7 @@ The provider plugin was developed by NetApp.
 
 # Naming Conventions
 
-The NetApp CVS GCP APIs do not require resource names to be unique.  They are considered
+The APIs for NetApp Cloud Volumes Service for Google Cloud do not require resource names to be unique.  They are considered
 as 'labels' and resources are uniquely identified by 'ids'.  However these ids are not
 user friendly, and as they are generated on the fly, they make it difficult to track
 resources and automate.
@@ -132,7 +132,7 @@ See [Building the Provider](#building-the-provider) for details on building the 
 
 # Testing the Provider
 
-**NOTE:** Testing the NetApp GCP provider for CVS is currently a complex operation as it
+**NOTE:** Testing the provider for NetApp Cloud Volumes Service for Google Cloud is currently a complex operation as it
 requires having a NetApp CVS subscription in GCP to test against.
 You can then use a .json file to expose your credentials.
 
