@@ -1,4 +1,4 @@
-# Terraform Provider for NetApp Cloud Volumes Service for Google Cloud 
+# Terraform Provider for NetApp Cloud Volumes Service for Google Cloud
 
 This is the repository for the Terraform Provider for NetApp Cloud Volumes Service (CVS) for Google Cloud.  The Provider can be used
 with Terraform to work with Cloud Volumes Service for Google Cloud resources.

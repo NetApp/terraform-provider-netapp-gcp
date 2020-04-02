@@ -54,7 +54,7 @@ func TestAccVolume_basic(t *testing.T) {
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "30"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "0"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.access", "ReadOnly"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.allowed_clients", "10.0.0.0/0"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.allowed_clients", "10.0.0.0/8"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.nfsv3.0.checked", "false"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.nfsv4.0.checked", "true"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.access", "ReadOnly"),
@@ -200,7 +200,7 @@ func testAccVolumeConfigUpdate() string {
 		}
 		export_policy {
 			rule {
-			  allowed_clients = "10.0.0.0/0"
+			  allowed_clients = "10.0.0.0/8"
 			  access= "ReadOnly"
 			  nfsv3 {
 				checked =  false
