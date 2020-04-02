@@ -22,8 +22,8 @@ and therefore may undergo significant changes as the community improves it.
 ```
 # Configure the NetApp_GCP Provider
 provider "netapp_gcp" {
-  project         = "${var.gcp_project}"
-  service_account = "${var.gcp_service_account}"
+  project         = var.gcp_project_number
+  service_account = var.gcp_service_account
 }
 
 # Create a volume tied to an account
@@ -68,10 +68,10 @@ resource "netapp-gcp_volume" "gcp-volume" {
 
 # Create a snapshot tied to an volume
 resource "netapp-gcp_snapshot" "gcp-snapshot" {
-  name = "main-snapshot"
+  name = "deleteme_asapGO_jusitin-snapshot"
   region = "us-west2"
-  volume_name =  "main-volume"
-  creation_token = "unique-token-number"
+  volume_name =  "deleteme_asapGO_jusitin"
+  # creation_token = "unique-token-number"
 }
 
 # Create an Active Directory
@@ -90,7 +90,7 @@ resource "netapp-gcp_active_directory" "gcp-active-directory" {
 
 The following arguments are used to configure the NetApp_GCP Provider:
 
-* `project` - (Required) This is the project ID for NetApp_GCP API operations.
+* `project` - (Required) This is the project number for NetApp_GCP API operations.
 * `service_account` - (Required) This is the path of service_account for NetApp_GCP API operations.
 
 ## Required Privileges
