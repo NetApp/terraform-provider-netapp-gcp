@@ -131,7 +131,7 @@ func testAccSnapshotConfigCreate(Volume string, Location string, Snapshot string
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		size = 1024
-		service_level = "medium"
+		service_level = "premium"
 	}
 	
 	resource "netapp-gcp_snapshot" "gcp-snapshot-acc" {
@@ -154,7 +154,7 @@ func testAccSnapshotConfigUpdate(Volume string, Location string, Snapshot string
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		size = 1024
-		service_level = "medium"
+		service_level = "premium"
 	}
 	
 	resource "netapp-gcp_snapshot" "gcp-snapshot-acc" {

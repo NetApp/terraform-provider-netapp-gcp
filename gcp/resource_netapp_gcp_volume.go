@@ -54,7 +54,7 @@ func resourceGCPVolume() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "medium",
-				ValidateFunc: validation.StringInSlice([]string{"low", "medium", "high"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"low", "medium", "high", "standard", "premium", "extreme"}, true),
 			},
 			"snapshot_policy": {
 				Type:     schema.TypeList,
@@ -226,7 +226,16 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	volume.Size = d.Get("size").(int) * GiBToBytes
 
 	if v, ok := d.GetOk("service_level"); ok {
-		volume.ServiceLevel = v.(string)
+		slevel := v.(string)
+		if slevel == "standard" {
+			volume.ServiceLevel = "low"
+		} else if slevel == "premium" {
+			volume.ServiceLevel = "medium"
+		} else if slevel == "extreme" {
+			volume.ServiceLevel = "high"
+		} else {
+			volume.ServiceLevel = slevel
+		}
 	}
 
 	if v, ok := d.GetOk("snapshot_policy"); ok {
@@ -328,7 +337,8 @@ func resourceGCPVolumeExists(d *schema.ResourceData, meta interface{}) (bool, er
 }
 
 func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
-	log.Printf("Updating volume: %#v", d)
+	log.Printf("Updating volume: %#v\n", d)
+	makechange := 0
 	client := meta.(*Client)
 	volume := updateVolumeRequest{}
 	volume.VolumeID = d.Id()
@@ -341,6 +351,7 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		if len(d.Get("snapshot_policy").([]interface{})) > 0 {
 			policy := d.Get("snapshot_policy").([]interface{})[0].(map[string]interface{})
 			volume.SnapshotPolicy = expandSnapshotPolicy(policy)
+			makechange = 1
 		}
 	}
 
@@ -348,17 +359,60 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		if len(d.Get("export_policy").([]interface{})) > 0 {
 			policy := d.Get("export_policy").([]interface{})[0].(map[string]interface{})
 			volume.ExportPolicy = expandExportPolicy(policy)
+			makechange = 1
 		}
 	}
 
 	if d.HasChange("service_level") {
-		volume.ServiceLevel = d.Get("service_level").(string)
+		o, n := d.GetChange("service_level")
+		slevel := n.(string)
+		oslevel := o.(string)
+
+		log.Printf("Updating volume: old=%v new=%v\n", oslevel, slevel)
+
+		switch slevel {
+		case "standard":
+			if oslevel != "low" {
+				volume.ServiceLevel = "low"
+				makechange = 1
+			}
+		case "premium":
+			if oslevel != "medium" {
+				volume.ServiceLevel = "medium"
+				makechange = 1
+			}
+		case "extreme":
+			if oslevel != "high" {
+				volume.ServiceLevel = "high"
+				makechange = 1
+			}
+		case "low":
+			if oslevel != "standard" {
+				volume.ServiceLevel = slevel
+				makechange = 1
+			}
+		case "medium":
+			if oslevel != "premium" {
+				volume.ServiceLevel = slevel
+				makechange = 1
+			}
+		case "high":
+			if oslevel != "extreme" {
+				volume.ServiceLevel = slevel
+				makechange = 1
+			}
+		}
 	}
 
-	err := client.updateVolume(volume)
-	if err != nil {
-		log.Print("updateVolume request failed")
-		return err
+	if makechange == 1 {
+		log.Println("Make change on volume")
+		err := client.updateVolume(volume)
+		if err != nil {
+			log.Print("updateVolume request failed")
+			return err
+		}
+	} else {
+		log.Println("NOT updateVolume")
 	}
 
 	return nil

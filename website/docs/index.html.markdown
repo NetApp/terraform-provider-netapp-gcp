@@ -34,7 +34,7 @@ resource "netapp-gcp_volume" "gcp-volume" {
   protocol_types = ["NFSv3"]
   network = "cvs-terraform-vpc"
   size = 1024
-  service_level = "medium"
+  service_level = "premium"
   snapshot_policy {
     enabled = true
     daily_schedule {

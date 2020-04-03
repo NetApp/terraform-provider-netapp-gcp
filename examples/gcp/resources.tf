@@ -7,7 +7,7 @@ resource "netapp-gcp_volume" "gcp-volume" {
   protocol_types = ["NFSv3"]
   network = "cvs-terraform-vpc"
   size = 1024
-  service_level = "medium"
+  service_level = "premium"
 }
 
 resource "netapp-gcp_snapshot" "gcp-snapshot" {
@@ -15,6 +15,6 @@ resource "netapp-gcp_snapshot" "gcp-snapshot" {
   name = "deleteme_snapshot_asapGo"
   region = "us-west2"
   volume_name =  "deleteme_asapGO"
-  # creation_token = "pensive-sleepy-easley"
+  creation_token = "agitated-affectionate-skossi"
   depends_on = [netapp-gcp_volume.gcp-volume]
 }

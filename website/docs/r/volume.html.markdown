@@ -22,7 +22,7 @@ resource "netapp-gcp_volume" "gcp-volume" {
   protocol_types = ["NFSv3"]
   network = "cvs-terraform-vpc"
   size = 1024
-  service_level = "medium"
+  service_level = "premium"
   snapshot_policy {
     enabled = true
     daily_schedule {
@@ -64,7 +64,7 @@ The following arguments are supported:
 * `protocol_types` - (Required) The protocol_type of the volume. For NFS use 'NFSv3' or 'NFSv4' and for SMB use 'CIFS' or 'SMB'
 * `network` - (Required) The network VPC of the volume.
 * `size` - (Required) The size of volume is between 1024 GiB to 102400 GiB inclusive.
-* `service_level` - (Optional) The performance of the service level of volume. Must be one of "low", "medium", "high", default is "medium".
+* `service_level` - (Optional) The performance of the service level of volume. Must be one of "standard", "premium", "extreme", default is "premium".
 * `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
 * `export_policy` - (Optional) The set of Export Policy attributes for volume.
 
