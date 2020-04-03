@@ -6,5 +6,5 @@ gcp_project_number = "************"
 
 # Absolute path to keyfile (.json) for service account with roles/netappcloudvolumes.admin.
 # See https://cloud.google.com/solutions/partners/netapp-cloud-volumes/api?hl=en_US
-gcp_service_account = ""/Users/********/Downloads/cvs-terraform-dev-********.json"
+gcp_service_account = "/Users/********/Downloads/cvs-terraform-dev-********.json"
 
