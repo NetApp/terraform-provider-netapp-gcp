@@ -3,6 +3,7 @@ package gcp
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -261,7 +262,20 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(res.Name.JobID.VolID)
 	log.Printf("Created volume: %v", volume.Name)
 
-	return resourceGCPVolumeRead(d, meta)
+	err = resourceGCPVolumeRead(d, meta)
+	if err != nil {
+		dvolume := deleteVolumeRequest{}
+		dvolume.Region = volume.Region
+		dvolume.VolumeID = res.Name.JobID.VolID
+		deleteErr := client.deleteVolume(dvolume)
+		if deleteErr != nil {
+			return deleteErr
+		} else {
+			return err
+		}
+	} else {
+		return nil
+	}
 }
 
 func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
@@ -274,16 +288,27 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	id := d.Id()
 	volume.VolumeID = id
-	var res listVolumeResult
-	res, err := client.getVolumeByID(volume)
-	if err != nil {
-		return err
-	}
 
-	if res.VolumeID != id {
-		return fmt.Errorf("Expected VOlume ID %v, Response contained Volume ID %v", id, res.VolumeID)
-	}
+	for {
+		var res listVolumeResult
+		res, err := client.getVolumeByID(volume)
+		if err != nil {
+			return err
+		}
 
+		if res.VolumeID != id {
+			return fmt.Errorf("Expected VOlume ID %v, Response contained Volume ID %v", id, res.VolumeID)
+		}
+
+		if res.LifeCycleState == "error" {
+			return fmt.Errorf("Volume %v is in %v state. Please check the setup. Will delete the volume",
+				res.VolumeID, res.LifeCycleState)
+		} else if res.LifeCycleState == "available" {
+			break
+		} else {
+			time.Sleep(time.Duration(2) * time.Second)
+		}
+	}
 	return nil
 }
 

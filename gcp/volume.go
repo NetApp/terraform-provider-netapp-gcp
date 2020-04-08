@@ -3,8 +3,9 @@ package gcp
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/fatih/structs"
 	"log"
+
+	"github.com/fatih/structs"
 )
 
 // createVolumeRequest the users input for creating a Volume
