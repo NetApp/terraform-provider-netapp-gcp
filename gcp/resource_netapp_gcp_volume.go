@@ -372,6 +372,10 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	// size is always required.
 	volume.Size = d.Get("size").(int) * GiBToBytes
 
+	if d.HasChange("size") {
+		makechange = 1
+	}
+
 	if d.HasChange("snapshot_policy") {
 		if len(d.Get("snapshot_policy").([]interface{})) > 0 {
 			policy := d.Get("snapshot_policy").([]interface{})[0].(map[string]interface{})
