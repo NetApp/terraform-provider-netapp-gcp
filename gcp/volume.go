@@ -36,11 +36,12 @@ type listVolumesRequest struct {
 
 // listVolumeResult lists the volume for given volume ID
 type listVolumeResult struct {
-	VolumeID              string `json:"volumeId"`
-	VolumeName            string `json:"name"`
-	CreationToken         string `json:"creationToken"`
-	LifeCycleState        string `json:"lifeCycleState"`
-	LifeCycleStateDetails string `json:"lifeCycleStateDetails"`
+	VolumeID              string       `json:"volumeId"`
+	VolumeName            string       `json:"name"`
+	CreationToken         string       `json:"creationToken"`
+	LifeCycleState        string       `json:"lifeCycleState"`
+	LifeCycleStateDetails string       `json:"lifeCycleStateDetails"`
+	MountPoints           []mountPoint `json:"mountPoints"`
 }
 
 // listVolumesByNameRequest requests the volume for given volume ID and region
@@ -82,6 +83,13 @@ type createVolumeCreationTokenResult struct {
 type deleteVolumeRequest struct {
 	VolumeID string `structs:"volumeId"`
 	Region   string `structs:"region"`
+}
+
+type mountPoint struct {
+	Export       string `structs:"export"`
+	ExportFull   string `structs:"exportFull"`
+	ProtocolType string `structs:"protocolType"`
+	Server       string `structs:"server"`
 }
 
 type snapshotPolicy struct {

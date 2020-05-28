@@ -57,6 +57,30 @@ func resourceGCPVolume() *schema.Resource {
 				Default:      "medium",
 				ValidateFunc: validation.StringInSlice([]string{"low", "medium", "high", "standard", "premium", "extreme"}, true),
 			},
+			"mountpoints": {
+				Type:     schema.TypeList,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"export": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"exportfull": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"protocoltype": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"server": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 			"snapshot_policy": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -297,19 +321,37 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if res.VolumeID != id {
-			return fmt.Errorf("Expected VOlume ID %v, Response contained Volume ID %v", id, res.VolumeID)
+			return fmt.Errorf("Expected Volume ID %v, Response contained Volume ID %v", id, res.VolumeID)
 		}
 
 		if res.LifeCycleState == "error" {
 			return fmt.Errorf("Volume %v is in %v state. Please check the setup. Will delete the volume",
 				res.VolumeID, res.LifeCycleState)
 		} else if res.LifeCycleState == "available" {
+			if err := d.Set("mountpoints", flattenMountPoints(res.MountPoints)); err != nil {
+				return fmt.Errorf("error setting mountpoints: %s", err)
+			}
 			break
 		} else {
 			time.Sleep(time.Duration(2) * time.Second)
 		}
 	}
 	return nil
+}
+
+func flattenMountPoints(list []mountPoint) []map[string]interface{} {
+	result := make([]map[string]interface{}, 0, len(list))
+
+	for _, i := range list {
+		m := map[string]interface{}{
+			"export":       i.Export,
+			"exportfull":   i.ExportFull,
+			"protocoltype": i.ProtocolType,
+			"server":       i.Server,
+		}
+		result = append(result, m)
+	}
+	return result
 }
 
 func resourceGCPVolumeDelete(d *schema.ResourceData, meta interface{}) error {
