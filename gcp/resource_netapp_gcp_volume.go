@@ -3,6 +3,7 @@ package gcp
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/terraform/helper/schema"
@@ -57,31 +58,61 @@ func resourceGCPVolume() *schema.Resource {
 				Default:      "medium",
 				ValidateFunc: validation.StringInSlice([]string{"low", "medium", "high", "standard", "premium", "extreme"}, true),
 			},
+			"mount_points": {
+				Type:     schema.TypeList,
+				Optional: true,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"export": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"server": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+						"protocol_type": {
+							Type:     schema.TypeString,
+							Optional: true,
+							Computed: true,
+						},
+					},
+				},
+			},
 			"snapshot_policy": {
 				Type:     schema.TypeList,
 				Optional: true,
+				Computed: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"enabled": {
 							Type:     schema.TypeBool,
 							Optional: true,
+							Computed: true,
 						},
 						"daily_schedule": {
 							Type:     schema.TypeList,
 							Optional: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"hour": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 									"minute": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 									"snapshots_to_keep": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 								},
 							},
@@ -89,15 +120,18 @@ func resourceGCPVolume() *schema.Resource {
 						"hourly_schedule": {
 							Type:     schema.TypeList,
 							Optional: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"minute": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 									"snapshots_to_keep": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 								},
 							},
@@ -105,23 +139,28 @@ func resourceGCPVolume() *schema.Resource {
 						"monthly_schedule": {
 							Type:     schema.TypeList,
 							Optional: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"days_of_month": {
 										Type:     schema.TypeString,
 										Optional: true,
+										Default:  "1",
 									},
 									"hour": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 									"minute": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 									"snapshots_to_keep": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 								},
 							},
@@ -129,23 +168,28 @@ func resourceGCPVolume() *schema.Resource {
 						"weekly_schedule": {
 							Type:     schema.TypeList,
 							Optional: true,
+							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
 									"day": {
 										Type:     schema.TypeString,
 										Optional: true,
+										Default:  "Sunday",
 									},
 									"hour": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 									"minute": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 									"snapshots_to_keep": {
 										Type:     schema.TypeInt,
 										Optional: true,
+										Default:  0,
 									},
 								},
 							},
@@ -154,12 +198,12 @@ func resourceGCPVolume() *schema.Resource {
 				},
 			},
 			"export_policy": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"rule": {
-							Type:     schema.TypeList,
+							Type:     schema.TypeSet,
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -172,7 +216,7 @@ func resourceGCPVolume() *schema.Resource {
 										Optional: true,
 									},
 									"nfsv3": {
-										Type:     schema.TypeList,
+										Type:     schema.TypeSet,
 										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
@@ -184,7 +228,7 @@ func resourceGCPVolume() *schema.Resource {
 										},
 									},
 									"nfsv4": {
-										Type:     schema.TypeList,
+										Type:     schema.TypeSet,
 										Optional: true,
 										Elem: &schema.Resource{
 											Schema: map[string]*schema.Schema{
@@ -210,7 +254,7 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	client := meta.(*Client)
 
-	volume := createVolumeRequest{}
+	volume := volumeRequest{}
 
 	volume.Name = d.Get("name").(string)
 	volume.Region = d.Get("region").(string)
@@ -247,8 +291,8 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if v, ok := d.GetOk("export_policy"); ok {
-		if len(v.([]interface{})) > 0 {
-			policy := v.([]interface{})[0].(map[string]interface{})
+		policy := v.(*schema.Set)
+		if policy.Len() > 0 {
 			volume.ExportPolicy = expandExportPolicy(policy)
 		}
 	}
@@ -264,7 +308,7 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	err = resourceGCPVolumeRead(d, meta)
 	if err != nil {
-		dvolume := deleteVolumeRequest{}
+		dvolume := volumeRequest{}
 		dvolume.Region = volume.Region
 		dvolume.VolumeID = res.Name.JobID.VolID
 		deleteErr := client.deleteVolume(dvolume)
@@ -282,32 +326,79 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("Reading volume: %#v", d)
 	client := meta.(*Client)
 
-	volume := listVolumesRequest{}
+	volume := volumeRequest{}
 
 	volume.Region = d.Get("region").(string)
 
 	id := d.Id()
 	volume.VolumeID = id
 
+	var res volumeResult
 	for {
-		var res listVolumeResult
-		res, err := client.getVolumeByID(volume)
+		var vol volumeResult
+		vol, err := client.getVolumeByID(volume)
 		if err != nil {
 			return err
 		}
 
-		if res.VolumeID != id {
+		if vol.VolumeID != id {
 			return fmt.Errorf("Expected VOlume ID %v, Response contained Volume ID %v", id, res.VolumeID)
 		}
 
-		if res.LifeCycleState == "error" {
+		if vol.LifeCycleState == "error" {
 			return fmt.Errorf("Volume %v is in %v state. Please check the setup. Will delete the volume",
-				res.VolumeID, res.LifeCycleState)
-		} else if res.LifeCycleState == "available" {
+				vol.VolumeID, vol.LifeCycleState)
+		} else if vol.LifeCycleState == "available" {
+			res = vol
 			break
 		} else {
 			time.Sleep(time.Duration(2) * time.Second)
 		}
+	}
+
+	if err := d.Set("size", res.Size/GiBToBytes); err != nil {
+		return fmt.Errorf("Error reading volume size: %s", err)
+	}
+	if err := d.Set("service_level", res.ServiceLevel); err != nil {
+		return fmt.Errorf("Error reading volume service_level: %s", err)
+	}
+	for i, protocol := range res.ProtocolTypes {
+		if protocol == "CIFS" {
+			res.ProtocolTypes[i] = "SMB"
+		}
+	}
+	if err := d.Set("protocol_types", res.ProtocolTypes); err != nil {
+		return fmt.Errorf("Error reading volume protocol_types: %s", err)
+	}
+	network := res.Network
+	index := strings.Index(network, "networks/")
+	if index > -1 {
+		network = network[index+len("networks/"):]
+	}
+	if err := d.Set("network", network); err != nil {
+		return fmt.Errorf("Error reading volume network: %s", err)
+	}
+	if err := d.Set("region", res.Region); err != nil {
+		return fmt.Errorf("Error reading volume region: %s", err)
+	}
+	snapshot_policy := flattenSnapshotPolicy(res.SnapshotPolicy)
+	export_policy := flattenExportPolicy(res.ExportPolicy)
+	if err := d.Set("snapshot_policy", snapshot_policy); err != nil {
+		return fmt.Errorf("Error reading volume snapshot_policy: %s", err)
+	}
+	if len(res.ExportPolicy.Rules) > 0 {
+		if err := d.Set("export_policy", export_policy); err != nil {
+			return fmt.Errorf("Error reading volume export_policy: %s", err)
+		}
+	} else {
+		a := schema.NewSet(schema.HashString, []interface{}{})
+		if err := d.Set("export_policy", a); err != nil {
+			return fmt.Errorf("Error reading volume export_policy: %s", err)
+		}
+	}
+	mount_points := flattenMountPoints(res.MountPoints)
+	if err := d.Set("mount_points", mount_points); err != nil {
+		return fmt.Errorf("Error reading volume mount_points: %s", err)
 	}
 	return nil
 }
@@ -315,7 +406,7 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 func resourceGCPVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("Deleting volume: %#v", d)
 
-	volume := deleteVolumeRequest{}
+	volume := volumeRequest{}
 
 	volume.Region = d.Get("region").(string)
 	client := meta.(*Client)
@@ -335,12 +426,12 @@ func resourceGCPVolumeExists(d *schema.ResourceData, meta interface{}) (bool, er
 	log.Printf("Checking existence of volume: %#v", d)
 	client := meta.(*Client)
 
-	volume := listVolumesRequest{}
+	volume := volumeRequest{}
 
 	id := d.Id()
 	volume.VolumeID = id
 	volume.Region = d.Get("region").(string)
-	var res listVolumeResult
+	var res volumeResult
 	res, err := client.getVolumeByID(volume)
 	if err != nil {
 		if err, ok := err.(*restapi.ResponseError); ok {
@@ -365,7 +456,7 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("Updating volume: %#v\n", d)
 	makechange := 0
 	client := meta.(*Client)
-	volume := updateVolumeRequest{}
+	volume := volumeRequest{}
 	volume.VolumeID = d.Id()
 	volume.Region = d.Get("region").(string)
 	volume.Name = d.Get("name").(string)
@@ -385,11 +476,9 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("export_policy") {
-		if len(d.Get("export_policy").([]interface{})) > 0 {
-			policy := d.Get("export_policy").([]interface{})[0].(map[string]interface{})
-			volume.ExportPolicy = expandExportPolicy(policy)
-			makechange = 1
-		}
+		policy := d.Get("export_policy").(*schema.Set)
+		volume.ExportPolicy = expandExportPolicy(policy)
+		makechange = 1
 	}
 
 	if d.HasChange("service_level") {
@@ -437,12 +526,11 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		log.Println("Make change on volume")
 		err := client.updateVolume(volume)
 		if err != nil {
-			log.Print("updateVolume request failed")
 			return err
 		}
 	} else {
 		log.Println("NOT updateVolume")
 	}
 
-	return nil
+	return resourceGCPVolumeRead(d, meta)
 }

@@ -2,17 +2,17 @@ package gcp
 
 import (
 	"fmt"
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
+	"log"
 	"strings"
 	"testing"
 	"time"
-
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccVolume_basic(t *testing.T) {
 
-	var volume listVolumeResult
+	var volume volumeResult
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
 			testAccPreCheck(t)
@@ -26,20 +26,12 @@ func TestAccVolume_basic(t *testing.T) {
 					testAccCheckGCPVolumeExists("netapp-gcp_volume.terraform-acceptance-test-1", &volume),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "name", "terraform-acceptance-test-1"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "size", "1024"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-west2"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "premium"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-east4"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "extreme"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "protocol_types.0", "NFSv3"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.hour", "10"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "1"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "0"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.access", "ReadWrite"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.allowed_clients", "0.0.0.0/0"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.nfsv3.0.checked", "true"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.nfsv4.0.checked", "false"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.access", "ReadWrite"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.allowed_clients", "10.10.13.0"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.nfsv3.0.checked", "true"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.nfsv4.0.checked", "false"),
 				),
 			},
 			{
@@ -48,39 +40,28 @@ func TestAccVolume_basic(t *testing.T) {
 					testAccCheckGCPVolumeExists("netapp-gcp_volume.terraform-acceptance-test-1", &volume),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "name", "terraform-acceptance-test-1"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "size", "2048"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-west2"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "standard"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-east4"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "extreme"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.hour", "20"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "30"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "0"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.access", "ReadOnly"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.allowed_clients", "10.0.0.0/8"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.nfsv3.0.checked", "false"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.nfsv4.0.checked", "true"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.access", "ReadOnly"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.allowed_clients", "10.10.13.1"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.nfsv3.0.checked", "false"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.nfsv4.0.checked", "true"),
 				),
 			},
-			{
-				Config: testAccVolumeConfigCreateSMB(),
-				Check: resource.ComposeTestCheckFunc(
-					testAccCheckGCPVolumeExists("netapp-gcp_volume.terraform-acceptance-test-1", &volume),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "name", "terraform-acceptance-test-1-SMB"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "size", "1024"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-west2"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "premium"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "protocol_types.0", "SMB"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.hour", "10"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "1"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "0"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.access", "ReadWrite"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.0.allowed_clients", "0.0.0.0/0"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.access", "ReadWrite"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "export_policy.0.rule.1.allowed_clients", "10.10.13.0"),
-				),
-			},
+			// remove temporarily since us-west2 is not working.
+			// {
+			// 	Config: testAccVolumeConfigCreateSMB(),
+			// 	Check: resource.ComposeTestCheckFunc(
+			// 		testAccCheckGCPVolumeExists("netapp-gcp_volume.terraform-acceptance-test-1-SMB", &volume),
+			// 		testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1-SMB", "name", "terraform-acceptance-test-1-SMB"),
+			// 		testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1-SMB", "size", "1024"),
+			// 		testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1-SMB", "region", "us-east4"),
+			// 		testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1-SMB", "service_level", "extreme"),
+			// 		testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1-SMB", "protocol_types.0", "SMB"),
+			// 		testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1-SMB", "snapshot_policy.0.daily_schedule.0.hour", "10"),
+			// 		testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1-SMB", "snapshot_policy.0.daily_schedule.0.minute", "1"),
+			// 		testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1-SMB", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "0"),
+			// 	),
+			// },
 		},
 	})
 }
@@ -92,7 +73,7 @@ func testAccCheckGCPVolumeDestroy(state *terraform.State) error {
 		if rs.Type != "netapp-gcp_volume" {
 			continue
 		}
-		response, err := client.getVolumeByID(listVolumesRequest{
+		response, err := client.getVolumeByID(volumeRequest{
 			VolumeID: rs.Primary.ID,
 			Region:   rs.Primary.Attributes["region"],
 		})
@@ -107,7 +88,7 @@ func testAccCheckGCPVolumeDestroy(state *terraform.State) error {
 	return nil
 }
 
-func testAccCheckGCPVolumeExists(name string, volume *listVolumeResult) resource.TestCheckFunc {
+func testAccCheckGCPVolumeExists(name string, volume *volumeResult) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		client := testAccProvider.Meta().(*Client)
 
@@ -119,7 +100,7 @@ func testAccCheckGCPVolumeExists(name string, volume *listVolumeResult) resource
 		if rs.Primary.ID == "" {
 			return fmt.Errorf("No volume ID is set")
 		}
-		response, err := client.getVolumeByID(listVolumesRequest{
+		response, err := client.getVolumeByID(volumeRequest{
 			VolumeID: rs.Primary.ID,
 			Region:   rs.Primary.Attributes["region"],
 		})
@@ -143,15 +124,15 @@ func testAccVolumeConfigCreate() string {
 	resource "netapp-gcp_volume" "terraform-acceptance-test-1" {
 		provider = netapp-gcp
 		name = "terraform-acceptance-test-1"
-		region = "us-west2"
+		region = "us-east4"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		size = 1024
-		service_level = "premium"
+		service_level = "extreme"
 		snapshot_policy {
 		  enabled = true
 		  daily_schedule {
-			hour = 10	
+			hour = 10
 			minute = 1
 		  }
 		}
@@ -186,11 +167,11 @@ func testAccVolumeConfigUpdate() string {
 	resource "netapp-gcp_volume" "terraform-acceptance-test-1" {
 		provider = netapp-gcp
 		name = "terraform-acceptance-test-1"
-		region = "us-west2"
+		region = "us-east4"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		size = 2048
-		service_level = "standard"
+		service_level = "extreme"
 		snapshot_policy {
 		  enabled = true
 		  daily_schedule {
@@ -203,20 +184,20 @@ func testAccVolumeConfigUpdate() string {
 			  allowed_clients = "10.0.0.0/8"
 			  access= "ReadOnly"
 			  nfsv3 {
-				checked =  false
+				checked =  true
 			  }
 			  nfsv4 {
-				checked = true
+				checked = false
 			  }
 			}
 		  rule {
 			allowed_clients= "10.10.13.1"
 			access= "ReadOnly"
 			nfsv3 {
-				checked =  false
+				checked =  true
 			  }
 			  nfsv4 {
-				checked = true
+				checked = false
 			  }
 			}
 		  }
@@ -226,31 +207,21 @@ func testAccVolumeConfigUpdate() string {
 
 func testAccVolumeConfigCreateSMB() string {
 	return fmt.Sprintf(`
-	resource "netapp-gcp_volume" "terraform-acceptance-test-1" {
+	resource "netapp-gcp_volume" "terraform-acceptance-test-1-SMB" {
 		provider = netapp-gcp
 		name = "terraform-acceptance-test-1-SMB"
-		region = "us-west2"
+		region = "us-east4"
 		protocol_types = ["SMB"]
 		network = "cvs-terraform-vpc"
 		size = 1024
-		service_level = "premium"
+		service_level = "extreme"
 		snapshot_policy {
 		  enabled = true
 		  daily_schedule {
-			hour = 10	
+			hour = 10
 			minute = 1
 		  }
 		}
-		export_policy {
-			rule {
-			  allowed_clients = "0.0.0.0/0"
-			  access= "ReadWrite"
-			}
-		  rule {
-			allowed_clients= "10.10.13.0"
-			access= "ReadWrite"
-			}
-		  }
 	  }
 	`)
 }
@@ -267,6 +238,7 @@ func testCheckResourceAttr(name string, key string, value string) resource.TestC
 	// Becuase the volume is still in transition between states thus not ready to delete yet.
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
+		log.Printf("rsrs rsrsrs rsrs: %#v", rs.Primary)
 		if !ok {
 			return fmt.Errorf("Not found: %s", name)
 		}
@@ -290,7 +262,6 @@ func testCheckResourceAttr(name string, key string, value string) resource.TestC
 			if !ok {
 				return fmt.Errorf("%s: Attribute '%s' not found", name, key)
 			}
-
 			return fmt.Errorf(
 				"%s: Attribute '%s' expected %#v, got %#v",
 				name,

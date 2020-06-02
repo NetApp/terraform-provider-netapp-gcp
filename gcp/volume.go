@@ -3,22 +3,41 @@ package gcp
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-
 	"github.com/fatih/structs"
+	"github.com/hashicorp/terraform/helper/schema"
+	"log"
 )
 
-// createVolumeRequest the users input for creating a Volume
-type createVolumeRequest struct {
-	Name           string         `structs:"name"`
-	Region         string         `structs:"region"`
-	CreationToken  string         `structs:"creationToken"`
-	ProtocolTypes  []string       `structs:"protocolTypes"`
-	Network        string         `structs:"network"`
-	Size           int            `structs:"quotaInBytes"`
-	ServiceLevel   string         `structs:"serviceLevel"`
-	SnapshotPolicy snapshotPolicy `structs:"snapshotPolicy"`
+// volumeRequest the users input for creating,requesting,updateing a Volume
+// exportPolicy can't set to omitempty because it could be deleted during update.
+type volumeRequest struct {
+	Name           string         `structs:"name,omitempty"`
+	Region         string         `structs:"region,omitempty"`
+	CreationToken  string         `structs:"creationToken,omitempty"`
+	ProtocolTypes  []string       `structs:"protocolTypes,omitempty"`
+	Network        string         `structs:"network,omitempty"`
+	Size           int            `structs:"quotaInBytes,omitempty"`
+	ServiceLevel   string         `structs:"serviceLevel,omitempty"`
+	SnapshotPolicy snapshotPolicy `structs:"snapshotPolicy,omitempty"`
 	ExportPolicy   exportPolicy   `structs:"exportPolicy"`
+	VolumeID       string         `structs:"volumeId,omitempty"`
+}
+
+// volumeRequest retrieves the volume attributes from API and convert to struct
+type volumeResult struct {
+	Name                  string         `json:"name,omitempty"`
+	Region                string         `json:"region,omitempty"`
+	CreationToken         string         `json:"creationToken,omitempty"`
+	ProtocolTypes         []string       `json:"protocolTypes,omitempty"`
+	Network               string         `json:"network,omitempty"`
+	Size                  int            `json:"quotaInBytes,omitempty"`
+	ServiceLevel          string         `json:"serviceLevel,omitempty"`
+	SnapshotPolicy        snapshotPolicy `json:"snapshotPolicy,omitempty"`
+	ExportPolicy          exportPolicy   `json:"exportPolicy,omitempty"`
+	VolumeID              string         `json:"volumeId,omitempty"`
+	LifeCycleState        string         `json:"lifeCycleState"`
+	LifeCycleStateDetails string         `json:"lifeCycleStateDetails"`
+	MountPoints           []mountPoints  `json:"mountPoints,omitempty"`
 }
 
 // createVolumeResult the api response for creating a volume
@@ -26,41 +45,6 @@ type createVolumeResult struct {
 	Name    listVolumeJobIDResult `json:"response"`
 	Code    int                   `json:"code"`
 	Message string                `json:"message"`
-}
-
-// listVolumeResult requests the volume for given volume ID and region
-type listVolumesRequest struct {
-	VolumeID string `structs:"volumeId"`
-	Region   string `structs:"region"`
-}
-
-// listVolumeResult lists the volume for given volume ID
-type listVolumeResult struct {
-	VolumeID              string `json:"volumeId"`
-	VolumeName            string `json:"name"`
-	CreationToken         string `json:"creationToken"`
-	LifeCycleState        string `json:"lifeCycleState"`
-	LifeCycleStateDetails string `json:"lifeCycleStateDetails"`
-}
-
-// listVolumesByNameRequest requests the volume for given volume ID and region
-type listVolumesByNameRequest struct {
-	Region        string `structs:"region"`
-	VolumeID      string `json:"volumeId"`
-	VolumeName    string `json:"name"`
-	CreationToken string `json:"creationToken"`
-}
-
-type updateVolumeRequest struct {
-	Name           string         `structs:"name"`
-	Region         string         `structs:"region"`
-	ProtocolTypes  []string       `structs:"protocolTypes"`
-	Network        string         `structs:"network"`
-	Size           int            `structs:"quotaInBytes"`
-	ServiceLevel   string         `structs:"serviceLevel"`
-	SnapshotPolicy snapshotPolicy `structs:"snapshotPolicy"`
-	ExportPolicy   exportPolicy   `structs:"exportPolicy"`
-	VolumeID       string         `structs:"volumeId"`
 }
 
 // listVolumeJobIDResult the api response for createVolumeResult struct creating a volume
@@ -71,17 +55,6 @@ type listVolumeJobIDResult struct {
 // listVolumeIDResult the api response for listVolumeJobIDResult struct creating a volume
 type listVolumeIDResult struct {
 	VolID string `json:"volumeId"`
-}
-
-// createVolumeCreationTokenResult the api results for creating a volume
-type createVolumeCreationTokenResult struct {
-	CreationTokenName string `json:"creationToken"`
-}
-
-// deleteVolumeRequest the user input for deleteing a volume
-type deleteVolumeRequest struct {
-	VolumeID string `structs:"volumeId"`
-	Region   string `structs:"region"`
 }
 
 type snapshotPolicy struct {
@@ -141,85 +114,101 @@ type simpleExportPolicyRule struct {
 	SimpleExportPolicyRule exportPolicyRule `structs:"SimpleExportPolicyRule"`
 }
 
-func (c *Client) getVolumeByID(volume listVolumesRequest) (listVolumeResult, error) {
+type mountPoints struct {
+	Export       string `structs:"export"`
+	Server       string `structs:"server"`
+	ProtocolType string `structs:"protocolType"`
+}
+
+func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 
 	baseURL := fmt.Sprintf("%s/Volumes/%s", volume.Region, volume.VolumeID)
 
-	response, err := c.CallAPIMethod("GET", baseURL, nil)
+	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
 		log.Print("ListVolumes request failed")
-		return listVolumeResult{}, err
+		return volumeResult{}, err
 	}
 
-	var result listVolumeResult
+	responseError := apiResponseChecker(statusCode, response, "ListVolumes")
+	if responseError != nil {
+		return volumeResult{}, responseError
+	}
+
+	var result volumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
 		log.Print("Failed to unmarshall response from ListVolumes")
-		return listVolumeResult{}, err
+		return volumeResult{}, err
 	}
 
 	if result.LifeCycleState == "deleted" || result.LifeCycleState == "deleting" {
-		return listVolumeResult{}, nil
+		return volumeResult{}, nil
 	}
 
 	return result, nil
 }
 
-func (c *Client) getVolumeByNameOrCreationToken(volume listVolumesByNameRequest) (listVolumeResult, error) {
+func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeResult, error) {
 
-	if volume.VolumeName == "" && volume.CreationToken == "" {
-		return listVolumeResult{}, fmt.Errorf("Either CreationToken or volume name or both are required")
+	if volume.Name == "" && volume.CreationToken == "" {
+		return volumeResult{}, fmt.Errorf("Either CreationToken or volume name or both are required")
 	}
 
 	baseURL := fmt.Sprintf("%s/Volumes", volume.Region)
 
-	response, err := c.CallAPIMethod("GET", baseURL, nil)
+	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
 		log.Print("ListVolumesByName request failed")
-		return listVolumeResult{}, err
+		return volumeResult{}, err
 	}
 
-	var result []listVolumeResult
+	responseError := apiResponseChecker(statusCode, response, "ListVolumesByName")
+	if responseError != nil {
+		return volumeResult{}, responseError
+	}
+
+	var result []volumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
 		log.Print("Failed to unmarshall response from ListVolumes")
-		return listVolumeResult{}, err
+		return volumeResult{}, err
 	}
 
 	var count = 0
-	var resultVolume listVolumeResult
+	var resultVolume volumeResult
 	for _, eachVolume := range result {
 		if volume.CreationToken != "" && eachVolume.CreationToken == volume.CreationToken {
-			if volume.VolumeName != "" && eachVolume.VolumeName == volume.VolumeName {
+			if volume.Name != "" && eachVolume.Name == volume.Name {
 				return eachVolume, nil
-			} else if volume.VolumeName != "" && eachVolume.VolumeName != volume.VolumeName {
-				return listVolumeResult{}, fmt.Errorf("Given CreationToken does not match with given volume name : %v", volume.VolumeName)
+			} else if volume.Name != "" && eachVolume.Name != volume.Name {
+				return volumeResult{}, fmt.Errorf("Given CreationToken does not match with given volume name : %v", volume.Name)
 			}
 			return eachVolume, nil
-		} else if volume.CreationToken == "" && volume.VolumeName != "" && eachVolume.VolumeName == volume.VolumeName {
+		} else if volume.CreationToken == "" && volume.Name != "" && eachVolume.Name == volume.Name {
 			count = count + 1
 			resultVolume = eachVolume
 		}
 	}
 
 	if volume.CreationToken != "" {
-		return listVolumeResult{}, fmt.Errorf("Given CreationToken does not exist : %v", volume.CreationToken)
+		return volumeResult{}, fmt.Errorf("Given CreationToken does not exist : %v", volume.CreationToken)
 	}
 	if count > 1 {
-		return listVolumeResult{}, fmt.Errorf("Found more than one volume : %v", volume.VolumeName)
+		return volumeResult{}, fmt.Errorf("Found more than one volume : %v", volume.Name)
 	} else if count == 0 {
-		return listVolumeResult{}, fmt.Errorf("No volume found for : %v", volume.VolumeName)
+		return volumeResult{}, fmt.Errorf("No volume found for : %v", volume.Name)
 	}
 
 	return resultVolume, nil
 }
 
-func (c *Client) createVolume(request *createVolumeRequest) (createVolumeResult, error) {
+func (c *Client) createVolume(request *volumeRequest) (createVolumeResult, error) {
 	creationToken, err := c.createVolumeCreationToken(*request)
 	if err != nil {
 		log.Print("CreateVolume request failed")
 		return createVolumeResult{}, err
 	}
 
-	request.CreationToken = creationToken.CreationTokenName
+	request.CreationToken = creationToken.CreationToken
 	projectID := c.GetProjectID()
 	request.Network = fmt.Sprintf("projects/%s/global/networks/%s", projectID, request.Network)
 
@@ -228,10 +217,15 @@ func (c *Client) createVolume(request *createVolumeRequest) (createVolumeResult,
 	baseURL := fmt.Sprintf("%s/Volumes", request.Region)
 	log.Printf("Parameters: %v", params)
 
-	response, err := c.CallAPIMethod("POST", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("POST", baseURL, params)
 	if err != nil {
 		log.Print("CreateVolume request failed")
 		return createVolumeResult{}, err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "CreateVolume")
+	if responseError != nil {
+		return createVolumeResult{}, responseError
 	}
 
 	var result createVolumeResult
@@ -240,21 +234,21 @@ func (c *Client) createVolume(request *createVolumeRequest) (createVolumeResult,
 		return createVolumeResult{}, err
 	}
 
-	//size too small or too large return 500 status code and a error message.
-	if (result.Code != 0 && result.Code != 200) || (result.Message != "") {
-		return createVolumeResult{}, fmt.Errorf("code: %d, message: %s", result.Code, result.Message)
-	}
-
 	return result, nil
 }
 
-func (c *Client) deleteVolume(request deleteVolumeRequest) error {
+func (c *Client) deleteVolume(request volumeRequest) error {
 
 	baseURL := fmt.Sprintf("%s/Volumes/%s", request.Region, request.VolumeID)
-	response, err := c.CallAPIMethod("DELETE", baseURL, nil)
+	statusCode, response, err := c.CallAPIMethod("DELETE", baseURL, nil)
 	if err != nil {
 		log.Print("DeleteVolume request failed")
 		return err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "DeleteVolume")
+	if responseError != nil {
+		return responseError
 	}
 
 	var result apiResponseCodeMessage
@@ -262,43 +256,51 @@ func (c *Client) deleteVolume(request deleteVolumeRequest) error {
 		log.Print("Failed to unmarshall response from CreationToken")
 		return err
 	}
-	if (result.Code != 0 && result.Code != 200) || (result.Message != "") {
-		return fmt.Errorf("code: %d, message: %s", result.Code, result.Message)
-	}
 
 	return nil
 }
 
-func (c *Client) createVolumeCreationToken(request createVolumeRequest) (createVolumeCreationTokenResult, error) {
+func (c *Client) createVolumeCreationToken(request volumeRequest) (volumeResult, error) {
 	params := structs.Map(request)
 
 	baseURL := fmt.Sprintf("%s/VolumeCreationToken", request.Region)
 	log.Printf("Parameters: %v", params)
 
-	response, err := c.CallAPIMethod("", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("", baseURL, params)
 	if err != nil {
 		log.Print("CreationToken request failed")
-		return createVolumeCreationTokenResult{}, err
+		return volumeResult{}, err
 	}
 
-	var result createVolumeCreationTokenResult
+	responseError := apiResponseChecker(statusCode, response, "CreationToken")
+	if responseError != nil {
+		return volumeResult{}, responseError
+	}
+
+	var result volumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
 		log.Print("Failed to unmarshall response from CreationToken")
-		return createVolumeCreationTokenResult{}, err
+		return volumeResult{}, err
 	}
 	return result, nil
 }
 
-func (c *Client) updateVolume(request updateVolumeRequest) error {
+func (c *Client) updateVolume(request volumeRequest) error {
 	params := structs.Map(request)
 
 	baseURL := fmt.Sprintf("%s/Volumes/%s", request.Region, request.VolumeID)
 
-	response, err := c.CallAPIMethod("PUT", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("PUT", baseURL, params)
 	if err != nil {
 		log.Print("updateVolume request failed")
 		return err
 	}
+
+	responseError := apiResponseChecker(statusCode, response, "updateVolume")
+	if responseError != nil {
+		return responseError
+	}
+
 	var result apiResponseCodeMessage
 	if err := json.Unmarshal(response, &result); err != nil {
 		log.Print("Failed to unmarshall response from updateVolume")
@@ -321,6 +323,7 @@ func (c *Client) GetProjectID() string {
 	return c.Project
 }
 
+// expandSnapshotPolicy converts map to snapshotPolicy struct
 func expandSnapshotPolicy(data map[string]interface{}) snapshotPolicy {
 	snapshot_policy := snapshotPolicy{}
 
@@ -390,42 +393,105 @@ func expandSnapshotPolicy(data map[string]interface{}) snapshotPolicy {
 	return snapshot_policy
 }
 
-func expandExportPolicy(data map[string]interface{}) exportPolicy {
+// flattenExportPolicy converts exportPolicy struct to []map[string]interface{}
+func flattenExportPolicy(v exportPolicy) interface{} {
+	export_policy_rules := v.Rules
+	rules := make([]map[string]interface{}, 0, len(export_policy_rules))
+	for _, export_policy_rule := range export_policy_rules {
+		rule_map := make(map[string]interface{})
+		rule_map["access"] = export_policy_rule.Access
+		rule_map["allowed_clients"] = export_policy_rule.AllowedClients
+		nfsv3Config := make(map[string]interface{})
+		nfsv4Config := make(map[string]interface{})
+		nfsv3Config["checked"] = export_policy_rule.Nfsv3.Checked
+		nfsv4Config["checked"] = export_policy_rule.Nfsv4.Checked
+		nfsv3 := make([]map[string]interface{}, 1)
+		nfsv4 := make([]map[string]interface{}, 1)
+		nfsv3[0] = make(map[string]interface{})
+		nfsv4[0] = make(map[string]interface{})
+		nfsv3[0] = nfsv3Config
+		nfsv4[0] = nfsv4Config
+		rule_map["nfsv3"] = nfsv3
+		rule_map["nfsv4"] = nfsv4
+		rules = append(rules, rule_map)
+	}
+	result := make([]map[string]interface{}, 1)
+	result[0] = make(map[string]interface{})
+	result[0]["rule"] = rules
+	return result
+}
+
+// expandExportPolicy converts set to exportPolicy struct
+func expandExportPolicy(set *schema.Set) exportPolicy {
 	export_policy := exportPolicy{}
 
-	if v, ok := data["rule"]; ok {
-
-		for _, value := range v.([]interface{}) {
-			rule := exportPolicyRule{}
-			rule_map := value.(map[string]interface{})
-			if access := rule_map["access"]; access != "" {
-				rule.Access = access.(string)
+	for _, v := range set.List() {
+		rules := v.(map[string]interface{})
+		ruleSet := rules["rule"].(*schema.Set)
+		ruleConfigs := make([]exportPolicyRule, 0, ruleSet.Len())
+		for _, x := range ruleSet.List() {
+			export_policy_rule := exportPolicyRule{}
+			ruleConfig := x.(map[string]interface{})
+			export_policy_rule.Access = ruleConfig["access"].(string)
+			export_policy_rule.AllowedClients = ruleConfig["allowed_clients"].(string)
+			nfsv3Set := ruleConfig["nfsv3"].(*schema.Set)
+			nfsv4Set := ruleConfig["nfsv4"].(*schema.Set)
+			for _, y := range nfsv3Set.List() {
+				nfsv3Config := y.(map[string]interface{})
+				export_policy_rule.Nfsv3.Checked = nfsv3Config["checked"].(bool)
 			}
-			if allowedClients := rule_map["allowed_clients"]; allowedClients != "" {
-				rule.AllowedClients = allowedClients.(string)
+			for _, z := range nfsv4Set.List() {
+				nfsv4Config := z.(map[string]interface{})
+				export_policy_rule.Nfsv4.Checked = nfsv4Config["checked"].(bool)
 			}
-			nfs := nfs{}
-			nfsv3 := rule_map["nfsv3"]
-			if len(nfsv3.([]interface{})) > 0 {
-				nfsv3 := nfsv3.([]interface{})[0].(map[string]interface{})
-				if checked, ok := nfsv3["checked"]; ok {
-					nfs.Checked = checked.(bool)
-				}
-				rule.Nfsv3 = nfs
-			}
-			nfsv4 := rule_map["nfsv4"]
-			if len(nfsv4.([]interface{})) > 0 {
-				nfsv4 := nfsv4.([]interface{})[0].(map[string]interface{})
-				if checked, ok := nfsv4["checked"]; ok {
-					nfs.Checked = checked.(bool)
-				}
-				rule.Nfsv4 = nfs
-			}
-			export_policy.Rules = append(export_policy.Rules, rule)
+			ruleConfigs = append(ruleConfigs, export_policy_rule)
 		}
-
-		return export_policy
+		export_policy.Rules = ruleConfigs
 	}
+	return export_policy
+}
 
-	return exportPolicy{}
+// flattenSnapshotPolicy converts snapshotPolicy struct to []map[string]interface{}
+func flattenSnapshotPolicy(v snapshotPolicy) interface{} {
+	flattened := make([]map[string]interface{}, 1)
+	sp := make(map[string]interface{})
+	sp["enabled"] = v.Enabled
+	hourly := make([]map[string]interface{}, 1)
+	hourly[0] = make(map[string]interface{})
+	hourly[0]["minute"] = v.HourlySchedule.Minute
+	daily := make([]map[string]interface{}, 1)
+	daily[0] = make(map[string]interface{})
+	daily[0]["hour"] = v.DailySchedule.Hour
+	daily[0]["minute"] = v.DailySchedule.Minute
+	daily[0]["snapshots_to_keep"] = v.DailySchedule.SnapshotsToKeep
+	monthly := make([]map[string]interface{}, 1)
+	monthly[0] = make(map[string]interface{})
+	monthly[0]["days_of_month"] = v.MonthlySchedule.DaysOfMonth
+	monthly[0]["hour"] = v.MonthlySchedule.Hour
+	monthly[0]["minute"] = v.MonthlySchedule.Minute
+	monthly[0]["snapshots_to_keep"] = v.MonthlySchedule.SnapshotsToKeep
+	weekly := make([]map[string]interface{}, 1)
+	weekly[0] = make(map[string]interface{})
+	weekly[0]["day"] = v.WeeklySchedule.Day
+	weekly[0]["hour"] = v.WeeklySchedule.Hour
+	weekly[0]["minute"] = v.WeeklySchedule.Minute
+	weekly[0]["snapshots_to_keep"] = v.WeeklySchedule.SnapshotsToKeep
+	sp["daily_schedule"] = daily
+	sp["hourly_schedule"] = hourly
+	sp["weekly_schedule"] = weekly
+	sp["monthly_schedule"] = monthly
+	flattened[0] = sp
+	return flattened
+}
+
+func flattenMountPoints(v []mountPoints) interface{} {
+	mps := make([]map[string]interface{}, 0, len(v))
+	for _, mountpoint := range v {
+		mpmap := make(map[string]interface{})
+		mpmap["export"] = mountpoint.Export
+		mpmap["server"] = mountpoint.Server
+		mpmap["protocol_type"] = mountpoint.ProtocolType
+		mps = append(mps, mpmap)
+	}
+	return mps
 }

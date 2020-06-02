@@ -54,10 +54,15 @@ type deleteActiveDirectoryRequest struct {
 func (c *Client) createActiveDirectory(request *operateActiveDirectoryRequest) (operateActiveDirectoryResult, error) {
 	params := structs.Map(request)
 	baseURL := fmt.Sprintf("%s/Storage/ActiveDirectory", request.Region)
-	response, err := c.CallAPIMethod("POST", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("POST", baseURL, params)
 	if err != nil {
 		log.Print("CreateActiveDirectory request failed")
 		return operateActiveDirectoryResult{}, err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "CreateActiveDirectory")
+	if responseError != nil {
+		return operateActiveDirectoryResult{}, responseError
 	}
 
 	var result operateActiveDirectoryResult
@@ -72,10 +77,15 @@ func (c *Client) createActiveDirectory(request *operateActiveDirectoryRequest) (
 func (c *Client) listActiveDirectoryForRegion(request listActiveDirectoryRequest) (listActiveDirectoryResult, error) {
 	// GCP only allows one active directory per region.
 	baseURL := fmt.Sprintf("%s/Storage/ActiveDirectory", request.Region)
-	response, err := c.CallAPIMethod("GET", baseURL, nil)
+	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
 		log.Print("listActiveDirectory request failed")
 		return listActiveDirectoryResult{}, err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "listActiveDirectory")
+	if responseError != nil {
+		return listActiveDirectoryResult{}, responseError
 	}
 
 	var active_directorys []listActiveDirectoryResult
@@ -96,10 +106,15 @@ func (c *Client) listActiveDirectoryForRegion(request listActiveDirectoryRequest
 
 func (c *Client) deleteActiveDirectory(request deleteActiveDirectoryRequest) error {
 	baseURL := fmt.Sprintf("%s/Storage/ActiveDirectory/%s", request.Region, request.UUID)
-	_, err := c.CallAPIMethod("DELETE", baseURL, nil)
+	statusCode, response, err := c.CallAPIMethod("DELETE", baseURL, nil)
 	if err != nil {
 		log.Print("deleteActiveDirectory request failed")
 		return err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "deleteActiveDirectory")
+	if responseError != nil {
+		return responseError
 	}
 
 	return nil
@@ -108,11 +123,17 @@ func (c *Client) deleteActiveDirectory(request deleteActiveDirectoryRequest) err
 func (c *Client) updateActiveDirectory(request operateActiveDirectoryRequest) error {
 	params := structs.Map(request)
 	baseURL := fmt.Sprintf("%s/Storage/ActiveDirectory/%s", request.Region, request.UUID)
-	response, err := c.CallAPIMethod("PUT", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("PUT", baseURL, params)
 	if err != nil {
 		log.Print("updateActiveDirectory request failed")
 		return err
 	}
+
+	responseError := apiResponseChecker(statusCode, response, "updateActiveDirectory")
+	if responseError != nil {
+		return responseError
+	}
+
 	var result listActiveDirectoryResult
 	if err := json.Unmarshal(response, &result); err != nil {
 		log.Print("Failed to unmarshall response from updateActiveDirectory")

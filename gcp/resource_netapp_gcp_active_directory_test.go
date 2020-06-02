@@ -38,7 +38,7 @@ func TestAccActiveDirectory_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "region", "us-central1"),
 					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "domain", "newExample.com"),
 					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "dns_server", "10.0.0.1"),
-					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "net_bios", "new_cvserver"),
+					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "net_bios", "cvservers"),
 					testAccWaitSeconds(10),
 				),
 			},
@@ -122,7 +122,7 @@ func testAccActiveDirectoryConfigUpdate() string {
 		  password = "netapp"
 		domain = "newExample.com"
 		dns_server = "10.0.0.1"
-		net_bios = "new_cvserver"
+		net_bios = "cvservers"
 	  }
 	`)
 }

@@ -7,7 +7,7 @@ resource "netapp-gcp_volume" "gcp-volume" {
   protocol_types = ["NFSv3"]
   network = "cvs-terraform-vpc"
   size = 1024
-  service_level = "premium"
+  service_level = "extreme"
 }
 
 resource "netapp-gcp_snapshot" "gcp-snapshot" {

@@ -61,10 +61,15 @@ func (c *Client) getSnapshotByID(snapshot listSnapshotRequest) (listSnapshotResu
 
 	baseURL := fmt.Sprintf("%s/Volumes/%s/Snapshots/%s", snapshot.Region, snapshot.VolumeID, snapshot.SnapshotID)
 
-	response, err := c.CallAPIMethod("GET", baseURL, nil)
+	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
-		log.Print("ListVolumes request failed")
+		log.Print("ListSnapshot request failed")
 		return listSnapshotResult{}, err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "ListSnapshot")
+	if responseError != nil {
+		return listSnapshotResult{}, responseError
 	}
 
 	var result listSnapshotResult
@@ -86,10 +91,15 @@ func (c *Client) createSnapshot(request *createSnapshotRequest) (createSnapshotR
 	baseURL := fmt.Sprintf("%s/Volumes/%s/Snapshots", request.Region, request.VolumeID)
 	log.Printf("Parameters: %v", params)
 
-	response, err := c.CallAPIMethod("POST", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("POST", baseURL, params)
 	if err != nil {
 		log.Print("CreateSnapshot request failed")
 		return createSnapshotResult{}, err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "CreateSnapshot")
+	if responseError != nil {
+		return createSnapshotResult{}, responseError
 	}
 
 	var result createSnapshotResult
@@ -104,11 +114,17 @@ func (c *Client) createSnapshot(request *createSnapshotRequest) (createSnapshotR
 func (c *Client) deleteSnapshot(request deleteSnapshotRequest) error {
 
 	baseURL := fmt.Sprintf("%s/Volumes/%s/Snapshots/%s", request.Region, request.VolumeID, request.SnapshotID)
-	_, err := c.CallAPIMethod("DELETE", baseURL, nil)
+	statusCode, response, err := c.CallAPIMethod("DELETE", baseURL, nil)
 	if err != nil {
 		log.Print("DeleteSnapshot request failed")
 		return err
 	}
+
+	responseError := apiResponseChecker(statusCode, response, "DeleteSnapshot")
+	if responseError != nil {
+		return responseError
+	}
+
 	return nil
 }
 
@@ -116,10 +132,15 @@ func (c *Client) updateSnapshot(request updateSnapshotRequest) error {
 
 	params := structs.Map(request)
 	baseURL := fmt.Sprintf("%s/Volumes/%s/Snapshots/%s", request.Region, request.VolumeID, request.SnapshotID)
-	_, err := c.CallAPIMethod("PUT", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("PUT", baseURL, params)
 	if err != nil {
 		log.Print("UpdateSnapshot request failed")
 		return err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "UpdateSnapshot")
+	if responseError != nil {
+		return responseError
 	}
 
 	return nil

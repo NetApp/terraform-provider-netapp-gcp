@@ -26,7 +26,7 @@ type Client struct {
 }
 
 // CallAPIMethod can be used to make a request to any GCP API method, receiving results as byte
-func (c *Client) CallAPIMethod(method string, baseURL string, params map[string]interface{}) ([]byte, error) {
+func (c *Client) CallAPIMethod(method string, baseURL string, params map[string]interface{}) (int, []byte, error) {
 	c.initOnce.Do(c.init)
 
 	c.waitForAvailableSlot()
@@ -40,17 +40,17 @@ func (c *Client) CallAPIMethod(method string, baseURL string, params map[string]
 	if params == nil {
 		params = map[string]interface{}{}
 	}
-	result, err := c.restapiClient.Do(baseURL, &restapi.Request{
+	statusCode, result, err := c.restapiClient.Do(baseURL, &restapi.Request{
 		Method: method,
 		Params: params,
 	})
 	if err != nil {
-		return nil, err
+		return statusCode, nil, err
 	}
 	ourlog.WithFields(logrus.Fields{
 		"method": method,
 	}).Debug("Received successful API response")
-	return result, nil
+	return statusCode, result, nil
 }
 
 func (c *Client) init() {

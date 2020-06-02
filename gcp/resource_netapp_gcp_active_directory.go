@@ -102,6 +102,26 @@ func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) er
 	}
 	d.Set("uuid", res.UUID)
 
+	if err := d.Set("domain", res.Domain); err != nil {
+		return fmt.Errorf("Error reading active directory domain: %s", err)
+	}
+
+	if err := d.Set("net_bios", res.NetBIOS); err != nil {
+		return fmt.Errorf("Error reading active directory net_bios: %s", err)
+	}
+
+	if err := d.Set("username", res.Username); err != nil {
+		return fmt.Errorf("Error reading active directory username: %s", err)
+	}
+
+	if err := d.Set("dns_server", res.DNS); err != nil {
+		return fmt.Errorf("Error reading active directory dns_server: %s", err)
+	}
+
+	if err := d.Set("region", res.Region); err != nil {
+		return fmt.Errorf("Error reading active directory region: %s", err)
+	}
+
 	return nil
 }
 
@@ -162,6 +182,5 @@ func resourceGCPActiveDirectoryUpdate(d *schema.ResourceData, meta interface{}) 
 	if err != nil {
 		return err
 	}
-
-	return nil
+	return resourceGCPActiveDirectoryRead(d, meta)
 }

@@ -54,10 +54,10 @@ func resourceGCPSnapshotCreate(d *schema.ResourceData, meta interface{}) error {
 	snapshot.Name = d.Get("name").(string)
 	snapshot.Region = d.Get("region").(string)
 
-	volume := listVolumesByNameRequest{}
+	volume := volumeRequest{}
 	volume.Region = snapshot.Region
 
-	volume.VolumeName = d.Get("volume_name").(string)
+	volume.Name = d.Get("volume_name").(string)
 	volume.CreationToken = d.Get("creation_token").(string)
 
 	// Check the volume status. Start creating snapshot when volume is ready to use
@@ -70,11 +70,11 @@ func resourceGCPSnapshotCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 		if volresult.LifeCycleStateDetails != "Available for use" {
 			if retries < 3 {
-				log.Printf("Volume %s is not ready. Wait for 5 seconds and check again.\n", volume.VolumeName)
+				log.Printf("Volume %s is not ready. Wait for 5 seconds and check again.\n", volume.Name)
 				time.Sleep(5 * time.Second)
 				retries++
 			} else {
-				log.Printf("Volume %s is not ready.\n", volume.VolumeName)
+				log.Printf("Volume %s is not ready.\n", volume.Name)
 				return err
 			}
 		} else {
@@ -103,9 +103,9 @@ func resourceGCPSnapshotRead(d *schema.ResourceData, meta interface{}) error {
 
 	snapshot.Region = d.Get("region").(string)
 
-	volume := listVolumesByNameRequest{}
+	volume := volumeRequest{}
 	volume.Region = snapshot.Region
-	volume.VolumeName = d.Get("volume_name").(string)
+	volume.Name = d.Get("volume_name").(string)
 	volume.CreationToken = d.Get("creation_token").(string)
 
 	volresult, err := client.getVolumeByNameOrCreationToken(volume)
@@ -141,9 +141,9 @@ func resourceGCPSnapshotDelete(d *schema.ResourceData, meta interface{}) error {
 
 	snapshot.Region = d.Get("region").(string)
 
-	volume := listVolumesByNameRequest{}
+	volume := volumeRequest{}
 	volume.Region = snapshot.Region
-	volume.VolumeName = d.Get("volume_name").(string)
+	volume.Name = d.Get("volume_name").(string)
 	volume.CreationToken = d.Get("creation_token").(string)
 
 	volresult, err := client.getVolumeByNameOrCreationToken(volume)
@@ -175,9 +175,9 @@ func resourceGCPSnapshotExists(d *schema.ResourceData, meta interface{}) (bool, 
 	snapshot.SnapshotID = id
 	snapshot.Region = d.Get("region").(string)
 
-	volume := listVolumesByNameRequest{}
+	volume := volumeRequest{}
 	volume.Region = snapshot.Region
-	volume.VolumeName = d.Get("volume_name").(string)
+	volume.Name = d.Get("volume_name").(string)
 	volume.CreationToken = d.Get("creation_token").(string)
 
 	volresult, err := client.getVolumeByNameOrCreationToken(volume)
@@ -219,9 +219,9 @@ func resourceGCPSnapshotUpdate(d *schema.ResourceData, meta interface{}) error {
 	snapshot.Name = d.Get("name").(string)
 	snapshot.Region = d.Get("region").(string)
 
-	volume := listVolumesByNameRequest{}
+	volume := volumeRequest{}
 	volume.Region = snapshot.Region
-	volume.VolumeName = d.Get("volume_name").(string)
+	volume.Name = d.Get("volume_name").(string)
 	volume.CreationToken = d.Get("creation_token").(string)
 
 	volresult, err := client.getVolumeByNameOrCreationToken(volume)

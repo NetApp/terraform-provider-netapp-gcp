@@ -47,9 +47,9 @@ func testAccCheckSnapshotDestroy(state *terraform.State) error {
 			continue
 		}
 
-		volume := listVolumesByNameRequest{}
+		volume := volumeRequest{}
 		volume.Region = rs.Primary.Attributes["region"]
-		volume.VolumeName = rs.Primary.Attributes["volume_name"]
+		volume.Name = rs.Primary.Attributes["volume_name"]
 		volume.CreationToken = rs.Primary.Attributes["creation_token"]
 
 		volresult, err := client.getVolumeByNameOrCreationToken(volume)
@@ -86,9 +86,9 @@ func testAccCheckSnapshotExists(name string, snapshot *listSnapshotResult) resou
 			return fmt.Errorf("No snapshot ID is set")
 		}
 
-		volume := listVolumesByNameRequest{}
+		volume := volumeRequest{}
 		volume.Region = rs.Primary.Attributes["region"]
-		volume.VolumeName = rs.Primary.Attributes["volume_name"]
+		volume.Name = rs.Primary.Attributes["volume_name"]
 		volume.CreationToken = rs.Primary.Attributes["creation_token"]
 
 		volresult, err := client.getVolumeByNameOrCreationToken(volume)
@@ -118,7 +118,7 @@ func testAccCheckSnapshotExists(name string, snapshot *listSnapshotResult) resou
 }
 
 const VolName = "acceptant-test-volume"
-const Region = "us-west2"
+const Region = "us-east4"
 const SnapshotName = "acceptant-test-snapshot"
 
 // Create volume and snapshot based the created volume
@@ -131,7 +131,7 @@ func testAccSnapshotConfigCreate(Volume string, Location string, Snapshot string
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		size = 1024
-		service_level = "premium"
+		service_level = "extreme"
 	}
 	
 	resource "netapp-gcp_snapshot" "gcp-snapshot-acc" {
@@ -154,7 +154,7 @@ func testAccSnapshotConfigUpdate(Volume string, Location string, Snapshot string
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		size = 1024
-		service_level = "premium"
+		service_level = "extreme"
 	}
 	
 	resource "netapp-gcp_snapshot" "gcp-snapshot-acc" {
