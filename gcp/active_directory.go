@@ -3,19 +3,20 @@ package gcp
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/fatih/structs"
 	"log"
+	"github.com/fatih/structs"
 )
 
 // operateActiveDirectoryRequest requests the user's input for creating/updating an active directory
 type operateActiveDirectoryRequest struct {
-	Username string `structs:"username"`
-	Password string `structs:"password"`
-	Region   string `structs:"region"`
-	Domain   string `structs:"domain"`
-	DNS      string `structs:"DNS"`
-	NetBIOS  string `structs:"netBIOS"`
-	UUID     string `structs:"UUID"`
+	Username           string `structs:"username"`
+	Password           string `structs:"password"`
+	Region             string `structs:"region"`
+	Domain             string `structs:"domain"`
+	DNS                string `structs:"DNS"`
+	NetBIOS            string `structs:"netBIOS"`
+	OrganizationalUnit string `structs:"organizationalUnit"`
+	UUID               string `structs:"UUID"`
 }
 
 // operateActiveDirectoryResult returns the api response for creating/updating an active directory
@@ -32,13 +33,14 @@ type listActiveDirectoryRequest struct {
 
 // listActiveDirectoryResult lists the active directory for given ID
 type listActiveDirectoryResult struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	Region   string `json:"region"`
-	Domain   string `json:"domain"`
-	DNS      string `json:"DNS"`
-	NetBIOS  string `json:"netBIOS"`
-	UUID     string `json:"UUID"`
+	Username           string `json:"username"`
+	Password           string `json:"password"`
+	Region             string `json:"region"`
+	Domain             string `json:"domain"`
+	DNS                string `json:"DNS"`
+	NetBIOS            string `json:"netBIOS"`
+	OrganizationalUnit string `structs:"organizationalUnit"`
+	UUID               string `json:"UUID"`
 }
 
 type listActiveDirectoryApiResult struct {

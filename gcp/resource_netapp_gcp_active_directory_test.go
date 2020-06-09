@@ -2,9 +2,10 @@ package gcp
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"testing"
 )
 
 func TestAccActiveDirectory_basic(t *testing.T) {
@@ -28,6 +29,7 @@ func TestAccActiveDirectory_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "domain", "example.com"),
 					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "dns_server", "10.0.0.0"),
 					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "net_bios", "cvserver"),
+					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "organizational_unit", "CN=Computers"),
 				),
 			},
 			{
@@ -39,6 +41,7 @@ func TestAccActiveDirectory_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "domain", "newExample.com"),
 					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "dns_server", "10.0.0.1"),
 					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "net_bios", "cvservers"),
+					resource.TestCheckResourceAttr("netapp-gcp_active_directory.terraform-acceptance-test-1", "organizational_unit", "OU=engineering"),
 					testAccWaitSeconds(10),
 				),
 			},
@@ -123,6 +126,7 @@ func testAccActiveDirectoryConfigUpdate() string {
 		domain = "newExample.com"
 		dns_server = "10.0.0.1"
 		net_bios = "cvservers"
+		organizational_unit = "OU=engineering"
 	  }
 	`)
 }
