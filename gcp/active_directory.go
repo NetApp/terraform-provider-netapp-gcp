@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+
 	"github.com/fatih/structs"
 )
 
@@ -16,6 +17,7 @@ type operateActiveDirectoryRequest struct {
 	DNS                string `structs:"DNS"`
 	NetBIOS            string `structs:"netBIOS"`
 	OrganizationalUnit string `structs:"organizationalUnit"`
+	Site               string `structs:"site"`
 	UUID               string `structs:"UUID"`
 }
 
@@ -40,6 +42,7 @@ type listActiveDirectoryResult struct {
 	DNS                string `json:"DNS"`
 	NetBIOS            string `json:"netBIOS"`
 	OrganizationalUnit string `structs:"organizationalUnit"`
+	Site               string `structs:"site"`
 	UUID               string `json:"UUID"`
 }
 
