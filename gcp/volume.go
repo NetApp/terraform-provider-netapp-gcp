@@ -3,9 +3,10 @@ package gcp
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
-	"log"
 )
 
 // volumeRequest the users input for creating,requesting,updateing a Volume
