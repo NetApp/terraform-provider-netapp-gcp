@@ -58,6 +58,10 @@ func resourceGCPVolume() *schema.Resource {
 				Default:      "medium",
 				ValidateFunc: validation.StringInSlice([]string{"low", "medium", "high", "standard", "premium", "extreme"}, true),
 			},
+			"volume_path": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"mount_points": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -290,6 +294,10 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
+	if v, ok := d.GetOk("volume_path"); ok {
+		volume.CreationToken = v.(string)
+	}
+
 	if v, ok := d.GetOk("export_policy"); ok {
 		policy := v.(*schema.Set)
 		if policy.Len() > 0 {
@@ -369,6 +377,9 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if err := d.Set("protocol_types", res.ProtocolTypes); err != nil {
 		return fmt.Errorf("Error reading volume protocol_types: %s", err)
+	}
+	if err := d.Set("volume_path", res.CreationToken); err != nil {
+		return fmt.Errorf("Error reading volume path or Creation Token: %s", err)
 	}
 	network := res.Network
 	index := strings.Index(network, "networks/")

@@ -130,6 +130,7 @@ func testAccSnapshotConfigCreate(Volume string, Location string, Snapshot string
 		region = "%s"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
+		volume_path = "terraform-acceptance-test-paths"
 		size = 1024
 		service_level = "extreme"
 	}
@@ -153,6 +154,7 @@ func testAccSnapshotConfigUpdate(Volume string, Location string, Snapshot string
 		region = "%s"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
+		volume_path = "terraform-acceptance-test-paths"
 		size = 1024
 		service_level = "extreme"
 	}

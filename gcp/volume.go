@@ -3,9 +3,10 @@ package gcp
 import (
 	"encoding/json"
 	"fmt"
+	"log"
+
 	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
-	"log"
 )
 
 // volumeRequest the users input for creating,requesting,updateing a Volume
@@ -202,13 +203,15 @@ func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeRes
 }
 
 func (c *Client) createVolume(request *volumeRequest) (createVolumeResult, error) {
-	creationToken, err := c.createVolumeCreationToken(*request)
-	if err != nil {
-		log.Print("CreateVolume request failed")
-		return createVolumeResult{}, err
+	if request.CreationToken == "" {
+		creationToken, err := c.createVolumeCreationToken(*request)
+		if err != nil {
+			log.Print("CreateVolume request failed")
+			return createVolumeResult{}, err
+		}
+		request.CreationToken = creationToken.CreationToken
 	}
 
-	request.CreationToken = creationToken.CreationToken
 	projectID := c.GetProjectID()
 	request.Network = fmt.Sprintf("projects/%s/global/networks/%s", projectID, request.Network)
 

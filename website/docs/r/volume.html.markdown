@@ -12,6 +12,14 @@ Provides an NetApp_GCP volume resource. This can be used to create a new (empty)
 
 ## Example Usages
 
+**Read NetApp_GCP volume:**
+
+```
+data "netapp-gcp_volume" "data-volume" {
+  name = "deleteme_asapGO_jusitin"
+  region = "us-west2"
+```
+
 **Create NetApp_GCP volume:**
 
 ```
@@ -23,6 +31,7 @@ resource "netapp-gcp_volume" "gcp-volume" {
   network = "cvs-terraform-vpc"
   size = 1024
   service_level = "premium"
+  volume_path = "deleteme-asapGO"
   snapshot_policy {
     enabled = true
     daily_schedule {
@@ -67,6 +76,7 @@ The following arguments are supported:
 * `service_level` - (Optional) The performance of the service level of volume. Must be one of "standard", "premium", "extreme", default is "premium".
 * `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
 * `export_policy` - (Optional) The set of Export Policy attributes for volume.
+* `volume_path` - (Optional) The name of the volume path for volume.
 
 The `snapshot_policy` block supports:
 * `enabled` - (Optional) If enabled, make snapshots automatically according to the schedules. Default is false.

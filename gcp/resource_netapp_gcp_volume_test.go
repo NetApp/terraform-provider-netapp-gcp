@@ -2,12 +2,13 @@ package gcp
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
-	"github.com/hashicorp/terraform/terraform"
 	"log"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/hashicorp/terraform/helper/resource"
+	"github.com/hashicorp/terraform/terraform"
 )
 
 func TestAccVolume_basic(t *testing.T) {
@@ -28,6 +29,7 @@ func TestAccVolume_basic(t *testing.T) {
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "size", "1024"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-east4"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "extreme"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "volume_path", "terraform-acceptance-test-path"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "protocol_types.0", "NFSv3"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.hour", "10"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "1"),
@@ -129,6 +131,7 @@ func testAccVolumeConfigCreate() string {
 		network = "cvs-terraform-vpc"
 		size = 1024
 		service_level = "extreme"
+		volume_path = "terraform-acceptance-test-path"
 		snapshot_policy {
 		  enabled = true
 		  daily_schedule {
@@ -170,6 +173,7 @@ func testAccVolumeConfigUpdate() string {
 		region = "us-east4"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
+		volume_path = "terraform-acceptance-test-path"
 		size = 2048
 		service_level = "extreme"
 		snapshot_policy {

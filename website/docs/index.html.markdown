@@ -35,6 +35,7 @@ resource "netapp-gcp_volume" "gcp-volume" {
   network = "cvs-terraform-vpc"
   size = 1024
   service_level = "premium"
+  volume_path = "deleteme-asapGO"
   snapshot_policy {
     enabled = true
     daily_schedule {

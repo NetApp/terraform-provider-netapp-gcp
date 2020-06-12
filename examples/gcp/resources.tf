@@ -1,20 +1,30 @@
 # Specify GCP resources
 
+data "netapp-gcp_volume" "data-volume" {
+  name = "vol"
+  region = "us-east4"
+}
+
+output "volume" {
+  value = data.netapp-gcp_volume.data-volume
+}
+
 resource "netapp-gcp_volume" "gcp-volume" {
   provider = netapp-gcp
   name = "deleteme_asapGO"
-  region = "us-west2"
+  region = "us-east4"
   protocol_types = ["NFSv3"]
   network = "cvs-terraform-vpc"
   size = 1024
-  service_level = "extreme"
+  volume_path = "deleteme-asapGO"
+  service_level = "standard"
 }
 
 resource "netapp-gcp_snapshot" "gcp-snapshot" {
   provider = netapp-gcp
   name = "deleteme_snapshot_asapGo"
-  region = "us-west2"
-  volume_name =  "deleteme_asapGO"
-  creation_token = "agitated-affectionate-skossi"
+  region = "us-east4"
+  volume_name =  data.netapp-gcp_volume.data-volume.name
+  creation_token = data.netapp-gcp_volume.data-volume.volume_path
   depends_on = [netapp-gcp_volume.gcp-volume]
 }

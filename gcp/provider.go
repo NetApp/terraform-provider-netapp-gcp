@@ -29,6 +29,10 @@ func Provider() terraform.ResourceProvider {
 			"netapp-gcp_snapshot":         resourceGCPSnapshot(),
 		},
 
+		DataSourcesMap: map[string]*schema.Resource{
+			"netapp-gcp_volume": dataSourceGCPVolume(),
+		},
+
 		ConfigureFunc: providerConfigure,
 	}
 }
