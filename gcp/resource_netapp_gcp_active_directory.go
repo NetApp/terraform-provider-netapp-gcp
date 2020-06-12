@@ -2,9 +2,10 @@ package gcp
 
 import (
 	"fmt"
+	"log"
+
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/netapp/terraform-provider-netapp-gcp/gcp/cvs/restapi"
-	"log"
 )
 
 func resourceGCPActiveDirectory() *schema.Resource {
@@ -39,6 +40,14 @@ func resourceGCPActiveDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"organizational_unit": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"site": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 			"region": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -72,6 +81,12 @@ func resourceGCPActiveDirectoryCreate(d *schema.ResourceData, meta interface{}) 
 	active_directory.Domain = d.Get("domain").(string)
 	active_directory.DNS = d.Get("dns_server").(string)
 	active_directory.NetBIOS = d.Get("net_bios").(string)
+	if v, ok := d.GetOk("organizational_unit"); ok {
+		active_directory.OrganizationalUnit = v.(string)
+	}
+	if v, ok := d.GetOk("site"); ok {
+		active_directory.Site = v.(string)
+	}
 	active_directory.Region = d.Get("region").(string)
 
 	res, err := client.createActiveDirectory(&active_directory)
@@ -108,6 +123,14 @@ func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) er
 
 	if err := d.Set("net_bios", res.NetBIOS); err != nil {
 		return fmt.Errorf("Error reading active directory net_bios: %s", err)
+	}
+
+	if err := d.Set("organizational_unit", res.OrganizationalUnit); err != nil {
+		return fmt.Errorf("Error reading active directory organizational_unit: %s", err)
+	}
+
+	if err := d.Set("site", res.Site); err != nil {
+		return fmt.Errorf("Error reading active directory site: %s", err)
 	}
 
 	if err := d.Set("username", res.Username); err != nil {
@@ -176,6 +199,8 @@ func resourceGCPActiveDirectoryUpdate(d *schema.ResourceData, meta interface{}) 
 	active_directory.Domain = d.Get("domain").(string)
 	active_directory.DNS = d.Get("dns_server").(string)
 	active_directory.NetBIOS = d.Get("net_bios").(string)
+	active_directory.OrganizationalUnit = d.Get("organizational_unit").(string)
+	active_directory.Site = d.Get("site").(string)
 	active_directory.Region = d.Get("region").(string)
 	active_directory.UUID = d.Get("uuid").(string)
 	err := client.updateActiveDirectory(active_directory)

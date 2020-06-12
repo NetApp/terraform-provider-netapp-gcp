@@ -474,6 +474,10 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	// size is always required.
 	volume.Size = d.Get("size").(int) * GiBToBytes
 
+	if d.HasChange("name") {
+		makechange = 1
+	}
+
 	if d.HasChange("size") {
 		makechange = 1
 	}
