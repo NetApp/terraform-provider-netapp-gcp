@@ -27,7 +27,7 @@ func TestAccVolume_basic(t *testing.T) {
 					testAccCheckGCPVolumeExists("netapp-gcp_volume.terraform-acceptance-test-1", &volume),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "name", "terraform-acceptance-test-1"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "size", "1024"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-east4"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-west2"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "extreme"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "volume_path", "terraform-acceptance-test-path"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "protocol_types.0", "NFSv3"),
@@ -42,7 +42,7 @@ func TestAccVolume_basic(t *testing.T) {
 					testAccCheckGCPVolumeExists("netapp-gcp_volume.terraform-acceptance-test-1", &volume),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "name", "terraform-acceptance-test-1"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "size", "2048"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-east4"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-west2"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "extreme"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.hour", "20"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "30"),
@@ -126,7 +126,7 @@ func testAccVolumeConfigCreate() string {
 	resource "netapp-gcp_volume" "terraform-acceptance-test-1" {
 		provider = netapp-gcp
 		name = "terraform-acceptance-test-1"
-		region = "us-east4"
+		region = "us-west2"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		size = 1024
@@ -140,29 +140,29 @@ func testAccVolumeConfigCreate() string {
 		  }
 		}
 		export_policy {
-			rule {
-			  allowed_clients = "0.0.0.0/0"
-			  access= "ReadWrite"
-			  nfsv3 {
-				checked =  true
-			  }
-			  nfsv4 {
-				checked = false
-			  }
+		  rule {
+			allowed_clients = "0.0.0.0/0"
+			access= "ReadWrite"
+			nfsv3 {
+			   checked =  true
 			}
+			nfsv4 {
+			   checked = false
+			}
+		  }
 		  rule {
 			allowed_clients= "10.10.13.0"
 			access= "ReadWrite"
 			nfsv3 {
 				checked =  true
-			  }
-			  nfsv4 {
+			}
+			nfsv4 {
 				checked = false
-			  }
 			}
 		  }
+	    }
 	  }
-	`)
+  `)
 }
 
 func testAccVolumeConfigUpdate() string {
@@ -170,7 +170,7 @@ func testAccVolumeConfigUpdate() string {
 	resource "netapp-gcp_volume" "terraform-acceptance-test-1" {
 		provider = netapp-gcp
 		name = "terraform-acceptance-test-1"
-		region = "us-east4"
+		region = "us-west2"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		volume_path = "terraform-acceptance-test-path"

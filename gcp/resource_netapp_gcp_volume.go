@@ -56,7 +56,7 @@ func resourceGCPVolume() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				Default:      "medium",
-				ValidateFunc: validation.StringInSlice([]string{"low", "medium", "high", "standard", "premium", "extreme"}, true),
+				ValidateFunc: validation.StringInSlice([]string{"standard", "premium", "extreme"}, true),
 			},
 			"volume_path": {
 				Type:     schema.TypeString,
@@ -253,6 +253,24 @@ func resourceGCPVolume() *schema.Resource {
 	}
 }
 
+/*
+	There is a bug on service level API. Translate based on the setup value.
+	resource value: API call value
+	standard      : low
+	premium       : medium
+	extreme       : extreme
+*/
+func TranslateServiceLevelState2API(slevel string) string {
+	var apiValue = slevel
+	if slevel == "standard" {
+		apiValue = "low"
+	} else if slevel == "premium" {
+		apiValue = "medium"
+	}
+
+	return apiValue
+}
+
 func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("Creating volume: %#v", d)
 
@@ -276,15 +294,7 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if v, ok := d.GetOk("service_level"); ok {
 		slevel := v.(string)
-		if slevel == "standard" {
-			volume.ServiceLevel = "low"
-		} else if slevel == "premium" {
-			volume.ServiceLevel = "medium"
-		} else if slevel == "extreme" {
-			volume.ServiceLevel = "high"
-		} else {
-			volume.ServiceLevel = slevel
-		}
+		volume.ServiceLevel = TranslateServiceLevelState2API(slevel)
 	}
 
 	if v, ok := d.GetOk("snapshot_policy"); ok {
@@ -367,7 +377,24 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("size", res.Size/GiBToBytes); err != nil {
 		return fmt.Errorf("Error reading volume size: %s", err)
 	}
-	if err := d.Set("service_level", res.ServiceLevel); err != nil {
+
+	log.Printf("**** API response service level is %s", res.ServiceLevel)
+	/*
+		There is a bug on API. Translate the response with right value
+		API Respose:  Real Value
+		basic      :  standard
+		standard   :  premium
+		extreme    :  extreme
+	*/
+	var slevel = res.ServiceLevel
+
+	if res.ServiceLevel == "basic" {
+		slevel = "standard"
+	} else if res.ServiceLevel == "standard" {
+		slevel = "premium"
+	}
+
+	if err := d.Set("service_level", slevel); err != nil {
 		return fmt.Errorf("Error reading volume service_level: %s", err)
 	}
 	for i, protocol := range res.ProtocolTypes {
@@ -501,40 +528,9 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		slevel := n.(string)
 		oslevel := o.(string)
 
-		log.Printf("Updating volume: old=%v new=%v\n", oslevel, slevel)
-
-		switch slevel {
-		case "standard":
-			if oslevel != "low" {
-				volume.ServiceLevel = "low"
-				makechange = 1
-			}
-		case "premium":
-			if oslevel != "medium" {
-				volume.ServiceLevel = "medium"
-				makechange = 1
-			}
-		case "extreme":
-			if oslevel != "high" {
-				volume.ServiceLevel = "high"
-				makechange = 1
-			}
-		case "low":
-			if oslevel != "standard" {
-				volume.ServiceLevel = slevel
-				makechange = 1
-			}
-		case "medium":
-			if oslevel != "premium" {
-				volume.ServiceLevel = slevel
-				makechange = 1
-			}
-		case "high":
-			if oslevel != "extreme" {
-				volume.ServiceLevel = slevel
-				makechange = 1
-			}
-		}
+		log.Printf("Updating volume: service_level old=%v new=%v\n", oslevel, slevel)
+		volume.ServiceLevel = TranslateServiceLevelState2API(slevel)
+		makechange = 1
 	}
 
 	if makechange == 1 {

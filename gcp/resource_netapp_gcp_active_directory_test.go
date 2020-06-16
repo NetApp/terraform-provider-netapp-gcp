@@ -112,6 +112,7 @@ func testAccActiveDirectoryConfigCreate() string {
 		domain = "example.com"
 		dns_server = "10.0.0.0"
 		net_bios = "cvserver"
+		organizational_unit = "CN=Computers"
 	  }
 	`)
 }
