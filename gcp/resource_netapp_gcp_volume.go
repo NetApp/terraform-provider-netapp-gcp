@@ -61,6 +61,7 @@ func resourceGCPVolume() *schema.Resource {
 			"volume_path": {
 				Type:     schema.TypeString,
 				Optional: true,
+				Computed: true,
 			},
 			"mount_points": {
 				Type:     schema.TypeList,
