@@ -3,10 +3,10 @@ package gcp
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-
 	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
+	"log"
+	"time"
 )
 
 // volumeRequest the users input for creating,requesting,updateing a Volume
@@ -131,14 +131,14 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 		return volumeResult{}, err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "ListVolumes")
+	responseError := apiResponseChecker(statusCode, response, "getVolumeByID")
 	if responseError != nil {
 		return volumeResult{}, responseError
 	}
 
 	var result volumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
-		log.Print("Failed to unmarshall response from ListVolumes")
+		log.Print("Failed to unmarshall response from getVolumeByID")
 		return volumeResult{}, err
 	}
 
@@ -147,6 +147,29 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 	}
 
 	return result, nil
+}
+
+func (c *Client) getVolumeByRegion(region string) ([]volumeResult, error) {
+
+	baseURL := fmt.Sprintf("%s/Volumes", region)
+	var volumes []volumeResult
+
+	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
+	if err != nil {
+		log.Print("ListVolumes request failed")
+		return volumes, err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "getVolumeByRegion")
+	if responseError != nil {
+		return volumes, responseError
+	}
+
+	if err := json.Unmarshal(response, &volumes); err != nil {
+		log.Print("Failed to unmarshall response from getVolumeByRegion")
+		return volumes, err
+	}
+	return volumes, nil
 }
 
 func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeResult, error) {
@@ -163,14 +186,14 @@ func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeRes
 		return volumeResult{}, err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "ListVolumesByName")
+	responseError := apiResponseChecker(statusCode, response, "getVolumeByNameOrCreationToken")
 	if responseError != nil {
 		return volumeResult{}, responseError
 	}
 
 	var result []volumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
-		log.Print("Failed to unmarshall response from ListVolumes")
+		log.Print("Failed to unmarshall response from getVolumeByNameOrCreationToken")
 		return volumeResult{}, err
 	}
 
@@ -203,6 +226,12 @@ func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeRes
 }
 
 func (c *Client) createVolume(request *volumeRequest) (createVolumeResult, error) {
+
+	volumes, err := c.getVolumeByRegion(request.Region)
+	if err != nil {
+		return createVolumeResult{}, err
+	}
+
 	if request.CreationToken == "" {
 		creationToken, err := c.createVolumeCreationToken(*request)
 		if err != nil {
@@ -226,15 +255,32 @@ func (c *Client) createVolume(request *volumeRequest) (createVolumeResult, error
 		return createVolumeResult{}, err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "CreateVolume")
+	responseError := apiResponseChecker(statusCode, response, "createVolume")
 	if responseError != nil {
 		return createVolumeResult{}, responseError
 	}
 
 	var result createVolumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
-		log.Print("Failed to unmarshall response from CreateVolume")
+		log.Print("Failed to unmarshall response from createVolume")
 		return createVolumeResult{}, err
+	}
+
+	var volume volumeResult
+	volume, err = c.getVolumeByID(volumeRequest{Region: request.Region, VolumeID: result.Name.JobID.VolID})
+	if err != nil {
+		return createVolumeResult{}, err
+	}
+
+	// For each region, the first volume creation will take a long time, usually around 3-4 minutes. Because it’s spinning up an svm.
+	// Wait until the volume created if it's the first volume of the region.
+	if len(volumes) == 0 {
+		wait_seconds := 300
+		for wait_seconds > 0 && volume.LifeCycleState == "creating" {
+			time.Sleep(10)
+			volume, err = c.getVolumeByID(volumeRequest{VolumeID: result.Name.JobID.VolID})
+			wait_seconds = wait_seconds - 10
+		}
 	}
 
 	return result, nil
@@ -249,14 +295,14 @@ func (c *Client) deleteVolume(request volumeRequest) error {
 		return err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "DeleteVolume")
+	responseError := apiResponseChecker(statusCode, response, "deleteVolume")
 	if responseError != nil {
 		return responseError
 	}
 
 	var result apiResponseCodeMessage
 	if err := json.Unmarshal(response, &result); err != nil {
-		log.Print("Failed to unmarshall response from CreationToken")
+		log.Print("Failed to unmarshall response from deleteVolume")
 		return err
 	}
 
@@ -275,14 +321,14 @@ func (c *Client) createVolumeCreationToken(request volumeRequest) (volumeResult,
 		return volumeResult{}, err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "CreationToken")
+	responseError := apiResponseChecker(statusCode, response, "createVolumeCreationToken")
 	if responseError != nil {
 		return volumeResult{}, responseError
 	}
 
 	var result volumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
-		log.Print("Failed to unmarshall response from CreationToken")
+		log.Print("Failed to unmarshall response from createVolumeCreationToken")
 		return volumeResult{}, err
 	}
 	return result, nil
