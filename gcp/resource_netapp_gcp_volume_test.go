@@ -31,9 +31,19 @@ func TestAccVolume_basic(t *testing.T) {
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "extreme"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "volume_path", "terraform-acceptance-test-path"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "protocol_types.0", "NFSv3"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.hour", "10"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "1"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "0"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.hourly_schedule.0.snapshots_to_keep", "48"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.hourly_schedule.0.minute", "1"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "14"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "2"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.hour", "23"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.weekly_schedule.0.snapshots_to_keep", "4"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.weekly_schedule.0.minute", "3"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.weekly_schedule.0.hour", "1"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.weekly_schedule.0.day", "Monday"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.monthly_schedule.0.snapshots_to_keep", "6"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.monthly_schedule.0.minute", "4"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.monthly_schedule.0.hour", "2"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.monthly_schedule.0.days_of_month", "6"),
 				),
 			},
 			{
@@ -44,9 +54,19 @@ func TestAccVolume_basic(t *testing.T) {
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "size", "2048"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-west2"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "extreme"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.hour", "20"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "30"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "0"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.hourly_schedule.0.snapshots_to_keep", "9"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.hourly_schedule.0.minute", "2"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "20"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.minute", "10"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.hour", "22"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.weekly_schedule.0.snapshots_to_keep", "15"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.weekly_schedule.0.minute", "35"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.weekly_schedule.0.hour", "2"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.weekly_schedule.0.day", "Tuesday"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.monthly_schedule.0.snapshots_to_keep", "10"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.monthly_schedule.0.minute", "5"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.monthly_schedule.0.hour", "3"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.monthly_schedule.0.days_of_month", "15"),
 				),
 			},
 			// remove temporarily since us-west2 is not working.
@@ -133,11 +153,28 @@ func testAccVolumeConfigCreate() string {
 		service_level = "extreme"
 		volume_path = "terraform-acceptance-test-path"
 		snapshot_policy {
-		  enabled = true
-		  daily_schedule {
-			hour = 10
-			minute = 1
-		  }
+			enabled = true
+			hourly_schedule {
+			  snapshots_to_keep = 48
+			  minute = 1
+			}
+			daily_schedule {
+			  snapshots_to_keep = 14
+			  hour = 23
+			  minute = 2
+			}
+			weekly_schedule {
+			  snapshots_to_keep = 4
+			  hour = 1
+			  minute = 3
+			  day = "Monday"
+			}
+			monthly_schedule {
+			  snapshots_to_keep = 6
+			  hour = 2
+			  minute = 4
+			  days_of_month = 6
+			}    
 		}
 		export_policy {
 		  rule {
@@ -177,11 +214,28 @@ func testAccVolumeConfigUpdate() string {
 		size = 2048
 		service_level = "extreme"
 		snapshot_policy {
-		  enabled = true
-		  daily_schedule {
-			hour = 20	
-			minute = 30
-		  }
+			enabled = true
+			hourly_schedule {
+			  snapshots_to_keep = 9
+			  minute = 2
+			}
+			daily_schedule {
+			  snapshots_to_keep = 20
+			  hour = 22
+			  minute = 10
+			}
+			weekly_schedule {
+			  snapshots_to_keep = 15
+			  hour = 2
+			  minute = 35
+			  day = "Tuesday"
+			}
+			monthly_schedule {
+			  snapshots_to_keep = 10
+			  hour = 3
+			  minute = 5
+			  days_of_month = 15
+			}    
 		}
 		export_policy {
 			rule {

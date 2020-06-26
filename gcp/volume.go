@@ -405,7 +405,7 @@ func expandSnapshotPolicy(data map[string]interface{}) snapshotPolicy {
 			}
 		}
 	}
-	if v, ok := data["montly_schedule"]; ok {
+	if v, ok := data["monthly_schedule"]; ok {
 		if len(v.([]interface{})) > 0 {
 			montly_schedule := v.([]interface{})[0].(map[string]interface{})
 			if days_of_month, ok := montly_schedule["days_of_month"]; ok {
@@ -508,6 +508,7 @@ func flattenSnapshotPolicy(v snapshotPolicy) interface{} {
 	hourly := make([]map[string]interface{}, 1)
 	hourly[0] = make(map[string]interface{})
 	hourly[0]["minute"] = v.HourlySchedule.Minute
+	hourly[0]["snapshots_to_keep"] = v.HourlySchedule.SnapshotsToKeep
 	daily := make([]map[string]interface{}, 1)
 	daily[0] = make(map[string]interface{})
 	daily[0]["hour"] = v.DailySchedule.Hour
