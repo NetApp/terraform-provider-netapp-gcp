@@ -22,6 +22,7 @@ type volumeRequest struct {
 	SnapshotPolicy snapshotPolicy `structs:"snapshotPolicy,omitempty"`
 	ExportPolicy   exportPolicy   `structs:"exportPolicy"`
 	VolumeID       string         `structs:"volumeId,omitempty"`
+	Shared_vpc_project_number string
 }
 
 // volumeRequest retrieves the volume attributes from API and convert to struct
@@ -241,7 +242,12 @@ func (c *Client) createVolume(request *volumeRequest) (createVolumeResult, error
 		request.CreationToken = creationToken.CreationToken
 	}
 
-	projectID := c.GetProjectID()
+	var projectID string
+	if request.Shared_vpc_project_number != "" {
+		projectID = request.Shared_vpc_project_number
+	} else{
+		projectID = c.GetProjectID()
+	}
 	request.Network = fmt.Sprintf("projects/%s/global/networks/%s", projectID, request.Network)
 
 	params := structs.Map(request)

@@ -63,6 +63,10 @@ func resourceGCPVolume() *schema.Resource {
 				Optional: true,
 				Computed: true,
 			},
+			"shared_vpc_project_number": {
+				Type: schema.TypeString,
+				Optional: true,
+			},
 			"mount_points": {
 				Type:     schema.TypeList,
 				Optional: true,
@@ -314,6 +318,10 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		if policy.Len() > 0 {
 			volume.ExportPolicy = expandExportPolicy(policy)
 		}
+	}
+
+	if v,ok := d.GetOk("shared_vpc_project_number"); ok{
+		volume.Shared_vpc_project_number = v.(string)
 	}
 
 	res, err := client.createVolume(&volume)

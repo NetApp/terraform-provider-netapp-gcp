@@ -68,14 +68,15 @@ resource "netapp-gcp_volume" "gcp-volume" {
 
 The following arguments are supported:
 
-* `name` - (Required) The name of the NetApp_GCP volume.
-* `region` - (Required) The region where the NetApp_GCP volume to be created.
-* `protocol_types` - (Required) The protocol_type of the volume. For NFS use 'NFSv3' or 'NFSv4' and for SMB use 'CIFS' or 'SMB'
-* `network` - (Required) The network VPC of the volume.
-* `size` - (Required) The size of volume is between 1024 GiB to 102400 GiB inclusive.
-* `service_level` - (Optional) The performance of the service level of volume. Must be one of "standard", "premium", "extreme", default is "premium".
-* `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
 * `export_policy` - (Optional) The set of Export Policy attributes for volume.
+* `name` - (Required) The name of the NetApp_GCP volume.
+* `network` - (Required) The network VPC of the volume.
+* `protocol_types` - (Required) The protocol_type of the volume. For NFS use 'NFSv3' or 'NFSv4' and for SMB use 'CIFS' or 'SMB'.
+* `region` - (Required) The region where the NetApp_GCP volume to be created.
+* `service_level` - (Optional) The performance of the service level of volume. Must be one of "standard", "premium", "extreme", default is "premium".
+* `shared_vpc_project_number` - (Optional) The host project number when deploying in a shared VPC service project.
+* `size` - (Required) The size of volume is between 1024 GiB to 102400 GiB inclusive.
+* `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
 * `volume_path` - (Optional) The name of the volume path for volume.
 
 The `snapshot_policy` block supports:
