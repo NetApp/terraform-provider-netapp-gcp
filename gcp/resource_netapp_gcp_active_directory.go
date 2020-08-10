@@ -25,8 +25,9 @@ func resourceGCPActiveDirectory() *schema.Resource {
 				Required: true,
 			},
 			"password": {
-				Type:     schema.TypeString,
-				Required: true,
+				Type:      schema.TypeString,
+				Required:  true,
+				Sensitive: true,
 			},
 			"domain": {
 				Type:     schema.TypeString,

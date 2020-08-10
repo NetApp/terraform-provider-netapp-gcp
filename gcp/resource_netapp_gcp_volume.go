@@ -5,6 +5,7 @@ import (
 	"log"
 	"strings"
 	"time"
+	"regexp"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -64,8 +65,9 @@ func resourceGCPVolume() *schema.Resource {
 				Computed: true,
 			},
 			"shared_vpc_project_number": {
-				Type: schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringMatch(regexp.MustCompile("^[0-9]+$"), "shared_vpc_project_number must be an numerical project number"),
 			},
 			"mount_points": {
 				Type:     schema.TypeList,
@@ -320,7 +322,7 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		}
 	}
 
-	if v,ok := d.GetOk("shared_vpc_project_number"); ok{
+	if v, ok := d.GetOk("shared_vpc_project_number"); ok {
 		volume.Shared_vpc_project_number = v.(string)
 	}
 

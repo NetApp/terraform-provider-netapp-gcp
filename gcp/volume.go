@@ -3,25 +3,26 @@ package gcp
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/fatih/structs"
-	"github.com/hashicorp/terraform/helper/schema"
 	"log"
 	"time"
+
+	"github.com/fatih/structs"
+	"github.com/hashicorp/terraform/helper/schema"
 )
 
 // volumeRequest the users input for creating,requesting,updateing a Volume
 // exportPolicy can't set to omitempty because it could be deleted during update.
 type volumeRequest struct {
-	Name           string         `structs:"name,omitempty"`
-	Region         string         `structs:"region,omitempty"`
-	CreationToken  string         `structs:"creationToken,omitempty"`
-	ProtocolTypes  []string       `structs:"protocolTypes,omitempty"`
-	Network        string         `structs:"network,omitempty"`
-	Size           int            `structs:"quotaInBytes,omitempty"`
-	ServiceLevel   string         `structs:"serviceLevel,omitempty"`
-	SnapshotPolicy snapshotPolicy `structs:"snapshotPolicy,omitempty"`
-	ExportPolicy   exportPolicy   `structs:"exportPolicy"`
-	VolumeID       string         `structs:"volumeId,omitempty"`
+	Name                      string         `structs:"name,omitempty"`
+	Region                    string         `structs:"region,omitempty"`
+	CreationToken             string         `structs:"creationToken,omitempty"`
+	ProtocolTypes             []string       `structs:"protocolTypes,omitempty"`
+	Network                   string         `structs:"network,omitempty"`
+	Size                      int            `structs:"quotaInBytes,omitempty"`
+	ServiceLevel              string         `structs:"serviceLevel,omitempty"`
+	SnapshotPolicy            snapshotPolicy `structs:"snapshotPolicy,omitempty"`
+	ExportPolicy              exportPolicy   `structs:"exportPolicy"`
+	VolumeID                  string         `structs:"volumeId,omitempty"`
 	Shared_vpc_project_number string
 }
 
@@ -245,7 +246,7 @@ func (c *Client) createVolume(request *volumeRequest) (createVolumeResult, error
 	var projectID string
 	if request.Shared_vpc_project_number != "" {
 		projectID = request.Shared_vpc_project_number
-	} else{
+	} else {
 		projectID = c.GetProjectID()
 	}
 	request.Network = fmt.Sprintf("projects/%s/global/networks/%s", projectID, request.Network)
@@ -413,17 +414,17 @@ func expandSnapshotPolicy(data map[string]interface{}) snapshotPolicy {
 	}
 	if v, ok := data["monthly_schedule"]; ok {
 		if len(v.([]interface{})) > 0 {
-			montly_schedule := v.([]interface{})[0].(map[string]interface{})
-			if days_of_month, ok := montly_schedule["days_of_month"]; ok {
+			monthly_schedule := v.([]interface{})[0].(map[string]interface{})
+			if days_of_month, ok := monthly_schedule["days_of_month"]; ok {
 				snapshot_policy.MonthlySchedule.DaysOfMonth = days_of_month.(string)
 			}
-			if hour, ok := montly_schedule["hour"]; ok {
+			if hour, ok := monthly_schedule["hour"]; ok {
 				snapshot_policy.MonthlySchedule.Hour = hour.(int)
 			}
-			if minute, ok := montly_schedule["minute"]; ok {
+			if minute, ok := monthly_schedule["minute"]; ok {
 				snapshot_policy.MonthlySchedule.Minute = minute.(int)
 			}
-			if snapshotsToKeep, ok := montly_schedule["snapshots_to_keep"]; ok {
+			if snapshotsToKeep, ok := monthly_schedule["snapshots_to_keep"]; ok {
 				snapshot_policy.MonthlySchedule.SnapshotsToKeep = snapshotsToKeep.(int)
 			}
 		}
