@@ -67,7 +67,7 @@ func resourceGCPVolume() *schema.Resource {
 			"shared_vpc_project_number": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				ValidateFunc: validation.StringMatch(regexp.MustCompile("^[0-9]+$"), "shared_vpc_project_number must be an numerical project number"),
+				ValidateFunc: validation.StringMatch(regexp.MustCompile("^[0-9]+$"), "shared_vpc_project_number must be a numerical project number"),
 			},
 			"mount_points": {
 				Type:     schema.TypeList,

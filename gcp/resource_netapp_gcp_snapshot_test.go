@@ -3,6 +3,7 @@ package gcp
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -68,7 +69,9 @@ func testAccCheckSnapshotDestroy(state *terraform.State) error {
 			}
 		}
 	}
-
+	// Error: code: 500, message: Error creating volume - Cannot spawn additional jobs. Please wait for the ongoing jobs to finish and try again
+	// add wait time to avoid above error after starting volume test.
+	time.Sleep(30 * time.Second)
 	return nil
 }
 

@@ -106,7 +106,6 @@ func testAccCheckGCPVolumeDestroy(state *terraform.State) error {
 
 		}
 	}
-
 	return nil
 }
 
