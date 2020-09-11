@@ -30,8 +30,16 @@ the volume name) to ensure uniqueness.
 The current version of this provider requires Terraform 0.12 or higher to
 run.
 
-You will need to build the provider before being able to use it
+For version 0.12, you will need to build the provider before being able to use it
 (see [the section below](#building-the-provider)).
+
+For version 0.13 and above, you can either build your provider, or use the community provider in
+Terraform registery. If you don't need to customize our provider, using 0.13 is highly recommended.
+Please see Terraform website for more information:
+https://registry.terraform.io/providers/NetApp/netapp-gcp/latest
+
+If you are using 0.12 and would like to upgrade to 0.13, please see Terraform website for deatils:
+https://www.terraform.io/upgrade-guides/0-13.html
 
 Note that you need to run `terraform init` to fetch the provider before
 deploying.
@@ -55,13 +63,13 @@ The syntax is as follows:
 
 ```hcl
 provider "netapp-gcp" {
-  version = "~> 1.1"
+  version = "~> 0.1"
   ...
 }
 ```
 
 Version locking uses a pessimistic operator, so this version lock would mean
-anything within the 1.x namespace, including or after 1.1.0. [Read
+anything within the 0.x namespace, including or after 0.1.0. [Read
 more][provider-vc] on provider version control.
 
 [provider-vc]: https://www.terraform.io/docs/configuration/providers.html#provider-versions
@@ -172,7 +180,7 @@ This following example would run all of the acceptance tests matching
 run.
 
 
-# Walkthrough example
+# Walkthrough example for Terraform 0.12
 
 ### Installing go and terraform
 

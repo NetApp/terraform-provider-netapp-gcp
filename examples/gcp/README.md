@@ -1,7 +1,7 @@
-# NetApp NetApp_GCP 0.1.0 Example
+# NetApp NetApp_GCP 0.1.2 Example
 
 This repository is designed to demonstrate the capabilities of the [Terraform
-NetApp NetApp_GCP Provider][ref-tf-netapp-gcp] at the time of the 0.1.0 release.
+NetApp NetApp_GCP Provider][ref-tf-netapp-gcp] at the time of the 0.1.2 release.
 
 [ref-tf-netapp_gcp]: https://www.terraform.io/docs/providers/netapp/gcp/index.html
 

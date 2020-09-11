@@ -18,12 +18,24 @@ Use the navigation to the left to read about the available resources.
 and therefore may undergo significant changes as the community improves it.
 
 ## Example Usage
+Please see our [example][tf-example].
+[tf-example]: https://github.com/NetApp/terraform-provider-netapp-gcp/tree/master/examples/gcp
 
 ```
+# Install provider from terraform register, only available for version 0.13 and above.
+terraform {
+  required_providers {
+    netapp-gcp = {
+      source = "NetApp/netapp-gcp"
+      version = "0.1.1"
+    }
+  }
+}
+
 # Configure the NetApp_GCP Provider
-provider "netapp_gcp" {
-  project         = var.gcp_project_number
-  service_account = var.gcp_service_account
+provider "netapp-gcp" {
+  project         = "YOUR_PROJECT_NUMBER"
+  service_account = "YOUR_SERVICE_ACCOUNT"
 }
 
 # Create a volume tied to an account
