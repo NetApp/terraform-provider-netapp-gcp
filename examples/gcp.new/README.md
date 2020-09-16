@@ -26,3 +26,5 @@ All examples require Terraform 0.13 or higher.
     └── volume-smb - Creates an SMB volume
 ```
 
+## Usage
+Change into respective folder and change provider.tf to suite your GCP project. Next look for the "locals" block in the *.tf files and customize it to fir your environment. Then run "terraform init" followed by "terraform apply".
