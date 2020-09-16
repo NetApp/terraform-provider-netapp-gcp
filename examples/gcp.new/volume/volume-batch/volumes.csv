@@ -1,0 +1,8 @@
+volume_name,region,size,service_level
+terraform-batch-example01,europe-west3,1024,premium
+terraform-batch-example02,europe-west3,2000,standard
+terraform-batch-example03,europe-west3,4000,standard
+terraform-batch-example04,us-east4,1500,standard
+terraform-batch-example05,europe-west3,2000,extreme
+terraform-batch-example06,us-central1,2000,standard
+
