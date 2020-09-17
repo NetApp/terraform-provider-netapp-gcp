@@ -1,7 +1,7 @@
 # This example demonstrates how to query an existing volume and use the results
-# Possible uses are creating/deleting a snapshot
+# Possible use case is creating/deleting a snapshot
 # In this example, mount paths are displayed as outputs
-# A more advance example would be to use the path to mount the volume to a VM created by Terraform
+# A more advance example would use the path to mount the volume to a VM created by Terraform
 
 data "netapp-gcp_volume" "myvolume" {
     name = "data-volume1"

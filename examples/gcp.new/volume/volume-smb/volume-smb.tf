@@ -17,7 +17,7 @@ resource "netapp-gcp_volume" "gcp-volume-smb" {
   size = local.size
   service_level = local.service_level
 
-  # Advise: Since SMB volumes can only be created if an Active Directory connection exists for the region,
+  # Advice: Since SMB volumes can only be created if an Active Directory connection exists for the region,
   # depend the SMB volume on the AD resource. Either create the AD from TF, or use AD data source to query for
   # existing AD connection
   # depends_on = [

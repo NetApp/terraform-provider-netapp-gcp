@@ -1,6 +1,6 @@
-# This example create an Active Directory entry for the specified region
+# This example creates an Active Directory entry for the specified region
 # Please note, that CVS will not evaluate the correctness of this data
-# until the frist SMB volume using this entry will be created
+# until the first SMB volume using this entry will be created
 
 # local variables
 locals {

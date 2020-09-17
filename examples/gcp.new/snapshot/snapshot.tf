@@ -1,4 +1,4 @@
-# This example creates an snapshot of a volume specified via a volume data source
+# This example creates a snapshot of a volume specified via volume data source
 
 # local variables
 locals {

@@ -4,7 +4,7 @@ This folder contains examples for the resources (ActiveDirectory, Volumes, Snaps
 the data sources (Volumes, ActiveDirectory(future)) the provider supports.
 
 Each example is self-contained and doen't require files from other folders (provider.tf
-might be an expection). The tf-file named after the resource of interest in the example
+might be an exception). The tf-file named after the resource of interest in the example
 contains a short example description a comments. Intended for copy/paste for your resources.
 
 All examples require Terraform 0.13 or higher.
@@ -27,4 +27,4 @@ All examples require Terraform 0.13 or higher.
 ```
 
 ## Usage
-Change into respective folder and change provider.tf to suite your GCP project. Next look for the "locals" block in the *.tf files and customize it to fir your environment. Then run "terraform init" followed by "terraform apply".
+Change into respective folder and change provider.tf to suite your GCP project. Next look for the "locals" block in the *.tf files and customize it to for your environment. Then run "terraform init" followed by "terraform apply".
