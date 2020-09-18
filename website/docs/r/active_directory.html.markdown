@@ -12,6 +12,14 @@ Provides an NetApp_GCP active directory resource. This can be used to create a n
 
 ## Example Usages
 
+**Read NetApp_GCP active directory:**
+
+```
+data "netapp-gcp_active_directory" "ad-us-west2" {
+    region = "us-west2"
+}
+```
+
 **Create NetApp_GCP active directory:**
 
 ```

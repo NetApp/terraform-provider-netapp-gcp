@@ -88,14 +88,14 @@ func (c *Client) listActiveDirectoryForRegion(request listActiveDirectoryRequest
 		return listActiveDirectoryResult{}, err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "listActiveDirectory")
+	responseError := apiResponseChecker(statusCode, response, "listActiveDirectoryForRegion")
 	if responseError != nil {
 		return listActiveDirectoryResult{}, responseError
 	}
 
 	var active_directorys []listActiveDirectoryResult
 	if err := json.Unmarshal(response, &active_directorys); err != nil {
-		log.Print("Failed to unmarshall response from listActiveDirectory")
+		log.Print("Failed to unmarshall response from listActiveDirectoryForRegion")
 		return listActiveDirectoryResult{}, err
 	}
 	for _, v := range active_directorys {

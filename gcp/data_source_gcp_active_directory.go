@@ -26,7 +26,7 @@ func dataSourceGCPActiveDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"net_bios": {
+			"netbios": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -68,8 +68,8 @@ func dataSourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) 
 		return fmt.Errorf("Error reading active directory domain: %s", err)
 	}
 
-	if err := d.Set("net_bios", res.NetBIOS); err != nil {
-		return fmt.Errorf("Error reading active directory net_bios: %s", err)
+	if err := d.Set("netbios", res.NetBIOS); err != nil {
+		return fmt.Errorf("Error reading active directory netbios: %s", err)
 	}
 
 	if err := d.Set("organizational_unit", res.OrganizationalUnit); err != nil {
@@ -91,6 +91,5 @@ func dataSourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) 
 	if err := d.Set("region", res.Region); err != nil {
 		return fmt.Errorf("Error reading active directory region: %s", err)
 	}
-
 	return nil
 }

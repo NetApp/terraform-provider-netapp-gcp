@@ -34,7 +34,8 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
-			"netapp-gcp_volume": dataSourceGCPVolume(),
+			"netapp-gcp_volume":           dataSourceGCPVolume(),
+			"netapp-gcp_active_directory": dataSourceGCPActiveDirectory(),
 		},
 
 		ConfigureFunc: providerConfigure,

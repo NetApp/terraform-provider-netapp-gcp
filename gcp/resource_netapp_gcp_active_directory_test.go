@@ -2,10 +2,9 @@ package gcp
 
 import (
 	"fmt"
-	"testing"
-
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
+	"testing"
 )
 
 func TestAccActiveDirectory_basic(t *testing.T) {
