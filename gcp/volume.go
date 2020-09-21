@@ -227,7 +227,7 @@ func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeRes
 	return resultVolume, nil
 }
 
-func (c *Client) createVolume(request *volumeRequest) (createVolumeResult, error) {
+func (c *Client) createVolume(request *volumeRequest, volType string) (createVolumeResult, error) {
 
 	volumes, err := c.getVolumeByRegion(request.Region)
 	if err != nil {
@@ -253,7 +253,7 @@ func (c *Client) createVolume(request *volumeRequest) (createVolumeResult, error
 
 	params := structs.Map(request)
 
-	baseURL := fmt.Sprintf("%s/Volumes", request.Region)
+	baseURL := fmt.Sprintf("%s/%s", request.Region, volType)
 	log.Printf("Parameters: %v", params)
 
 	statusCode, response, err := c.CallAPIMethod("POST", baseURL, params)

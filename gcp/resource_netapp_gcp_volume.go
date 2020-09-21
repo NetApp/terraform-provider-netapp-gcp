@@ -3,16 +3,16 @@ package gcp
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
-	"regexp"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/netapp/terraform-provider-netapp-gcp/gcp/cvs/restapi"
 )
 
-// GiBTobytes converting GB to bytes
+// GiBToBytes converting GB to bytes
 const GiBToBytes = 1024 * 1024 * 1024
 
 // TiBToGiB converting TiB to GiB
@@ -33,6 +33,11 @@ func resourceGCPVolume() *schema.Resource {
 			"name": {
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"type_dp": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 			"region": {
 				Type:     schema.TypeString,
@@ -315,6 +320,17 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		volume.CreationToken = v.(string)
 	}
 
+	var volType string
+	dpType := d.Get("type_dp").(bool)
+	// if v, ok := d.GetOk("type_dp"); ok {
+	if dpType == true {
+		volType = "DataProtectionVolumes"
+	} else {
+		volType = "Volumes"
+	}
+	// }
+	log.Print(volType)
+
 	if v, ok := d.GetOk("export_policy"); ok {
 		policy := v.(*schema.Set)
 		if policy.Len() > 0 {
@@ -326,7 +342,7 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		volume.Shared_vpc_project_number = v.(string)
 	}
 
-	res, err := client.createVolume(&volume)
+	res, err := client.createVolume(&volume, volType)
 	if err != nil {
 		log.Print("Error creating volume")
 		return err
@@ -343,12 +359,10 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		deleteErr := client.deleteVolume(dvolume)
 		if deleteErr != nil {
 			return deleteErr
-		} else {
-			return err
 		}
-	} else {
-		return nil
+		return err
 	}
+	return nil
 }
 
 func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {

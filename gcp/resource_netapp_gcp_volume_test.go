@@ -27,8 +27,8 @@ func TestAccVolume_basic(t *testing.T) {
 					testAccCheckGCPVolumeExists("netapp-gcp_volume.terraform-acceptance-test-1", &volume),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "name", "terraform-acceptance-test-1"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "size", "1024"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-west2"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "extreme"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-east4"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "premium"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "volume_path", "terraform-acceptance-test-path"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "protocol_types.0", "NFSv3"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.hourly_schedule.0.snapshots_to_keep", "48"),
@@ -52,8 +52,8 @@ func TestAccVolume_basic(t *testing.T) {
 					testAccCheckGCPVolumeExists("netapp-gcp_volume.terraform-acceptance-test-1", &volume),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "name", "terraform-acceptance-test-1"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "size", "2048"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-west2"),
-					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "extreme"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "region", "us-east4"),
+					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "service_level", "premium"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.hourly_schedule.0.snapshots_to_keep", "9"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.hourly_schedule.0.minute", "2"),
 					testCheckResourceAttr("netapp-gcp_volume.terraform-acceptance-test-1", "snapshot_policy.0.daily_schedule.0.snapshots_to_keep", "20"),
@@ -145,11 +145,11 @@ func testAccVolumeConfigCreate() string {
 	resource "netapp-gcp_volume" "terraform-acceptance-test-1" {
 		provider = netapp-gcp
 		name = "terraform-acceptance-test-1"
-		region = "us-west2"
+		region = "us-east4"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		size = 1024
-		service_level = "extreme"
+		service_level = "premium"
 		volume_path = "terraform-acceptance-test-path"
 		snapshot_policy {
 			enabled = true
@@ -206,12 +206,12 @@ func testAccVolumeConfigUpdate() string {
 	resource "netapp-gcp_volume" "terraform-acceptance-test-1" {
 		provider = netapp-gcp
 		name = "terraform-acceptance-test-1"
-		region = "us-west2"
+		region = "us-east4"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		volume_path = "terraform-acceptance-test-path"
 		size = 2048
-		service_level = "extreme"
+		service_level = "premium"
 		snapshot_policy {
 			enabled = true
 			hourly_schedule {
@@ -262,26 +262,26 @@ func testAccVolumeConfigUpdate() string {
 	`)
 }
 
-func testAccVolumeConfigCreateSMB() string {
-	return fmt.Sprintf(`
-	resource "netapp-gcp_volume" "terraform-acceptance-test-1-SMB" {
-		provider = netapp-gcp
-		name = "terraform-acceptance-test-1-SMB"
-		region = "us-east4"
-		protocol_types = ["SMB"]
-		network = "cvs-terraform-vpc"
-		size = 1024
-		service_level = "extreme"
-		snapshot_policy {
-		  enabled = true
-		  daily_schedule {
-			hour = 10
-			minute = 1
-		  }
-		}
-	  }
-	`)
-}
+// func testAccVolumeConfigCreateSMB() string {
+// 	return fmt.Sprintf(`
+// 	resource "netapp-gcp_volume" "terraform-acceptance-test-1-SMB" {
+// 		provider = netapp-gcp
+// 		name = "terraform-acceptance-test-1-SMB"
+// 		region = "us-east4"
+// 		protocol_types = ["SMB"]
+// 		network = "cvs-terraform-vpc"
+// 		size = 1024
+// 		service_level = "extreme"
+// 		snapshot_policy {
+// 		  enabled = true
+// 		  daily_schedule {
+// 			hour = 10
+// 			minute = 1
+// 		  }
+// 		}
+// 	  }
+// 	`)
+// }
 
 func testAccWaitSeconds(second int) resource.TestCheckFunc {
 	return func(s *terraform.State) error {

@@ -78,6 +78,7 @@ The following arguments are supported:
 * `size` - (Required) The size of volume is between 1024 GiB to 102400 GiB inclusive.
 * `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
 * `volume_path` - (Optional) The name of the volume path for volume.
+* `type_dp` - (Optional) The type of the volume to be DP.
 
 The `snapshot_policy` block supports:
 * `enabled` - (Optional) If enabled, make snapshots automatically according to the schedules. Default is false.
