@@ -17,6 +17,7 @@ All examples require Terraform 0.13 or higher.
 │   ├── datasource - Queries a region for existing Active Directory connection
 │   └── minimal - Creates an Active Directory connection
 ├── snapshot - Creates a snapshot for an volume
+├── volume_replication - Creates two volumes, one as secondary for volume replication relationship 
 └── volume - contains examples for volume manipulation
     ├── advanced - More complex example using variables and outputs
     ├── datasource - Shows how to query an existing volume for later TF use
