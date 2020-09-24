@@ -37,3 +37,5 @@ resource "netapp-gcp_volume" "gcp-volume-destination" {
   service_level = local.destination_service_level
   type_dp = "true"
 }
+
+# Setting up the replication will follow as soon it is in the provider

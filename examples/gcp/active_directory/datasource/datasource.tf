@@ -6,7 +6,6 @@ locals {
 }
 
 data "netapp-gcp_active_directory" "ad-europe-west3" {
-    # domain = "example.com"
     region = local.region
 }
 

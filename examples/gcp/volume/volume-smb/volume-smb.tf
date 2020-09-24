@@ -9,6 +9,7 @@ locals {
   service_level = "extreme"
 }
 
+# query for existing Active Directory in specified region
 data "netapp-gcp_active_directory" "myad" {
     region = local.region
 }
