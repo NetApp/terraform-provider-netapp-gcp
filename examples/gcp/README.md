@@ -1,38 +1,31 @@
-# NetApp NetApp_GCP 0.1.2 Example
+# CVS/GCP Terraform provider examples
 
-This repository is designed to demonstrate the capabilities of the [Terraform
-NetApp NetApp_GCP Provider][ref-tf-netapp-gcp] at the time of the 0.1.2 release.
+This folder contains examples for the resources (ActiveDirectory, Volumes, Snapshots) and
+the data sources (Volumes, ActiveDirectory(future)) the provider supports.
 
-[ref-tf-netapp_gcp]: https://www.terraform.io/docs/providers/netapp/gcp/index.html
+Each example is self-contained and doen't require files from other folders (provider.tf
+might be an exception). The tf-file named after the resource of interest in the example
+contains a short example description a comments. Intended for copy/paste for your resources.
 
-This example performs the following:
+All examples require Terraform 0.13 or higher.
 
-* Creates a number of volumes on the GCP CVS tied to the project,
-  using the [`netapp_gcp_volume` resource][ref-tf-netapp-gcp-volume].
+## Overview of examples:
 
-[ref-tf-netapp-gcp-volume]: https://www.terraform.io/docs/providers/netapp/gcp/r/volume.html
+```bash
+.
+├── active_directory
+│   ├── datasource - Queries a region for existing Active Directory connection
+│   └── minimal - Creates an Active Directory connection
+├── snapshot - Creates a snapshot for an volume
+├── volume_replication - Creates two volumes, one as secondary for volume replication relationship 
+└── volume - contains examples for volume manipulation
+    ├── advanced - More complex example using variables and outputs
+    ├── datasource - Shows how to query an existing volume for later TF use
+    ├── minimal - Most simple volume example. Can be considered as "Hello World"
+    ├── volume-batch - Creates multiple volumes out of a CSV file
+    ├── volume-nfs - Creates an NFS volume
+    └── volume-smb - Creates an SMB volume
+```
 
-## Requirements
-
-* A working GCP NetApp account.
-
-## Usage Details
-
-You can either clone the entire
-[terraform-provider-netapp_gcp][ref-tf-netapp-gcp-github] repository, or download the
-`provider.tf`, `variables.tf`, `resources.tf`, and
-`terraform.tfvars.example` files into a directory of your choice. Once done,
-edit the `terraform.tfvars.example` file, populating the fields with the
-relevant values, and then rename it to `terraform.tfvars`. Don't forget to
-configure your endpoint and credentials by either adding them to the
-`provider.tf` file, or by using enviornment variables. See
-[here][ref-tf-netapp-gcp-provider-settings] for a reference on provider-level
-configuration values.
-
-[ref-tf-netapp-gcp-github]: https://github.com/terraform-providers/terraform-provider-netapp-gcp
-[ref-tf-netapp-gcp-provider-settings]: https://www.terraform.io/docs/providers/netapp/gcp/index.html#argument-reference
-
-Once done, run `terraform init`, and `terraform plan` to review the plan, then
-`terraform apply` to execute. If you use Terraform 0.11.0 or higher, you can
-skip `terraform plan` as `terraform apply` will now perform the plan for you and
-ask you confirm the changes.
+## Usage
+Change into respective folder and change provider.tf to suite your GCP project. Next look for the "locals" block in the *.tf files and customize it to for your environment. Then run "terraform init" followed by "terraform apply".
