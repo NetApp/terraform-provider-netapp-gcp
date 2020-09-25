@@ -79,6 +79,7 @@ The following arguments are supported:
 * `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
 * `volume_path` - (Optional) The name of the volume path for volume.
 * `type_dp` - (Optional) The type of the volume to be DP.
+* `delete_on_creation_error` - (Optional) Delete volume if volume is in error state after creation. Default is true.
 
 The `snapshot_policy` block supports:
 * `enabled` - (Optional) If enabled, make snapshots automatically according to the schedules. Default is false.

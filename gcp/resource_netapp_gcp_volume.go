@@ -1,6 +1,7 @@
 package gcp
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -261,6 +262,11 @@ func resourceGCPVolume() *schema.Resource {
 					},
 				},
 			},
+			"delete_on_creation_error": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  true,
+			},
 		},
 	}
 }
@@ -356,9 +362,14 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		dvolume := volumeRequest{}
 		dvolume.Region = volume.Region
 		dvolume.VolumeID = res.Name.JobID.VolID
-		deleteErr := client.deleteVolume(dvolume)
-		if deleteErr != nil {
-			return deleteErr
+		if d.Get("delete_on_creation_error").(bool) {
+			deleteErr := client.deleteVolume(dvolume)
+			if deleteErr != nil {
+				return fmt.Errorf("failed to delete volume in error state after creation. %s", deleteErr.Error())
+			}
+		}
+		if strings.Contains(err.Error(), "Please check the setup") {
+			err = errors.New("volume was in error state and now is deleted, please check the setup")
 		}
 		return err
 	}
@@ -389,7 +400,7 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if vol.LifeCycleState == "error" {
-			return fmt.Errorf("Volume %v is in %v state. Please check the setup. Will delete the volume",
+			return fmt.Errorf("Volume %v is in %v state. Please check the setup",
 				vol.VolumeID, vol.LifeCycleState)
 		} else if vol.LifeCycleState == "available" {
 			res = vol
