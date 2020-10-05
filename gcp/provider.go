@@ -21,9 +21,17 @@ func Provider() terraform.ResourceProvider {
 			},
 			"service_account": {
 				Type:        schema.TypeString,
-				Required:    true,
+				Required:    false,
+				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("GCP_SERVICE_ACCOUNT", nil),
 				Description: "The private key path for GCP API operations.",
+			},
+			"credentials": {
+				Type:        schema.TypeString,
+				Required:    false,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("GCP_CREDENTIALS", nil),
+				Description: "The credentials for GCP API operations.",
 			},
 		},
 
@@ -46,6 +54,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	config := configStuct{
 		Project:        d.Get("project").(string),
 		ServiceAccount: d.Get("service_account").(string),
+		Credentials:    d.Get("credentials").(string),
 	}
 
 	return config.clientFun()

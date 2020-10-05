@@ -17,6 +17,7 @@ type Client struct {
 	MaxConcurrentRequests int
 	BaseURL               string
 	ServiceAccount        string
+	Credentials           string
 	Project               string
 	Audience              string
 
@@ -61,6 +62,7 @@ func (c *Client) init() {
 	c.restapiClient = &restapi.Client{
 		Host:           c.Host,
 		ServiceAccount: c.ServiceAccount,
+		Credentials:    c.Credentials,
 		Audience:       c.Audience,
 	}
 }
@@ -73,6 +75,16 @@ func (c *Client) SetServiceAccount(serviceAccount string) {
 // GetServiceAccount returns the API version that will be used for GCP API requests
 func (c *Client) GetServiceAccount() string {
 	return c.ServiceAccount
+}
+
+// SetServiceAccount for the client to use for requests to the GCP API
+func (c *Client) SetCredentials(credentials string) {
+	c.Credentials = credentials
+}
+
+// GetServiceAccount returns the API version that will be used for GCP API requests
+func (c *Client) GetCredentials() string {
+	return c.Credentials
 }
 
 func (c *Client) waitForAvailableSlot() {

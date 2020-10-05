@@ -11,6 +11,7 @@ import (
 type Client struct {
 	Host           string
 	ServiceAccount string
+	Credentials    string
 	Audience       string
 
 	httpClient http.Client
@@ -19,7 +20,7 @@ type Client struct {
 // Do sends the API Request, parses the response as JSON, and returns the HTTP status code as int, the "result" value as byte
 func (c *Client) Do(baseURL string, req *Request) (int, []byte, error) {
 
-	httpReq, err := req.BuildHTTPReq(c.Host, c.ServiceAccount, c.Audience, baseURL)
+	httpReq, err := req.BuildHTTPReq(c.Host, c.ServiceAccount, c.Credentials, c.Audience, baseURL)
 	if err != nil {
 		return 0, nil, err
 	}
