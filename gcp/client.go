@@ -77,12 +77,12 @@ func (c *Client) GetServiceAccount() string {
 	return c.ServiceAccount
 }
 
-// SetServiceAccount for the client to use for requests to the GCP API
+// SetCredentials for the client to use for requests to the GCP API
 func (c *Client) SetCredentials(credentials string) {
 	c.Credentials = credentials
 }
 
-// GetServiceAccount returns the API version that will be used for GCP API requests
+// GetCredentials returns the API version that will be used for GCP API requests
 func (c *Client) GetCredentials() string {
 	return c.Credentials
 }

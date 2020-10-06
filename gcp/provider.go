@@ -21,14 +21,12 @@ func Provider() terraform.ResourceProvider {
 			},
 			"service_account": {
 				Type:        schema.TypeString,
-				Required:    false,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("GCP_SERVICE_ACCOUNT", nil),
 				Description: "The private key path for GCP API operations.",
 			},
 			"credentials": {
 				Type:        schema.TypeString,
-				Required:    false,
 				Optional:    true,
 				DefaultFunc: schema.EnvDefaultFunc("GCP_CREDENTIALS", nil),
 				Description: "The credentials for GCP API operations.",
@@ -39,6 +37,7 @@ func Provider() terraform.ResourceProvider {
 			"netapp-gcp_volume":           resourceGCPVolume(),
 			"netapp-gcp_active_directory": resourceGCPActiveDirectory(),
 			"netapp-gcp_snapshot":         resourceGCPSnapshot(),
+			"netapp-gcp_volume_backup":    resourceGCPVolumeBackup(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{

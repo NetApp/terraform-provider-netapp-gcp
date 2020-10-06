@@ -121,7 +121,7 @@ func testAccCheckSnapshotExists(name string, snapshot *listSnapshotResult) resou
 }
 
 const VolName = "acceptant-test-volume"
-const Region = "us-west2"
+const Region = "us-east4"
 const SnapshotName = "acceptant-test-snapshot"
 
 // Create volume and snapshot based the created volume

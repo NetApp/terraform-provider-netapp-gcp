@@ -15,7 +15,7 @@ Provides a NetApp_GCP snapshot resource. This can be used to create a new snapsh
 **Create NetApp_GCP snapshot:**
 
 ```
-resource "netapp_gcp_snapshot" "gcp-snapshot" {
+resource "netapp-gcp_snapshot" "gcp-snapshot" {
   name = "main-snapshot"
   region = "us-west2"
   volume_name =  "main-volume"
