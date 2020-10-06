@@ -9,6 +9,11 @@ locals {
   service_level = "extreme"
 }
 
+# query for existing Active Directory in specified region
+data "netapp-gcp_active_directory" "myad" {
+    region = local.region
+}
+
 resource "netapp-gcp_volume" "gcp-volume-smb" {
   name = local.volume_name
   region = local.region
@@ -20,9 +25,9 @@ resource "netapp-gcp_volume" "gcp-volume-smb" {
   # Advice: Since SMB volumes can only be created if an Active Directory connection exists for the region,
   # depend the SMB volume on the AD resource. Either create the AD from TF, or use AD data source to query for
   # existing AD connection
-  # depends_on = [
-  #     netapp-gcp_active_directory.ad-west3
-  # ]
+  depends_on = [
+    data.netapp-gcp_active_directory.myad
+  ]
 
   # Snapshot policy definition
   snapshot_policy {
