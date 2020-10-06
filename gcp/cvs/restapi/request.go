@@ -17,7 +17,8 @@ type Request struct {
 }
 
 // BuildHTTPReq builds an HTTP request to carry out the REST request
-func (r *Request) BuildHTTPReq(host string, serviceAccount string, audience string, baseURL string) (*http.Request, error) {
+func (r *Request) BuildHTTPReq(host string, serviceAccount string, credentials string, audience string, baseURL string) (*http.Request, error) {
+	var keyBytes []byte
 	bodyJSON, err := json.Marshal(r.Params)
 	if err != nil {
 		return nil, err
@@ -28,11 +29,15 @@ func (r *Request) BuildHTTPReq(host string, serviceAccount string, audience stri
 	if err != nil {
 		return nil, err
 	}
-
-	keyBytes, err := ioutil.ReadFile(serviceAccount)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to read service account key file  %v", err)
+	if credentials != "" {
+		keyBytes = []byte(credentials)
+	} else {
+		keyBytes, err = ioutil.ReadFile(serviceAccount)
+		if err != nil {
+			return nil, fmt.Errorf("Unable to read service account key file  %v\n", err)
+		}
 	}
+
 	tokenSource, err := google.JWTAccessTokenSourceFromJSON(keyBytes, audience)
 	if err != nil {
 		return nil, fmt.Errorf("Error building JWT access token source: %v", err)
