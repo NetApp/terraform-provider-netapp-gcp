@@ -267,6 +267,14 @@ func resourceGCPVolume() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"zone": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"storage_class": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -346,6 +354,14 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if v, ok := d.GetOk("shared_vpc_project_number"); ok {
 		volume.Shared_vpc_project_number = v.(string)
+	}
+
+	if v, ok := d.GetOk("zone"); ok {
+		volume.Zone = v.(string)
+	}
+
+	if v, ok := d.GetOk("storage_class"); ok {
+		volume.StorageClass = v.(string)
 	}
 
 	res, err := client.createVolume(&volume, volType)
@@ -473,6 +489,12 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	mount_points := flattenMountPoints(res.MountPoints)
 	if err := d.Set("mount_points", mount_points); err != nil {
 		return fmt.Errorf("Error reading volume mount_points: %s", err)
+	}
+	if err := d.Set("zone", res.Zone); err != nil {
+		return fmt.Errorf("Error reading volume zone: %s", err)
+	}
+	if err := d.Set("storage_class", res.StorageClass); err != nil {
+		return fmt.Errorf("Error reading volume storage_class: %s", err)
 	}
 	return nil
 }

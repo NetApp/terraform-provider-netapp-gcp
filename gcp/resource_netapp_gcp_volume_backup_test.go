@@ -129,6 +129,8 @@ func testAccVolumeBackupConfigCreate() string {
 		provider = netapp-gcp
 		name = "test-volume"
 		region = "us-east4"
+		zone = "gcp-zone"
+		storage_class = "hardware"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		volume_path = "terraform-acceptance-test-paths"

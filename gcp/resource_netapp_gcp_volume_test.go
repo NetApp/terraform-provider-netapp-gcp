@@ -146,6 +146,8 @@ func testAccVolumeConfigCreate() string {
 		provider = netapp-gcp
 		name = "terraform-acceptance-test-1"
 		region = "us-east4"
+		zone = "gcp-zone"
+		storage_class = "hardware"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		size = 1024
@@ -207,6 +209,8 @@ func testAccVolumeConfigUpdate() string {
 		provider = netapp-gcp
 		name = "terraform-acceptance-test-1"
 		region = "us-east4"
+		zone = "gcp-zone"
+		storage_class = "hardware"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		volume_path = "terraform-acceptance-test-path"

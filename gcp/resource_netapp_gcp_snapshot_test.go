@@ -131,6 +131,8 @@ func testAccSnapshotConfigCreate(Volume string, Location string, Snapshot string
 		provider = netapp-gcp
 		name = "%s"
 		region = "%s"
+		zone = "gcp-zone"
+		storage_class = "hardware"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		volume_path = "terraform-acceptance-test-paths"
@@ -155,6 +157,8 @@ func testAccSnapshotConfigUpdate(Volume string, Location string, Snapshot string
 		provider = netapp-gcp
 		name = "%s"
 		region = "%s"
+		zone = "gcp-zone"
+		storage_class = "hardware"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		volume_path = "terraform-acceptance-test-paths"

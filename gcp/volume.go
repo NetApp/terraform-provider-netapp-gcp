@@ -23,6 +23,8 @@ type volumeRequest struct {
 	SnapshotPolicy            snapshotPolicy `structs:"snapshotPolicy,omitempty"`
 	ExportPolicy              exportPolicy   `structs:"exportPolicy"`
 	VolumeID                  string         `structs:"volumeId,omitempty"`
+	Zone                      string         `structs:"zone,omitempty"`
+	StorageClass              string         `structs:"storageClass,omitempty"`
 	Shared_vpc_project_number string
 }
 
@@ -41,6 +43,8 @@ type volumeResult struct {
 	LifeCycleState        string         `json:"lifeCycleState"`
 	LifeCycleStateDetails string         `json:"lifeCycleStateDetails"`
 	MountPoints           []mountPoints  `json:"mountPoints,omitempty"`
+	Zone                  string         `json:"zone,omitempty"`
+	StorageClass          string         `json:"storageClass,omitempty"`
 }
 
 // createVolumeResult the api response for creating a volume

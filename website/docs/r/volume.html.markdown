@@ -80,6 +80,8 @@ The following arguments are supported:
 * `volume_path` - (Optional) The name of the volume path for volume.
 * `type_dp` - (Optional) The type of the volume to be DP.
 * `delete_on_creation_error` - (Optional) Delete volume if volume is in error state after creation. Default is true.
+* `zone` - (Optional) The desired zone for the resource.
+* `storage_class` - (Optional) Storage Class to be provisioned. Allows the user to choose between hardware based or software based.
 
 The `snapshot_policy` block supports:
 * `enabled` - (Optional) If enabled, make snapshots automatically according to the schedules. Default is false.
