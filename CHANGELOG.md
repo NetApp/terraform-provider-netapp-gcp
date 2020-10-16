@@ -2,8 +2,8 @@
 
 * **New DataSource:** netapp-gcp_active_directory
 * **New Resource:** `netapp-gcp_volume_backup`
-* **Update Resource:** `netapp-gcp_volume` to support `type_dp`
-* **Update Resource:** `netapp-gcp_volume` to support `zone` and `storage_class` for SDS
+* **Updated Resource:** `netapp-gcp_volume` to support `type_dp`
+* **Updated Resource:** `netapp-gcp_volume` to support `zone` and `storage_class` for SDS
 
 ## 0.1.1 (Aug 12, 2020)
 
