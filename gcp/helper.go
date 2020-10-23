@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"math/rand"
 )
 
 type apiErrorResponse struct {
@@ -28,4 +29,8 @@ func apiResponseChecker(statusCode int, response []byte, funcName string) error 
 
 	return nil
 
+}
+
+func nextRandomInt(min int, max int) int {
+	return rand.Intn(max-min) + min
 }

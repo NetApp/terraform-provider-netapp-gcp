@@ -1,7 +1,6 @@
 package gcp
 
 import (
-	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -265,7 +264,7 @@ func resourceGCPVolume() *schema.Resource {
 			"delete_on_creation_error": {
 				Type:     schema.TypeBool,
 				Optional: true,
-				Default:  true,
+				Default:  false,
 			},
 			"zone": {
 				Type:     schema.TypeString,
@@ -298,7 +297,7 @@ func TranslateServiceLevelState2API(slevel string) string {
 }
 
 func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
-	log.Printf("Creating volume: %#v", d)
+	log.Printf("Creating volume: %v", d.Get("name").(string))
 
 	client := meta.(*Client)
 
@@ -336,13 +335,13 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	var volType string
 	dpType := d.Get("type_dp").(bool)
-	// if v, ok := d.GetOk("type_dp"); ok {
+
 	if dpType == true {
 		volType = "DataProtectionVolumes"
 	} else {
 		volType = "Volumes"
 	}
-	// }
+
 	log.Print(volType)
 
 	if v, ok := d.GetOk("export_policy"); ok {
@@ -363,33 +362,47 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if v, ok := d.GetOk("storage_class"); ok {
 		volume.StorageClass = v.(string)
 	}
-
-	res, err := client.createVolume(&volume, volType)
+	var res createVolumeResult
+	var err error
+	res, err = client.createVolume(&volume, volType)
 	if err != nil {
 		log.Print("Error creating volume")
 		return err
 	}
 
 	d.SetId(res.Name.JobID.VolID)
-	log.Printf("Created volume: %v", volume.Name)
-
-	err = resourceGCPVolumeRead(d, meta)
+	var volumeRes volumeResult
+	time.Sleep(5 * time.Second)
+	volumeRes, err = client.getVolumeByID(volumeRequest{Region: volume.Region, VolumeID: res.Name.JobID.VolID})
 	if err != nil {
-		dvolume := volumeRequest{}
-		dvolume.Region = volume.Region
-		dvolume.VolumeID = res.Name.JobID.VolID
+		return err
+	}
+	if volumeRes.LifeCycleState == "available" {
+		return resourceGCPVolumeRead(d, meta)
+	}
+	if volumeRes.LifeCycleState == "creating" {
+		// wait for 5 minutes for completing volume creation.
+		waitSeconds := 300
+		for waitSeconds > 0 && volumeRes.LifeCycleState == "creating" {
+			time.Sleep(10)
+			volumeRes, err = client.getVolumeByID(volumeRequest{Region: volume.Region, VolumeID: res.Name.JobID.VolID})
+			if err != nil {
+				return err
+			}
+			waitSeconds = waitSeconds - 10
+		}
+	} else if volumeRes.LifeCycleState == "error" {
 		if d.Get("delete_on_creation_error").(bool) {
-			deleteErr := client.deleteVolume(dvolume)
+			deleteErr := resourceGCPVolumeDelete(d, meta)
 			if deleteErr != nil {
 				return fmt.Errorf("failed to delete volume in error state after creation. %s", deleteErr.Error())
 			}
+			return fmt.Errorf("%v. Volume in error state is deleted", err.Error())
 		}
-		if strings.Contains(err.Error(), "Please check the setup") {
-			err = errors.New("volume was in error state and now is deleted, please check the setup")
-		}
-		return err
+		return fmt.Errorf("%v", err.Error())
 	}
-	return nil
+
+	return resourceGCPVolumeRead(d, meta)
 }
 
 func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
@@ -412,12 +425,12 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		}
 
 		if vol.VolumeID != id {
-			return fmt.Errorf("Expected VOlume ID %v, Response contained Volume ID %v", id, res.VolumeID)
+			return fmt.Errorf("Expected Volume ID %v, Response contained Volume ID %v", id, res.VolumeID)
 		}
 
 		if vol.LifeCycleState == "error" {
-			return fmt.Errorf("Volume %v is in %v state. Please check the setup",
-				vol.VolumeID, vol.LifeCycleState)
+			return fmt.Errorf("Volume with name: %v and id: %v is in %v state. Please check the setup. LifeCycleStateDetails: %v",
+				vol.Name, vol.VolumeID, vol.LifeCycleState, vol.LifeCycleStateDetails)
 		} else if vol.LifeCycleState == "available" {
 			res = vol
 			break
@@ -490,12 +503,17 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("mount_points", mount_points); err != nil {
 		return fmt.Errorf("Error reading volume mount_points: %s", err)
 	}
-	if err := d.Set("zone", res.Zone); err != nil {
-		return fmt.Errorf("Error reading volume zone: %s", err)
+	if _, ok := d.GetOk("zone"); ok {
+		if err := d.Set("zone", res.Zone); err != nil {
+			return fmt.Errorf("Error reading volume zone: %s", err)
+		}
 	}
-	if err := d.Set("storage_class", res.StorageClass); err != nil {
-		return fmt.Errorf("Error reading volume storage_class: %s", err)
+	if _, ok := d.GetOk("storage_class"); ok {
+		if err := d.Set("storage_class", res.StorageClass); err != nil {
+			return fmt.Errorf("Error reading volume storage_class: %s", err)
+		}
 	}
+
 	return nil
 }
 
@@ -513,6 +531,41 @@ func resourceGCPVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 	deleteErr := client.deleteVolume(volume)
 	if deleteErr != nil {
 		return deleteErr
+	}
+
+	getVolume, err := client.getVolumeByID(volume)
+	if err != nil {
+		return err
+	}
+	if getVolume.LifeCycleState == "deleted" {
+		return nil
+	} else if getVolume.LifeCycleState == "deleting" {
+		waitTime := 300
+		for waitTime > 0 {
+			time.Sleep(20 * time.Second)
+			waitTime = waitTime - 20
+			getVolume, err = client.getVolumeByID(volume)
+			if err != nil {
+				return err
+			}
+			if getVolume.LifeCycleState == "deleted" {
+				return nil
+			}
+		}
+		// if volume is in error state when deleting, retry.
+	} else if getVolume.LifeCycleState == "error" {
+		time.Sleep(time.Duration(nextRandomInt(5, 20)) * time.Second)
+		deleteErr := client.deleteVolume(volume)
+		if deleteErr != nil {
+			return deleteErr
+		}
+		getVolume, err := client.getVolumeByID(volume)
+		if err != nil {
+			return err
+		}
+		if getVolume.LifeCycleState == "error" {
+			return fmt.Errorf("error deleting volume with id: %s, name: %s; %s", getVolume.VolumeID, getVolume.Name, getVolume.LifeCycleStateDetails)
+		}
 	}
 
 	return nil

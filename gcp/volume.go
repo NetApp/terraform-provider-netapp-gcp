@@ -1,6 +1,7 @@
 package gcp
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -9,6 +10,10 @@ import (
 	"github.com/fatih/structs"
 	"github.com/hashicorp/terraform/helper/schema"
 )
+
+const contextDeadlineExceededErrorMessage = "Post http://cloud-volumes-service.sde.svc.cluster.local/v2/Volumes: context deadline exceeded"
+const spawnJobCreationErrorMessage = "Error creating volume - Cannot spawn additional jobs. Please wait for the ongoing jobs to finish and try again"
+const spawnJobDeletionErrorMessage = "Error deleting volume - Cannot spawn additional jobs. Please wait for the ongoing jobs to finish and try again"
 
 // volumeRequest the users input for creating,requesting,updateing a Volume
 // exportPolicy can't set to omitempty because it could be deleted during update.
@@ -133,10 +138,8 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 
 	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
-		log.Print("ListVolumes request failed")
 		return volumeResult{}, err
 	}
-
 	responseError := apiResponseChecker(statusCode, response, "getVolumeByID")
 	if responseError != nil {
 		return volumeResult{}, responseError
@@ -147,11 +150,6 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 		log.Print("Failed to unmarshall response from getVolumeByID")
 		return volumeResult{}, err
 	}
-
-	if result.LifeCycleState == "deleted" || result.LifeCycleState == "deleting" {
-		return volumeResult{}, nil
-	}
-
 	return result, nil
 }
 
@@ -218,7 +216,6 @@ func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeRes
 			resultVolume = eachVolume
 		}
 	}
-
 	if volume.CreationToken != "" {
 		return volumeResult{}, fmt.Errorf("Given CreationToken does not exist : %v", volume.CreationToken)
 	}
@@ -232,11 +229,6 @@ func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeRes
 }
 
 func (c *Client) createVolume(request *volumeRequest, volType string) (createVolumeResult, error) {
-
-	volumes, err := c.getVolumeByRegion(request.Region)
-	if err != nil {
-		return createVolumeResult{}, err
-	}
 
 	if request.CreationToken == "" {
 		creationToken, err := c.createVolumeCreationToken(*request)
@@ -259,39 +251,88 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 
 	baseURL := fmt.Sprintf("%s/%s", request.Region, volType)
 	log.Printf("Parameters: %v", params)
-
 	statusCode, response, err := c.CallAPIMethod("POST", baseURL, params)
 	if err != nil {
-		log.Print("CreateVolume request failed")
 		return createVolumeResult{}, err
 	}
-
 	responseError := apiResponseChecker(statusCode, response, "createVolume")
 	if responseError != nil {
-		return createVolumeResult{}, responseError
+		var responseErrorContent apiErrorResponse
+		responseContent := bytes.NewBuffer(response).String()
+		if err := json.Unmarshal(response, &responseErrorContent); err != nil {
+			return createVolumeResult{}, fmt.Errorf(responseContent)
+		}
+		if responseErrorContent.Code == 500 {
+			if responseErrorContent.Message == spawnJobCreationErrorMessage {
+				retries := 10
+				var responseErrorContent apiErrorResponse
+				for retries > 0 {
+					time.Sleep(time.Duration(nextRandomInt(30, 50)) * time.Second)
+					statusCode, response, err = c.CallAPIMethod("POST", baseURL, params)
+					if err != nil {
+						return createVolumeResult{}, err
+					}
+					responseError = apiResponseChecker(statusCode, response, "createVolume")
+					responseContent = bytes.NewBuffer(response).String()
+					if err := json.Unmarshal(response, &responseErrorContent); err != nil {
+						return createVolumeResult{}, fmt.Errorf(responseContent)
+					}
+					if responseErrorContent.Code == 0 {
+						var result createVolumeResult
+						if err := json.Unmarshal(response, &result); err != nil {
+							log.Print("Failed to unmarshall response from createVolume")
+							return createVolumeResult{}, fmt.Errorf(bytes.NewBuffer(response).String())
+						}
+						return result, nil
+					}
+					retries--
+				}
+				if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
+					return createVolumeResult{}, responseError
+				}
+			} else if responseErrorContent.Message == contextDeadlineExceededErrorMessage {
+				retries := 5
+				var responseErrorContent apiErrorResponse
+				for retries > 0 {
+					time.Sleep(time.Duration(nextRandomInt(5, 10)) * time.Second)
+					statusCode, response, err = c.CallAPIMethod("POST", baseURL, params)
+					if err != nil {
+						if err := json.Unmarshal(response, &responseErrorContent); err != nil {
+							return createVolumeResult{}, fmt.Errorf(responseContent)
+						}
+					}
+					responseError = apiResponseChecker(statusCode, response, "createVolume")
+					responseContent = bytes.NewBuffer(response).String()
+					if err := json.Unmarshal(response, &responseErrorContent); err != nil {
+						return createVolumeResult{}, fmt.Errorf(responseContent)
+					}
+					if responseErrorContent.Code == 0 {
+						var result createVolumeResult
+						if err := json.Unmarshal(response, &result); err != nil {
+							log.Print("Failed to unmarshall response from createVolume")
+							return createVolumeResult{}, fmt.Errorf(bytes.NewBuffer(response).String())
+						}
+
+						return result, nil
+					}
+					retries--
+				}
+				if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
+					return createVolumeResult{}, responseError
+				}
+			} else {
+				return createVolumeResult{}, responseError
+			}
+		}
+		if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
+			return createVolumeResult{}, responseError
+		}
 	}
 
 	var result createVolumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
 		log.Print("Failed to unmarshall response from createVolume")
 		return createVolumeResult{}, err
-	}
-
-	var volume volumeResult
-	volume, err = c.getVolumeByID(volumeRequest{Region: request.Region, VolumeID: result.Name.JobID.VolID})
-	if err != nil {
-		return createVolumeResult{}, err
-	}
-
-	// For each region, the first volume creation will take a long time, usually around 3-4 minutes. Because it’s spinning up an svm.
-	// Wait until the volume created if it's the first volume of the region.
-	if len(volumes) == 0 {
-		wait_seconds := 300
-		for wait_seconds > 0 && volume.LifeCycleState == "creating" {
-			time.Sleep(10)
-			volume, err = c.getVolumeByID(volumeRequest{VolumeID: result.Name.JobID.VolID})
-			wait_seconds = wait_seconds - 10
-		}
 	}
 
 	return result, nil

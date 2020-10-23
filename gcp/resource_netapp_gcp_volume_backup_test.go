@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
@@ -35,44 +34,37 @@ func TestAccVolumeBackup_basic(t *testing.T) {
 
 func testAccCheckGCPVolumeBackupDestroy(state *terraform.State) error {
 	client := testAccProvider.Meta().(*Client)
+	var volumeID string
+	volumeBackup := listVolumeBackupRequest{}
 
 	for _, rs := range state.RootModule().Resources {
-		if rs.Type != "netapp-gcp_volume_backup" {
-			continue
-		}
-		volumeBackup := listVolumeBackupRequest{}
-
-		volumeBackup.Region = rs.Primary.Attributes["region"]
-
-		volume := volumeRequest{}
-		volume.Region = volumeBackup.Region
-		volume.Name = rs.Primary.Attributes["volume_name"]
-		volume.CreationToken = rs.Primary.Attributes["creation_token"]
-
-		volresult, err := client.getVolumeByNameOrCreationToken(volume)
-		if err != nil {
-			log.Print("Error getting volume ID")
-			return err
-		}
-
-		volumeBackup.VolumeID = volresult.VolumeID
-
-		volumeBackup.VolumeBackupID = rs.Primary.ID
-		var response listVolumeBackupResult
-		response, err = client.getVolumeBackupByID(volumeBackup)
-		if err != nil {
-			return err
-		}
-		if err == nil {
-			if response.VolumeBackupID != "" {
-				return fmt.Errorf("volume (%s) still exists", response.VolumeBackupID)
+		if rs.Type == "netapp-gcp_volume" {
+			volumeID = rs.Primary.ID
+			response, err := client.getVolumeByID(volumeRequest{
+				VolumeID: volumeID,
+				Region:   rs.Primary.Attributes["region"],
+			})
+			if err == nil {
+				if response.LifeCycleState != "deleted" {
+					return fmt.Errorf("volume (%s) still exists", response.VolumeID)
+				}
 			}
-
+		} else if rs.Type == "netapp-gcp_volume_backup" {
+			volumeBackup.Region = rs.Primary.Attributes["region"]
+			volumeBackup.VolumeBackupID = rs.Primary.ID
 		}
 	}
-	// Error: code: 500, message: Error creating volume - Cannot spawn additional jobs. Please wait for the ongoing jobs to finish and try again
-	// add wait time to avoid above error after starting volume test.
-	time.Sleep(30 * time.Second)
+	volumeBackup.VolumeID = volumeID
+	var response listVolumeBackupResult
+	response, err := client.getVolumeBackupByID(volumeBackup)
+	if err != nil {
+		return err
+	}
+	if err == nil {
+		if response.VolumeBackupID != "" {
+			return fmt.Errorf("volume (%s) still exists", response.VolumeBackupID)
+		}
+	}
 	return nil
 }
 
