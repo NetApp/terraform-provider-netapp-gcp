@@ -18,19 +18,19 @@ const spawnJobDeletionErrorMessage = "Error deleting volume - Cannot spawn addit
 // volumeRequest the users input for creating,requesting,updateing a Volume
 // exportPolicy can't set to omitempty because it could be deleted during update.
 type volumeRequest struct {
-	Name                      string         `structs:"name,omitempty"`
-	Region                    string         `structs:"region,omitempty"`
-	CreationToken             string         `structs:"creationToken,omitempty"`
-	ProtocolTypes             []string       `structs:"protocolTypes,omitempty"`
-	Network                   string         `structs:"network,omitempty"`
-	Size                      int            `structs:"quotaInBytes,omitempty"`
-	ServiceLevel              string         `structs:"serviceLevel,omitempty"`
-	SnapshotPolicy            snapshotPolicy `structs:"snapshotPolicy,omitempty"`
-	ExportPolicy              exportPolicy   `structs:"exportPolicy"`
-	VolumeID                  string         `structs:"volumeId,omitempty"`
-	Zone                      string         `structs:"zone,omitempty"`
-	StorageClass              string         `structs:"storageClass,omitempty"`
-	Shared_vpc_project_number string
+	Name                   string         `structs:"name,omitempty"`
+	Region                 string         `structs:"region,omitempty"`
+	CreationToken          string         `structs:"creationToken,omitempty"`
+	ProtocolTypes          []string       `structs:"protocolTypes,omitempty"`
+	Network                string         `structs:"network,omitempty"`
+	Size                   int            `structs:"quotaInBytes,omitempty"`
+	ServiceLevel           string         `structs:"serviceLevel,omitempty"`
+	SnapshotPolicy         snapshotPolicy `structs:"snapshotPolicy,omitempty"`
+	ExportPolicy           exportPolicy   `structs:"exportPolicy"`
+	VolumeID               string         `structs:"volumeId,omitempty"`
+	Zone                   string         `structs:"zone,omitempty"`
+	StorageClass           string         `structs:"storageClass,omitempty"`
+	SharedVpcProjectNumber string
 }
 
 // volumeRequest retrieves the volume attributes from API and convert to struct
@@ -240,8 +240,8 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 	}
 
 	var projectID string
-	if request.Shared_vpc_project_number != "" {
-		projectID = request.Shared_vpc_project_number
+	if request.SharedVpcProjectNumber != "" {
+		projectID = request.SharedVpcProjectNumber
 	} else {
 		projectID = c.GetProjectID()
 	}
@@ -426,95 +426,95 @@ func (c *Client) GetProjectID() string {
 
 // expandSnapshotPolicy converts map to snapshotPolicy struct
 func expandSnapshotPolicy(data map[string]interface{}) snapshotPolicy {
-	snapshot_policy := snapshotPolicy{}
+	snapshotPolicy := snapshotPolicy{}
 
 	if v, ok := data["enabled"]; ok {
-		snapshot_policy.Enabled = v.(bool)
+		snapshotPolicy.Enabled = v.(bool)
 	}
 
 	if v, ok := data["daily_schedule"]; ok {
 		if len(v.([]interface{})) > 0 {
-			daily_schedule := v.([]interface{})[0].(map[string]interface{})
-			if hour, ok := daily_schedule["hour"]; ok {
-				snapshot_policy.DailySchedule.Hour = hour.(int)
+			dailySchedule := v.([]interface{})[0].(map[string]interface{})
+			if hour, ok := dailySchedule["hour"]; ok {
+				snapshotPolicy.DailySchedule.Hour = hour.(int)
 			}
-			if minute, ok := daily_schedule["minute"]; ok {
-				snapshot_policy.DailySchedule.Minute = minute.(int)
+			if minute, ok := dailySchedule["minute"]; ok {
+				snapshotPolicy.DailySchedule.Minute = minute.(int)
 			}
-			if snapshotsToKeep, ok := daily_schedule["snapshots_to_keep"]; ok {
-				snapshot_policy.DailySchedule.SnapshotsToKeep = snapshotsToKeep.(int)
+			if snapshotsToKeep, ok := dailySchedule["snapshots_to_keep"]; ok {
+				snapshotPolicy.DailySchedule.SnapshotsToKeep = snapshotsToKeep.(int)
 			}
 		}
 	}
 	if v, ok := data["hourly_schedule"]; ok {
 		if len(v.([]interface{})) > 0 {
-			hourly_schedule := v.([]interface{})[0].(map[string]interface{})
-			if minute, ok := hourly_schedule["minute"]; ok {
-				snapshot_policy.HourlySchedule.Minute = minute.(int)
+			hourlySchedule := v.([]interface{})[0].(map[string]interface{})
+			if minute, ok := hourlySchedule["minute"]; ok {
+				snapshotPolicy.HourlySchedule.Minute = minute.(int)
 			}
-			if snapshotsToKeep, ok := hourly_schedule["snapshots_to_keep"]; ok {
-				snapshot_policy.HourlySchedule.SnapshotsToKeep = snapshotsToKeep.(int)
+			if snapshotsToKeep, ok := hourlySchedule["snapshots_to_keep"]; ok {
+				snapshotPolicy.HourlySchedule.SnapshotsToKeep = snapshotsToKeep.(int)
 			}
 		}
 	}
 	if v, ok := data["monthly_schedule"]; ok {
 		if len(v.([]interface{})) > 0 {
-			monthly_schedule := v.([]interface{})[0].(map[string]interface{})
-			if days_of_month, ok := monthly_schedule["days_of_month"]; ok {
-				snapshot_policy.MonthlySchedule.DaysOfMonth = days_of_month.(string)
+			monthlySchedule := v.([]interface{})[0].(map[string]interface{})
+			if daysOfMonth, ok := monthlySchedule["days_of_month"]; ok {
+				snapshotPolicy.MonthlySchedule.DaysOfMonth = daysOfMonth.(string)
 			}
-			if hour, ok := monthly_schedule["hour"]; ok {
-				snapshot_policy.MonthlySchedule.Hour = hour.(int)
+			if hour, ok := monthlySchedule["hour"]; ok {
+				snapshotPolicy.MonthlySchedule.Hour = hour.(int)
 			}
-			if minute, ok := monthly_schedule["minute"]; ok {
-				snapshot_policy.MonthlySchedule.Minute = minute.(int)
+			if minute, ok := monthlySchedule["minute"]; ok {
+				snapshotPolicy.MonthlySchedule.Minute = minute.(int)
 			}
-			if snapshotsToKeep, ok := monthly_schedule["snapshots_to_keep"]; ok {
-				snapshot_policy.MonthlySchedule.SnapshotsToKeep = snapshotsToKeep.(int)
+			if snapshotsToKeep, ok := monthlySchedule["snapshots_to_keep"]; ok {
+				snapshotPolicy.MonthlySchedule.SnapshotsToKeep = snapshotsToKeep.(int)
 			}
 		}
 	}
 	if v, ok := data["weekly_schedule"]; ok {
 		if len(v.([]interface{})) > 0 {
-			weekly_schedule := v.([]interface{})[0].(map[string]interface{})
-			if day, ok := weekly_schedule["day"]; ok {
-				snapshot_policy.WeeklySchedule.Day = day.(string)
+			weeklySchedule := v.([]interface{})[0].(map[string]interface{})
+			if day, ok := weeklySchedule["day"]; ok {
+				snapshotPolicy.WeeklySchedule.Day = day.(string)
 			}
-			if hour, ok := weekly_schedule["hour"]; ok {
-				snapshot_policy.WeeklySchedule.Hour = hour.(int)
+			if hour, ok := weeklySchedule["hour"]; ok {
+				snapshotPolicy.WeeklySchedule.Hour = hour.(int)
 			}
-			if minute, ok := weekly_schedule["minute"]; ok {
-				snapshot_policy.WeeklySchedule.Minute = minute.(int)
+			if minute, ok := weeklySchedule["minute"]; ok {
+				snapshotPolicy.WeeklySchedule.Minute = minute.(int)
 			}
-			if snapshotsToKeep, ok := weekly_schedule["snapshots_to_keep"]; ok {
-				snapshot_policy.WeeklySchedule.SnapshotsToKeep = snapshotsToKeep.(int)
+			if snapshotsToKeep, ok := weeklySchedule["snapshots_to_keep"]; ok {
+				snapshotPolicy.WeeklySchedule.SnapshotsToKeep = snapshotsToKeep.(int)
 			}
 		}
 	}
-	return snapshot_policy
+	return snapshotPolicy
 }
 
 // flattenExportPolicy converts exportPolicy struct to []map[string]interface{}
 func flattenExportPolicy(v exportPolicy) interface{} {
-	export_policy_rules := v.Rules
-	rules := make([]map[string]interface{}, 0, len(export_policy_rules))
-	for _, export_policy_rule := range export_policy_rules {
-		rule_map := make(map[string]interface{})
-		rule_map["access"] = export_policy_rule.Access
-		rule_map["allowed_clients"] = export_policy_rule.AllowedClients
+	exportPolicyRules := v.Rules
+	rules := make([]map[string]interface{}, 0, len(exportPolicyRules))
+	for _, exportPolicyRule := range exportPolicyRules {
+		ruleMap := make(map[string]interface{})
+		ruleMap["access"] = exportPolicyRule.Access
+		ruleMap["allowed_clients"] = exportPolicyRule.AllowedClients
 		nfsv3Config := make(map[string]interface{})
 		nfsv4Config := make(map[string]interface{})
-		nfsv3Config["checked"] = export_policy_rule.Nfsv3.Checked
-		nfsv4Config["checked"] = export_policy_rule.Nfsv4.Checked
+		nfsv3Config["checked"] = exportPolicyRule.Nfsv3.Checked
+		nfsv4Config["checked"] = exportPolicyRule.Nfsv4.Checked
 		nfsv3 := make([]map[string]interface{}, 1)
 		nfsv4 := make([]map[string]interface{}, 1)
 		nfsv3[0] = make(map[string]interface{})
 		nfsv4[0] = make(map[string]interface{})
 		nfsv3[0] = nfsv3Config
 		nfsv4[0] = nfsv4Config
-		rule_map["nfsv3"] = nfsv3
-		rule_map["nfsv4"] = nfsv4
-		rules = append(rules, rule_map)
+		ruleMap["nfsv3"] = nfsv3
+		ruleMap["nfsv4"] = nfsv4
+		rules = append(rules, ruleMap)
 	}
 	result := make([]map[string]interface{}, 1)
 	result[0] = make(map[string]interface{})
@@ -524,32 +524,32 @@ func flattenExportPolicy(v exportPolicy) interface{} {
 
 // expandExportPolicy converts set to exportPolicy struct
 func expandExportPolicy(set *schema.Set) exportPolicy {
-	export_policy := exportPolicy{}
+	exportPolicyObj := exportPolicy{}
 
 	for _, v := range set.List() {
 		rules := v.(map[string]interface{})
 		ruleSet := rules["rule"].(*schema.Set)
 		ruleConfigs := make([]exportPolicyRule, 0, ruleSet.Len())
 		for _, x := range ruleSet.List() {
-			export_policy_rule := exportPolicyRule{}
+			exportPolicyRule := exportPolicyRule{}
 			ruleConfig := x.(map[string]interface{})
-			export_policy_rule.Access = ruleConfig["access"].(string)
-			export_policy_rule.AllowedClients = ruleConfig["allowed_clients"].(string)
+			exportPolicyRule.Access = ruleConfig["access"].(string)
+			exportPolicyRule.AllowedClients = ruleConfig["allowed_clients"].(string)
 			nfsv3Set := ruleConfig["nfsv3"].(*schema.Set)
 			nfsv4Set := ruleConfig["nfsv4"].(*schema.Set)
 			for _, y := range nfsv3Set.List() {
 				nfsv3Config := y.(map[string]interface{})
-				export_policy_rule.Nfsv3.Checked = nfsv3Config["checked"].(bool)
+				exportPolicyRule.Nfsv3.Checked = nfsv3Config["checked"].(bool)
 			}
 			for _, z := range nfsv4Set.List() {
 				nfsv4Config := z.(map[string]interface{})
-				export_policy_rule.Nfsv4.Checked = nfsv4Config["checked"].(bool)
+				exportPolicyRule.Nfsv4.Checked = nfsv4Config["checked"].(bool)
 			}
-			ruleConfigs = append(ruleConfigs, export_policy_rule)
+			ruleConfigs = append(ruleConfigs, exportPolicyRule)
 		}
-		export_policy.Rules = ruleConfigs
+		exportPolicyObj.Rules = ruleConfigs
 	}
-	return export_policy
+	return exportPolicyObj
 }
 
 // flattenSnapshotPolicy converts snapshotPolicy struct to []map[string]interface{}

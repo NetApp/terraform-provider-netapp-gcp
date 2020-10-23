@@ -55,16 +55,16 @@ func testAccCheckSnapshotDestroy(state *terraform.State) error {
 
 		volresult, err := client.getVolumeByNameOrCreationToken(volume)
 		if err == nil {
-			retrive_snapshot := listSnapshotRequest{}
-			retrive_snapshot.Region = volume.Region
-			retrive_snapshot.VolumeID = volresult.VolumeID
-			retrive_snapshot.SnapshotID = rs.Primary.ID
+			retriveSnapshot := listSnapshotRequest{}
+			retriveSnapshot.Region = volume.Region
+			retriveSnapshot.VolumeID = volresult.VolumeID
+			retriveSnapshot.SnapshotID = rs.Primary.ID
 
-			response, err := client.getSnapshotByID(retrive_snapshot)
+			response, err := client.getSnapshotByID(retriveSnapshot)
 
 			if err == nil {
 				if response.SnapshotID != "" {
-					return fmt.Errorf("Error snapshot %s still exists in %s.", rs.Primary.ID, response)
+					return fmt.Errorf("Error snapshot %s still exists in %s", rs.Primary.ID, response)
 				}
 			}
 		}
@@ -82,7 +82,7 @@ func testAccCheckSnapshotExists(name string, snapshot *listSnapshotResult) resou
 
 		rs, ok := s.RootModule().Resources[name]
 		if !ok {
-			return fmt.Errorf("%s not found in state.", name)
+			return fmt.Errorf("%s not found in state", name)
 		}
 
 		if rs.Primary.ID == "" {
@@ -99,13 +99,13 @@ func testAccCheckSnapshotExists(name string, snapshot *listSnapshotResult) resou
 			return fmt.Errorf("Error getting volume ID")
 		}
 
-		retrive_snapshot := listSnapshotRequest{}
-		retrive_snapshot.SnapshotID = rs.Primary.Attributes["id"]
-		retrive_snapshot.Region = volume.Region
-		retrive_snapshot.VolumeID = volresult.VolumeID
+		retriveSnapshot := listSnapshotRequest{}
+		retriveSnapshot.SnapshotID = rs.Primary.Attributes["id"]
+		retriveSnapshot.Region = volume.Region
+		retriveSnapshot.VolumeID = volresult.VolumeID
 
 		var res listSnapshotResult
-		res, err = client.getSnapshotByID(retrive_snapshot)
+		res, err = client.getSnapshotByID(retriveSnapshot)
 		if err != nil {
 			return fmt.Errorf("Not able to get snapshot")
 		}

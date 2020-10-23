@@ -65,39 +65,39 @@ func resourceGCPActiveDirectoryCreate(d *schema.ResourceData, meta interface{}) 
 	log.Printf("Creating active directory: %#v", d)
 	client := meta.(*Client)
 	// check whether the AD already exists on GCP, if it exist, error out.
-	list_active_directory := listActiveDirectoryRequest{}
-	list_active_directory.Region = d.Get("region").(string)
-	existed_ad, err := client.listActiveDirectoryForRegion(list_active_directory)
+	listActiveDirectory := listActiveDirectoryRequest{}
+	listActiveDirectory.Region = d.Get("region").(string)
+	existedAd, err := client.listActiveDirectoryForRegion(listActiveDirectory)
 	if err != nil {
 		log.Print("Error checking current active directory before creating new active directory.")
 		return err
 	}
-	if existed_ad.UUID != "" {
-		return fmt.Errorf("Active Directory in region: \"%v\" already exists.", existed_ad.Region)
+	if existedAd.UUID != "" {
+		return fmt.Errorf("Active Directory in region: \"%v\" already exists", existedAd.Region)
 	}
 
-	active_directory := operateActiveDirectoryRequest{}
-	active_directory.Username = d.Get("username").(string)
-	active_directory.Password = d.Get("password").(string)
-	active_directory.Domain = d.Get("domain").(string)
-	active_directory.DNS = d.Get("dns_server").(string)
-	active_directory.NetBIOS = d.Get("net_bios").(string)
+	activeDirectory := operateActiveDirectoryRequest{}
+	activeDirectory.Username = d.Get("username").(string)
+	activeDirectory.Password = d.Get("password").(string)
+	activeDirectory.Domain = d.Get("domain").(string)
+	activeDirectory.DNS = d.Get("dns_server").(string)
+	activeDirectory.NetBIOS = d.Get("net_bios").(string)
 	if v, ok := d.GetOk("organizational_unit"); ok {
-		active_directory.OrganizationalUnit = v.(string)
+		activeDirectory.OrganizationalUnit = v.(string)
 	}
 	if v, ok := d.GetOk("site"); ok {
-		active_directory.Site = v.(string)
+		activeDirectory.Site = v.(string)
 	}
-	active_directory.Region = d.Get("region").(string)
+	activeDirectory.Region = d.Get("region").(string)
 
-	res, err := client.createActiveDirectory(&active_directory)
+	res, err := client.createActiveDirectory(&activeDirectory)
 	if err != nil {
 		log.Print("Error creating active directory")
 		return err
 	}
 	d.SetId(res.UUID)
 
-	log.Printf("Created active directory in region: %v", active_directory.Region)
+	log.Printf("Created active directory in region: %v", activeDirectory.Region)
 
 	return resourceGCPActiveDirectoryRead(d, meta)
 }
@@ -105,15 +105,15 @@ func resourceGCPActiveDirectoryCreate(d *schema.ResourceData, meta interface{}) 
 func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 	id := d.Id()
-	active_directory := listActiveDirectoryRequest{}
-	active_directory.Region = d.Get("region").(string)
+	activeDirectory := listActiveDirectoryRequest{}
+	activeDirectory.Region = d.Get("region").(string)
 	var res listActiveDirectoryResult
-	res, err := client.listActiveDirectoryForRegion(active_directory)
+	res, err := client.listActiveDirectoryForRegion(activeDirectory)
 	if err != nil {
 		return err
 	}
 	if res.UUID != id {
-		return fmt.Errorf("Expected active directory with id: %v, Response contained active directory with id: %v.",
+		return fmt.Errorf("Expected active directory with id: %v, Response contained active directory with id: %v",
 			d.Get("uuid").(string), res.UUID)
 	}
 	d.Set("uuid", res.UUID)
@@ -152,10 +152,10 @@ func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) er
 func resourceGCPActiveDirectoryDelete(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("Deleting active directory: %#v", d)
 	client := meta.(*Client)
-	active_directory := deleteActiveDirectoryRequest{}
-	active_directory.Region = d.Get("region").(string)
-	active_directory.UUID = d.Get("uuid").(string)
-	deleteErr := client.deleteActiveDirectory(active_directory)
+	activeDirectory := deleteActiveDirectoryRequest{}
+	activeDirectory.Region = d.Get("region").(string)
+	activeDirectory.UUID = d.Get("uuid").(string)
+	deleteErr := client.deleteActiveDirectory(activeDirectory)
 	if deleteErr != nil {
 		return deleteErr
 	}
@@ -167,11 +167,11 @@ func resourceGCPActiveDirectoryDelete(d *schema.ResourceData, meta interface{}) 
 func resourceGCPActiveDirectoryExists(d *schema.ResourceData, meta interface{}) (bool, error) {
 	log.Printf("Checking existence of active directory: %#v", d)
 	client := meta.(*Client)
-	active_directory := listActiveDirectoryRequest{}
-	active_directory.UUID = d.Get("uuid").(string)
-	active_directory.Region = d.Get("region").(string)
+	activeDirectory := listActiveDirectoryRequest{}
+	activeDirectory.UUID = d.Get("uuid").(string)
+	activeDirectory.Region = d.Get("region").(string)
 	var res listActiveDirectoryResult
-	res, err := client.listActiveDirectoryForRegion(active_directory)
+	res, err := client.listActiveDirectoryForRegion(activeDirectory)
 	if err != nil {
 		if err, ok := err.(*restapi.ResponseError); ok {
 			if err.Name == "xUnknown" {
@@ -182,7 +182,7 @@ func resourceGCPActiveDirectoryExists(d *schema.ResourceData, meta interface{}) 
 		}
 		return false, err
 	}
-	if res.UUID != active_directory.UUID {
+	if res.UUID != activeDirectory.UUID {
 		d.SetId("")
 		return false, nil
 	}
@@ -193,18 +193,18 @@ func resourceGCPActiveDirectoryExists(d *schema.ResourceData, meta interface{}) 
 func resourceGCPActiveDirectoryUpdate(d *schema.ResourceData, meta interface{}) error {
 	log.Printf("Checking existence of active directory: %#v", d)
 	client := meta.(*Client)
-	active_directory := operateActiveDirectoryRequest{}
+	activeDirectory := operateActiveDirectoryRequest{}
 	// all of the following are required for API: update.
-	active_directory.Username = d.Get("username").(string)
-	active_directory.Password = d.Get("password").(string)
-	active_directory.Domain = d.Get("domain").(string)
-	active_directory.DNS = d.Get("dns_server").(string)
-	active_directory.NetBIOS = d.Get("net_bios").(string)
-	active_directory.OrganizationalUnit = d.Get("organizational_unit").(string)
-	active_directory.Site = d.Get("site").(string)
-	active_directory.Region = d.Get("region").(string)
-	active_directory.UUID = d.Get("uuid").(string)
-	err := client.updateActiveDirectory(active_directory)
+	activeDirectory.Username = d.Get("username").(string)
+	activeDirectory.Password = d.Get("password").(string)
+	activeDirectory.Domain = d.Get("domain").(string)
+	activeDirectory.DNS = d.Get("dns_server").(string)
+	activeDirectory.NetBIOS = d.Get("net_bios").(string)
+	activeDirectory.OrganizationalUnit = d.Get("organizational_unit").(string)
+	activeDirectory.Site = d.Get("site").(string)
+	activeDirectory.Region = d.Get("region").(string)
+	activeDirectory.UUID = d.Get("uuid").(string)
+	err := client.updateActiveDirectory(activeDirectory)
 	if err != nil {
 		return err
 	}

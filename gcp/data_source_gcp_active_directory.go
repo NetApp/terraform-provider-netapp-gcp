@@ -2,6 +2,7 @@ package gcp
 
 import (
 	"fmt"
+
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -52,10 +53,10 @@ func dataSourceGCPActiveDirectory() *schema.Resource {
 
 func dataSourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
-	active_directory := listActiveDirectoryRequest{}
-	active_directory.Region = d.Get("region").(string)
+	activeDirectory := listActiveDirectoryRequest{}
+	activeDirectory.Region = d.Get("region").(string)
 	var res listActiveDirectoryResult
-	res, err := client.listActiveDirectoryForRegion(active_directory)
+	res, err := client.listActiveDirectoryForRegion(activeDirectory)
 	if err != nil {
 		return err
 	}

@@ -278,13 +278,11 @@ func resourceGCPVolume() *schema.Resource {
 	}
 }
 
-/*
-	There is a bug on service level API. Translate based on the setup value.
-	resource value: API call value
-	standard      : low
-	premium       : medium
-	extreme       : extreme
-*/
+// TranslateServiceLevelState2API to translate service level state based on the setup value due to the API bugs
+// resource value: API call value
+// standard      : low
+// premium       : medium
+// extreme       : extreme
 func TranslateServiceLevelState2API(slevel string) string {
 	var apiValue = slevel
 	if slevel == "standard" {
@@ -352,7 +350,7 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if v, ok := d.GetOk("shared_vpc_project_number"); ok {
-		volume.Shared_vpc_project_number = v.(string)
+		volume.SharedVpcProjectNumber = v.(string)
 	}
 
 	if v, ok := d.GetOk("zone"); ok {
@@ -484,13 +482,13 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("region", res.Region); err != nil {
 		return fmt.Errorf("Error reading volume region: %s", err)
 	}
-	snapshot_policy := flattenSnapshotPolicy(res.SnapshotPolicy)
-	export_policy := flattenExportPolicy(res.ExportPolicy)
-	if err := d.Set("snapshot_policy", snapshot_policy); err != nil {
+	snapshotPolicy := flattenSnapshotPolicy(res.SnapshotPolicy)
+	exportPolicy := flattenExportPolicy(res.ExportPolicy)
+	if err := d.Set("snapshot_policy", snapshotPolicy); err != nil {
 		return fmt.Errorf("Error reading volume snapshot_policy: %s", err)
 	}
 	if len(res.ExportPolicy.Rules) > 0 {
-		if err := d.Set("export_policy", export_policy); err != nil {
+		if err := d.Set("export_policy", exportPolicy); err != nil {
 			return fmt.Errorf("Error reading volume export_policy: %s", err)
 		}
 	} else {
@@ -499,8 +497,8 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 			return fmt.Errorf("Error reading volume export_policy: %s", err)
 		}
 	}
-	mount_points := flattenMountPoints(res.MountPoints)
-	if err := d.Set("mount_points", mount_points); err != nil {
+	mountPoints := flattenMountPoints(res.MountPoints)
+	if err := d.Set("mount_points", mountPoints); err != nil {
 		return fmt.Errorf("Error reading volume mount_points: %s", err)
 	}
 	if _, ok := d.GetOk("zone"); ok {

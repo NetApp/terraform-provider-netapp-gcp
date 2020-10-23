@@ -46,7 +46,7 @@ type listActiveDirectoryResult struct {
 	UUID               string `json:"UUID"`
 }
 
-type listActiveDirectoryApiResult struct {
+type listActiveDirectoryAPIResult struct {
 	Collection []listActiveDirectoryResult
 }
 
@@ -93,12 +93,12 @@ func (c *Client) listActiveDirectoryForRegion(request listActiveDirectoryRequest
 		return listActiveDirectoryResult{}, responseError
 	}
 
-	var active_directorys []listActiveDirectoryResult
-	if err := json.Unmarshal(response, &active_directorys); err != nil {
+	var activeDirectories []listActiveDirectoryResult
+	if err := json.Unmarshal(response, &activeDirectories); err != nil {
 		log.Print("Failed to unmarshall response from listActiveDirectoryForRegion")
 		return listActiveDirectoryResult{}, err
 	}
-	for _, v := range active_directorys {
+	for _, v := range activeDirectories {
 		// only one active directory is allowed in each region. Region is the unique identifier if uuid doesn't exist yet.
 		if v.Region == request.Region {
 			return v, nil

@@ -2,9 +2,10 @@ package gcp
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
-	"testing"
 )
 
 func TestAccActiveDirectory_basic(t *testing.T) {
@@ -61,12 +62,10 @@ func testAccCheckGCPActiveDirectoryDestroy(state *terraform.State) error {
 		})
 		if err == nil {
 			if response.UUID != "" {
-				return fmt.Errorf("Active directory (%s) still exists.", response.UUID)
+				return fmt.Errorf("Active directory (%s) still exists", response.UUID)
 			}
-
 		}
 	}
-
 	return nil
 }
 

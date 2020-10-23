@@ -18,13 +18,13 @@ func apiResponseChecker(statusCode int, response []byte, funcName string) error 
 
 	if statusCode >= 300 || statusCode < 200 {
 		log.Printf("%s request failed", funcName)
-		var error_response apiErrorResponse
-		response_content := bytes.NewBuffer(response).String()
-		if err := json.Unmarshal(response, &error_response); err != nil {
+		var errorResponse apiErrorResponse
+		responseContent := bytes.NewBuffer(response).String()
+		if err := json.Unmarshal(response, &errorResponse); err != nil {
 			log.Printf("Failed to unmarshall error response from %s", funcName)
-			return fmt.Errorf(response_content)
+			return fmt.Errorf(responseContent)
 		}
-		return fmt.Errorf("code: %d, message: %s", error_response.Code, error_response.Message)
+		return fmt.Errorf("code: %d, message: %s", errorResponse.Code, errorResponse.Message)
 	}
 
 	return nil

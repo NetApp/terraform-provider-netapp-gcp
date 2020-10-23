@@ -34,7 +34,7 @@ func (r *Request) BuildHTTPReq(host string, serviceAccount string, credentials s
 	} else {
 		keyBytes, err = ioutil.ReadFile(serviceAccount)
 		if err != nil {
-			return nil, fmt.Errorf("Unable to read service account key file  %v\n", err)
+			return nil, fmt.Errorf("Unable to read service account key file  %v", err)
 		}
 	}
 

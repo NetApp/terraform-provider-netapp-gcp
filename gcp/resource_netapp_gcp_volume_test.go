@@ -101,7 +101,7 @@ func testAccCheckGCPVolumeDestroy(state *terraform.State) error {
 		})
 		if err == nil {
 			if response.LifeCycleState != "deleted" {
-				return fmt.Errorf("volume (%s) still exists.", response.VolumeID)
+				return fmt.Errorf("volume (%s) still exists", response.VolumeID)
 			}
 
 		}
