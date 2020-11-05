@@ -340,8 +340,6 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		volType = "Volumes"
 	}
 
-	log.Print(volType)
-
 	if v, ok := d.GetOk("export_policy"); ok {
 		policy := v.(*schema.Set)
 		if policy.Len() > 0 {
@@ -368,39 +366,103 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
-	d.SetId(res.Name.JobID.VolID)
 	var volumeRes volumeResult
 	time.Sleep(5 * time.Second)
-	volumeRes, err = client.getVolumeByID(volumeRequest{Region: volume.Region, VolumeID: res.Name.JobID.VolID})
+	volume.Network = d.Get("network").(string)
+	volumeRes, err = validateVolumeExistsAfterCreate(client, volume, res.Name.JobID.VolID, volType)
 	if err != nil {
 		return err
 	}
+	d.SetId(volumeRes.VolumeID)
 	if volumeRes.LifeCycleState == "available" {
 		return resourceGCPVolumeRead(d, meta)
 	}
-	if volumeRes.LifeCycleState == "creating" {
-		// wait for 5 minutes for completing volume creation.
-		waitSeconds := 300
-		for waitSeconds > 0 && volumeRes.LifeCycleState == "creating" {
-			time.Sleep(10)
-			volumeRes, err = client.getVolumeByID(volumeRequest{Region: volume.Region, VolumeID: res.Name.JobID.VolID})
+	volumeRes, err = waitForVolumeCreationComplete(client, volumeRes)
+	if err != nil {
+		return err
+	}
+	// if volume's state is error, delete the volume and retry for twice. If the operation still fails, return error.
+	if volumeRes.LifeCycleState == "error" {
+		retries := 2
+		for retries > 0 && volumeRes.LifeCycleState == "error" {
+			deleteErr := resourceGCPVolumeDelete(d, meta)
+			if deleteErr != nil {
+				return fmt.Errorf("failed to delete volume in error state after creation. %s", deleteErr.Error())
+			}
+			volume.Network = d.Get("network").(string)
+			res, err = client.createVolume(&volume, volType)
 			if err != nil {
 				return err
 			}
-			waitSeconds = waitSeconds - 10
+			time.Sleep(5 * time.Second)
+			volume.Network = d.Get("network").(string)
+			volumeRes, err = validateVolumeExistsAfterCreate(client, volume, res.Name.JobID.VolID, volType)
+			if err != nil {
+				return err
+			}
+			d.SetId(volumeRes.VolumeID)
+			volumeRes, err = waitForVolumeCreationComplete(client, volumeRes)
+			if err != nil {
+				return err
+			}
+			if volumeRes.LifeCycleState == "available" {
+				return resourceGCPVolumeRead(d, meta)
+			}
+			timeSleep := time.Duration(nextRandomInt(5, 10)) * time.Second
+			time.Sleep(timeSleep)
+			retries--
 		}
-	} else if volumeRes.LifeCycleState == "error" {
 		if d.Get("delete_on_creation_error").(bool) {
 			deleteErr := resourceGCPVolumeDelete(d, meta)
 			if deleteErr != nil {
 				return fmt.Errorf("failed to delete volume in error state after creation. %s", deleteErr.Error())
 			}
-			return fmt.Errorf("%v. Volume in error state is deleted", err.Error())
+			return fmt.Errorf("%v. Volume in error state is deleted", volumeRes.LifeCycleStateDetails)
 		}
-		return fmt.Errorf("%v", err.Error())
+		return fmt.Errorf("%v", volumeRes.LifeCycleStateDetails)
 	}
-
 	return resourceGCPVolumeRead(d, meta)
+}
+
+// Wait 5 minutes for volume creation to complete.
+func waitForVolumeCreationComplete(client *Client, volumeRes volumeResult) (volumeResult, error) {
+	waitSeconds := 300
+	var err error
+	for waitSeconds > 0 && volumeRes.LifeCycleState == "creating" {
+		timeSleep := time.Duration(nextRandomInt(20, 30)) * time.Second
+		time.Sleep(timeSleep)
+		volumeRes, err = client.getVolumeByID(volumeRequest{Region: volumeRes.Region, VolumeID: volumeRes.VolumeID})
+		if err != nil {
+			return volumeResult{}, err
+		}
+		waitSeconds = waitSeconds - int(timeSleep)
+	}
+	return volumeRes, nil
+}
+
+// A bug might be presented in the API. A volume creation request is acknowledged(volume ID is returned), but get volume by ID doesn't find any result.
+// A temporary fix is to send the create request again.
+func validateVolumeExistsAfterCreate(client *Client, volume volumeRequest, volumeID string, volType string) (volumeResult, error) {
+	volumeRes, err := client.getVolumeByID(volumeRequest{Region: volume.Region, VolumeID: volumeID})
+	var res createVolumeResult
+	network := volume.Network
+	retries := 3
+	if err != nil {
+		for err != nil && err.Error() == "code: 404, message: Error describing volume - Volume not found" && retries > 0 {
+			time.Sleep(20 * time.Second)
+			volume.Network = network
+			res, err = client.createVolume(&volume, volType)
+			if err != nil {
+				return volumeResult{}, err
+			}
+			volumeRes, err = client.getVolumeByID(volumeRequest{Region: volume.Region, VolumeID: res.Name.JobID.VolID})
+			retries--
+		}
+		if err != nil {
+			return volumeResult{}, err
+		}
+	}
+	return volumeRes, nil
 }
 
 func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
@@ -415,26 +477,34 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	volume.VolumeID = id
 
 	var res volumeResult
-	for {
-		var vol volumeResult
-		vol, err := client.getVolumeByID(volume)
+	res, err := client.getVolumeByID(volume)
+	if err != nil {
+		return err
+	}
+
+	waitSeconds := 300
+	for waitSeconds > 0 && (res.LifeCycleState == "creating" || res.LifeCycleState == "deleting" || res.LifeCycleState == "updating") {
+		time.Sleep(20)
+		res, err = client.getVolumeByID(volumeRequest{Region: volume.Region, VolumeID: id})
 		if err != nil {
 			return err
 		}
+		waitSeconds = waitSeconds - 10
+	}
 
-		if vol.VolumeID != id {
-			return fmt.Errorf("Expected Volume ID %v, Response contained Volume ID %v", id, res.VolumeID)
-		}
+	if res.VolumeID != id {
+		return fmt.Errorf("Expected Volume ID %v, Response contained Volume ID %v", id, res.VolumeID)
+	}
 
-		if vol.LifeCycleState == "error" {
-			return fmt.Errorf("Volume with name: %v and id: %v is in %v state. Please check the setup. LifeCycleStateDetails: %v",
-				vol.Name, vol.VolumeID, vol.LifeCycleState, vol.LifeCycleStateDetails)
-		} else if vol.LifeCycleState == "available" {
-			res = vol
-			break
-		} else {
-			time.Sleep(time.Duration(2) * time.Second)
-		}
+	if res.LifeCycleState == "error" {
+		return fmt.Errorf("Volume with name: %v and id: %v is in error state. Please manually delete the volume, make sure the config is correct and run terraform apply agian. LifeCycleStateDetails: %v",
+			res.Name, res.VolumeID, res.LifeCycleStateDetails)
+	} else if res.LifeCycleState == "disabled" {
+		return fmt.Errorf("Volume with name: %v and id: %v is in disabled state. Please manually enable the volume and runn terraform apply again. LifeCycleStateDetails: %v",
+			res.Name, res.VolumeID, res.LifeCycleStateDetails)
+	} else if res.LifeCycleState == "deleted" {
+		d.SetId("")
+		return nil
 	}
 
 	if err := d.Set("size", res.Size/GiBToBytes); err != nil {
@@ -549,17 +619,24 @@ func resourceGCPVolumeDelete(d *schema.ResourceData, meta interface{}) error {
 			if getVolume.LifeCycleState == "deleted" {
 				return nil
 			}
+			if getVolume.LifeCycleState == "error" {
+				break
+			}
 		}
 		// if volume is in error state when deleting, retry.
-	} else if getVolume.LifeCycleState == "error" {
-		time.Sleep(time.Duration(nextRandomInt(5, 20)) * time.Second)
-		deleteErr := client.deleteVolume(volume)
-		if deleteErr != nil {
-			return deleteErr
-		}
-		getVolume, err := client.getVolumeByID(volume)
-		if err != nil {
-			return err
+	}
+	if getVolume.LifeCycleState == "error" {
+		retries := 3
+		for getVolume.LifeCycleState == "error" && retries > 0 {
+			time.Sleep(time.Duration(nextRandomInt(5, 20)) * time.Second)
+			deleteErr := client.deleteVolume(volume)
+			if deleteErr != nil {
+				return deleteErr
+			}
+			getVolume, err = client.getVolumeByID(volume)
+			if err != nil {
+				return err
+			}
 		}
 		if getVolume.LifeCycleState == "error" {
 			return fmt.Errorf("error deleting volume with id: %s, name: %s; %s", getVolume.VolumeID, getVolume.Name, getVolume.LifeCycleStateDetails)

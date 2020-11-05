@@ -19,15 +19,23 @@ type Request struct {
 // BuildHTTPReq builds an HTTP request to carry out the REST request
 func (r *Request) BuildHTTPReq(host string, serviceAccount string, credentials string, audience string, baseURL string) (*http.Request, error) {
 	var keyBytes []byte
-	bodyJSON, err := json.Marshal(r.Params)
-	if err != nil {
-		return nil, err
-	}
-
+	var err error
+	var req *http.Request
 	url := host + baseURL
-	req, err := http.NewRequest(r.Method, url, bytes.NewReader(bodyJSON))
-	if err != nil {
-		return nil, err
+	if r.Method != "GET" && r.Method != "DELETE" {
+		bodyJSON, err := json.Marshal(r.Params)
+		if err != nil {
+			return nil, err
+		}
+		req, err = http.NewRequest(r.Method, url, bytes.NewReader(bodyJSON))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		req, err = http.NewRequest(r.Method, url, nil)
+		if err != nil {
+			return nil, err
+		}
 	}
 	if credentials != "" {
 		keyBytes = []byte(credentials)

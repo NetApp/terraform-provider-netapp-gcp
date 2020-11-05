@@ -265,8 +265,8 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 		if responseErrorContent.Code == 500 {
 			if responseErrorContent.Message == spawnJobCreationErrorMessage {
 				retries := 10
-				var responseErrorContent apiErrorResponse
 				for retries > 0 {
+					var spawnJobResponseErrorContent apiErrorResponse
 					time.Sleep(time.Duration(nextRandomInt(30, 50)) * time.Second)
 					statusCode, response, err = c.CallAPIMethod("POST", baseURL, params)
 					if err != nil {
@@ -274,10 +274,10 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 					}
 					responseError = apiResponseChecker(statusCode, response, "createVolume")
 					responseContent = bytes.NewBuffer(response).String()
-					if err := json.Unmarshal(response, &responseErrorContent); err != nil {
+					if err := json.Unmarshal(response, &spawnJobResponseErrorContent); err != nil {
 						return createVolumeResult{}, fmt.Errorf(responseContent)
 					}
-					if responseErrorContent.Code == 0 {
+					if spawnJobResponseErrorContent.Code == 0 {
 						var result createVolumeResult
 						if err := json.Unmarshal(response, &result); err != nil {
 							log.Print("Failed to unmarshall response from createVolume")
@@ -285,40 +285,37 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 						}
 						return result, nil
 					}
+					if spawnJobResponseErrorContent.Code != 500 {
+						return createVolumeResult{}, responseError
+					}
 					retries--
-				}
-				if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
-					return createVolumeResult{}, responseError
 				}
 			} else if responseErrorContent.Message == contextDeadlineExceededErrorMessage {
 				retries := 5
-				var responseErrorContent apiErrorResponse
 				for retries > 0 {
+					var contextDeadlineResponseErrorContent apiErrorResponse
 					time.Sleep(time.Duration(nextRandomInt(5, 10)) * time.Second)
 					statusCode, response, err = c.CallAPIMethod("POST", baseURL, params)
 					if err != nil {
-						if err := json.Unmarshal(response, &responseErrorContent); err != nil {
-							return createVolumeResult{}, fmt.Errorf(responseContent)
-						}
+						return createVolumeResult{}, err
 					}
 					responseError = apiResponseChecker(statusCode, response, "createVolume")
 					responseContent = bytes.NewBuffer(response).String()
-					if err := json.Unmarshal(response, &responseErrorContent); err != nil {
+					if err := json.Unmarshal(response, &contextDeadlineResponseErrorContent); err != nil {
 						return createVolumeResult{}, fmt.Errorf(responseContent)
 					}
-					if responseErrorContent.Code == 0 {
+					if contextDeadlineResponseErrorContent.Code == 0 {
 						var result createVolumeResult
 						if err := json.Unmarshal(response, &result); err != nil {
 							log.Print("Failed to unmarshall response from createVolume")
 							return createVolumeResult{}, fmt.Errorf(bytes.NewBuffer(response).String())
 						}
-
 						return result, nil
 					}
+					if contextDeadlineResponseErrorContent.Code != 500 {
+						return createVolumeResult{}, responseError
+					}
 					retries--
-				}
-				if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
-					return createVolumeResult{}, responseError
 				}
 			} else {
 				return createVolumeResult{}, responseError
@@ -349,13 +346,53 @@ func (c *Client) deleteVolume(request volumeRequest) error {
 
 	responseError := apiResponseChecker(statusCode, response, "deleteVolume")
 	if responseError != nil {
-		return responseError
+		var responseErrorContent apiErrorResponse
+		responseContent := bytes.NewBuffer(response).String()
+		if err := json.Unmarshal(response, &responseErrorContent); err != nil {
+			return fmt.Errorf(responseContent)
+		}
+		if responseErrorContent.Code == 500 {
+			if responseErrorContent.Message == spawnJobDeletionErrorMessage {
+				retries := 10
+				for retries > 0 {
+					var deleteJobResponseErrorContent apiErrorResponse
+					time.Sleep(time.Duration(nextRandomInt(30, 50)) * time.Second)
+					statusCode, response, err = c.CallAPIMethod("DELETE", baseURL, nil)
+					if err != nil {
+						return err
+					}
+					responseError = apiResponseChecker(statusCode, response, "deleteVolume")
+					responseContent = bytes.NewBuffer(response).String()
+					if err := json.Unmarshal(response, &deleteJobResponseErrorContent); err != nil {
+						return fmt.Errorf(responseContent)
+					}
+					if deleteJobResponseErrorContent.Code == 0 {
+						var result createVolumeResult
+						if err := json.Unmarshal(response, &result); err != nil {
+							log.Print("Failed to unmarshall response from createVolume")
+							return fmt.Errorf(bytes.NewBuffer(response).String())
+						}
+						return nil
+					}
+					if deleteJobResponseErrorContent.Code != 500 {
+						return responseError
+					}
+					retries--
+				}
+
+			} else {
+				return responseError
+			}
+		}
+		if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
+			return responseError
+		}
 	}
 
-	var result apiResponseCodeMessage
+	var result apiErrorResponse
 	if err := json.Unmarshal(response, &result); err != nil {
 		log.Print("Failed to unmarshall response from deleteVolume")
-		return err
+		return fmt.Errorf(bytes.NewBuffer(response).String())
 	}
 
 	return nil
@@ -367,7 +404,7 @@ func (c *Client) createVolumeCreationToken(request volumeRequest) (volumeResult,
 	baseURL := fmt.Sprintf("%s/VolumeCreationToken", request.Region)
 	log.Printf("Parameters: %v", params)
 
-	statusCode, response, err := c.CallAPIMethod("", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("POST", baseURL, params)
 	if err != nil {
 		log.Print("CreationToken request failed")
 		return volumeResult{}, err
