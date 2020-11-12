@@ -404,7 +404,7 @@ func (c *Client) createVolumeCreationToken(request volumeRequest) (volumeResult,
 	baseURL := fmt.Sprintf("%s/VolumeCreationToken", request.Region)
 	log.Printf("Parameters: %v", params)
 
-	statusCode, response, err := c.CallAPIMethod("POST", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("GET", baseURL, params)
 	if err != nil {
 		log.Print("CreationToken request failed")
 		return volumeResult{}, err
