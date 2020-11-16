@@ -25,4 +25,8 @@ resource "netapp-gcp_volume" "gcp-minimal-volume" {
   storage_class = "hardware"
   # zone: For storage_class = "software" specification of zone is required
   # zone = "europe-west1-b"
+  # when using storage_class = "software", enabling snapshot_policy is required
+  # snapshot_policy {
+  #   enabled = true
+  # }
 }
