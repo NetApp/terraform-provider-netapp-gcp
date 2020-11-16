@@ -41,8 +41,8 @@ variable "size" {
 
 variable "service_level" {
   type        = string
-  description = "Service level low, medium or high."
-  default     = "medium"
+  description = "Service level standard, premium or extreme."
+  default     = "premium"
 }
 
 variable "storage_class" {
