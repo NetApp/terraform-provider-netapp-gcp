@@ -41,8 +41,20 @@ variable "size" {
 
 variable "service_level" {
   type        = string
-  description = "Service level low, medium or high."
-  default     = "medium"
+  description = "Service level standard, premium or extreme."
+  default     = "premium"
+}
+
+variable "storage_class" {
+  type        = string
+  description = "Type of CVS service: CVS=software, CVS-Performance=hardware."
+  default     = "hardware"
+}
+
+variable "zone" {
+  type        = string
+  description = "GCP zone CVS-Software is deployed to. Required for CVS-Software."
+  default     = null
 }
 
 variable "ad_username" {

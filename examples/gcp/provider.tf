@@ -14,7 +14,7 @@ terraform {
   required_providers {
     netapp-gcp = {
       source = "NetApp/netapp-gcp"
-      version = "~> 20.10.0"
+      version = "~> 20.11.1"
     }
   }
 }

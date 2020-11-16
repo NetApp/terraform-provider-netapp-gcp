@@ -21,6 +21,10 @@ resource "netapp-gcp_volume" "gcp-volume-smb" {
   network = local.network
   size = local.size
   service_level = local.service_level
+  # storage_class: choose "software for CVS, choose "hardware" for CVS-Performance
+  storage_class = "hardware"
+  # zone: For storage_class = "software" specification of zone is required
+  # zone = "europe-west1-b"
 
   # Advice: Since SMB volumes can only be created if an Active Directory connection exists for the region,
   # depend the SMB volume on the AD resource. Either create the AD from TF, or use AD data source to query for
