@@ -4,3 +4,5 @@ protocol = ["NFSv3"]
 size = 1024
 service_level = "premium"
 network = "ncv-vpc"
+storage_class = "hardware"
+# zone = "europe-west1-b"

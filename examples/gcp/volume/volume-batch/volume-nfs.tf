@@ -23,7 +23,11 @@ resource "netapp-gcp_volume" "gcp-volumes-batch" {
   network = local.network
   size = local.volumes[count.index].size
   service_level = local.volumes[count.index].service_level
-  
+  # storage_class: choose "software for CVS, choose "hardware" for CVS-Performance
+  storage_class = "hardware"
+  # zone: For storage_class = "software" specification of zone is required
+  # zone = "europe-west1-b"
+
   snapshot_policy {
     enabled = true
     daily_schedule {

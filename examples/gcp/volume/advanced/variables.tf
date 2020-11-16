@@ -45,6 +45,18 @@ variable "service_level" {
   default     = "medium"
 }
 
+variable "storage_class" {
+  type        = string
+  description = "Type of CVS service: CVS=software, CVS-Performance=hardware."
+  default     = "hardware"
+}
+
+variable "zone" {
+  type        = string
+  description = "GCP zone CVS-Software is deployed to. Required for CVS-Software."
+  default     = null
+}
+
 variable "ad_username" {
   type        = string
   description = "Active Directory username for joining domain."

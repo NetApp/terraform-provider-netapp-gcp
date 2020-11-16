@@ -8,6 +8,10 @@ resource "netapp-gcp_volume" "gcp-volume" {
   network = var.network
   size = var.size
   service_level = var.service_level
+  # storage_class: choose "software for CVS, choose "hardware" for CVS-Performance
+  storage_class = var.storage_class
+  # zone: For storage_class = "software" specification of zone is required
+  # zone = var.zone
 
   snapshot_policy {
     enabled = true
