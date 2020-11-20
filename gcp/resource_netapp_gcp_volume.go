@@ -231,6 +231,41 @@ func resourceGCPVolume() *schema.Resource {
 										Type:     schema.TypeString,
 										Optional: true,
 									},
+									"has_root_access": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"kerberos5_readonly": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5_readwrite": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5i_readonly": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5i_readwrite": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5p_readonly": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5p_readwrite": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
 									"nfsv3": {
 										Type:     schema.TypeSet,
 										Optional: true,

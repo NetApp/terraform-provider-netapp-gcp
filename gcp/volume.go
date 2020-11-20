@@ -108,10 +108,17 @@ type apiResponseCodeMessage struct {
 }
 
 type exportPolicyRule struct {
-	Access         string `structs:"access"`
-	AllowedClients string `structs:"allowedClients"`
-	Nfsv3          nfs    `structs:"nfsv3"`
-	Nfsv4          nfs    `structs:"nfsv4"`
+	Access              string `structs:"access"`
+	AllowedClients      string `structs:"allowedClients"`
+	HasRootAccess       bool   `structs:"hasRootAccess"`
+	Kerberos5ReadOnly   bool   `structs:"kerberos5ReadOnly"`
+	Kerberos5ReadWrite  bool   `structs:"kerberos5ReadWrite"`
+	Kerberos5iReadOnly  bool   `structs:"kerberos5iReadOnly"`
+	Kerberos5iReadWrite bool   `structs:"kerberos5iReadWrite"`
+	Kerberos5pReadOnly  bool   `structs:"kerberos5pReadOnly"`
+	Kerberos5pReadWrite bool   `structs:"kerberos5pReadWrite"`
+	Nfsv3               nfs    `structs:"nfsv3"`
+	Nfsv4               nfs    `structs:"nfsv4"`
 }
 
 type exportPolicy struct {
@@ -539,6 +546,13 @@ func flattenExportPolicy(v exportPolicy) interface{} {
 		ruleMap := make(map[string]interface{})
 		ruleMap["access"] = exportPolicyRule.Access
 		ruleMap["allowed_clients"] = exportPolicyRule.AllowedClients
+		ruleMap["has_root_access"] = exportPolicyRule.HasRootAccess
+		ruleMap["kerberos5_readonly"] = exportPolicyRule.Kerberos5ReadOnly
+		ruleMap["kerberos5_readwrite"] = exportPolicyRule.Kerberos5ReadWrite
+		ruleMap["kerberos5i_readonly"] = exportPolicyRule.Kerberos5iReadOnly
+		ruleMap["kerberos5i_readwrite"] = exportPolicyRule.Kerberos5iReadWrite
+		ruleMap["kerberos5p_readonly"] = exportPolicyRule.Kerberos5pReadOnly
+		ruleMap["kerberos5p_readwrite"] = exportPolicyRule.Kerberos5pReadWrite
 		nfsv3Config := make(map[string]interface{})
 		nfsv4Config := make(map[string]interface{})
 		nfsv3Config["checked"] = exportPolicyRule.Nfsv3.Checked
@@ -572,6 +586,13 @@ func expandExportPolicy(set *schema.Set) exportPolicy {
 			ruleConfig := x.(map[string]interface{})
 			exportPolicyRule.Access = ruleConfig["access"].(string)
 			exportPolicyRule.AllowedClients = ruleConfig["allowed_clients"].(string)
+			exportPolicyRule.HasRootAccess = ruleConfig["has_root_access"].(bool)
+			exportPolicyRule.Kerberos5ReadOnly = ruleConfig["kerberos5_readonly"].(bool)
+			exportPolicyRule.Kerberos5ReadWrite = ruleConfig["kerberos5_readwrite"].(bool)
+			exportPolicyRule.Kerberos5iReadOnly = ruleConfig["kerberos5i_readonly"].(bool)
+			exportPolicyRule.Kerberos5iReadWrite = ruleConfig["kerberos5i_readwrite"].(bool)
+			exportPolicyRule.Kerberos5pReadOnly = ruleConfig["kerberos5p_readonly"].(bool)
+			exportPolicyRule.Kerberos5pReadWrite = ruleConfig["kerberos5p_readwrite"].(bool)
 			nfsv3Set := ruleConfig["nfsv3"].(*schema.Set)
 			nfsv4Set := ruleConfig["nfsv4"].(*schema.Set)
 			for _, y := range nfsv3Set.List() {
