@@ -579,9 +579,9 @@ func expandExportPolicy(set *schema.Set) exportPolicy {
 
 	for _, v := range set.List() {
 		rules := v.(map[string]interface{})
-		ruleSet := rules["rule"].(*schema.Set)
-		ruleConfigs := make([]exportPolicyRule, 0, ruleSet.Len())
-		for _, x := range ruleSet.List() {
+		ruleSet := rules["rule"].([]interface{})
+		ruleConfigs := make([]exportPolicyRule, 0, len(ruleSet))
+		for _, x := range ruleSet {
 			exportPolicyRule := exportPolicyRule{}
 			ruleConfig := x.(map[string]interface{})
 			exportPolicyRule.Access = ruleConfig["access"].(string)
