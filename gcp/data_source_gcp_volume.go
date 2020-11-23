@@ -266,6 +266,15 @@ func dataSourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return err
 	}
 
+	// GH Issue #31: getVolumeByNameOrCreationToken doesn't return all required attributes
+	// snapshot_policy and export_policy are missing
+	// so we do getVolumeByID with the ID we just determined
+	volume.VolumeID = res.VolumeID
+	res, err = client.getVolumeByID(volume)
+	if err != nil {
+		return err
+	}
+
 	d.SetId(res.VolumeID)
 	if err := d.Set("name", res.Name); err != nil {
 		return fmt.Errorf("Error reading volume name: %s", err)
