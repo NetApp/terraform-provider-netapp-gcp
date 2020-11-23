@@ -50,6 +50,7 @@ type volumeResult struct {
 	MountPoints           []mountPoints  `json:"mountPoints,omitempty"`
 	Zone                  string         `json:"zone,omitempty"`
 	StorageClass          string         `json:"storageClass,omitempty"`
+	TypeDP                bool           `json:"isDataProtection,omitempty"`
 }
 
 // createVolumeResult the api response for creating a volume

@@ -16,6 +16,10 @@ func dataSourceGCPVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"type_dp": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"region": {
 				Type:     schema.TypeString,
 				Required: true,
@@ -165,7 +169,7 @@ func dataSourceGCPVolume() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"rule": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Computed: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -175,6 +179,34 @@ func dataSourceGCPVolume() *schema.Resource {
 									},
 									"allowed_clients": {
 										Type:     schema.TypeString,
+										Computed: true,
+									},
+									"has_root_access": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"kerberos5_readonly": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"kerberos5_readwrite": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"kerberos5i_readonly": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"kerberos5i_readwrite": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"kerberos5p_readonly": {
+										Type:     schema.TypeBool,
+										Computed: true,
+									},
+									"kerberos5p_readwrite": {
+										Type:     schema.TypeBool,
 										Computed: true,
 									},
 									"nfsv3": {
@@ -207,6 +239,14 @@ func dataSourceGCPVolume() *schema.Resource {
 					},
 				},
 			},
+			"zone": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"storage_class": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
 		},
 	}
 }
@@ -229,6 +269,9 @@ func dataSourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	d.SetId(res.VolumeID)
 	if err := d.Set("name", res.Name); err != nil {
 		return fmt.Errorf("Error reading volume name: %s", err)
+	}
+	if err := d.Set("type_dp", res.TypeDP); err != nil {
+		return fmt.Errorf("Error reading type_dp: %s", err)
 	}
 	if err := d.Set("size", res.Size/GiBToBytes); err != nil {
 		return fmt.Errorf("Error reading volume size: %s", err)
@@ -276,6 +319,12 @@ func dataSourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	mountPoints := flattenMountPoints(res.MountPoints)
 	if err := d.Set("mount_points", mountPoints); err != nil {
 		return fmt.Errorf("Error reading volume mount_points: %s", err)
+	}
+	if err := d.Set("zone", res.Zone); err != nil {
+		return fmt.Errorf("Error reading zone: %s", err)
+	}
+	if err := d.Set("storage_class", res.StorageClass); err != nil {
+		return fmt.Errorf("Error reading storage_class: %s", err)
 	}
 	return nil
 }
