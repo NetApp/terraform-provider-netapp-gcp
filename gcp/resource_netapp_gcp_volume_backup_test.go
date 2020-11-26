@@ -1,5 +1,8 @@
 package gcp
 
+// NOTE: the first "software" CVS volume creation in a region (or zone) takes 11 minutes, but go test limits a test to 10 minutes.
+// The trick is to have a "primer" volume already created (outside of the AT).  The second volume creation takes 1 or 2 minutes.
+
 import (
 	"fmt"
 	"log"
@@ -24,7 +27,7 @@ func TestAccVolumeBackup_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testAccCheckGCPVolumeBackupExists("netapp-gcp_volume_backup.gcp-volume-backup", &volume),
 					testCheckResourceAttr("netapp-gcp_volume_backup.gcp-volume-backup", "name", "terraform-acceptance-test-1"),
-					testCheckResourceAttr("netapp-gcp_volume_backup.gcp-volume-backup", "region", "us-east4"),
+					testCheckResourceAttr("netapp-gcp_volume_backup.gcp-volume-backup", "region", "us-east1"),
 					testCheckResourceAttr("netapp-gcp_volume_backup.gcp-volume-backup", "volume_name", "test-volume"),
 				),
 			},
@@ -120,22 +123,27 @@ func testAccVolumeBackupConfigCreate() string {
 	resource "netapp-gcp_volume" "gcp-volume-acc" {
 		provider = netapp-gcp
 		name = "test-volume"
-		region = "us-east4"
-		zone = "gcp-zone"
-		storage_class = "hardware"
+		region = "us-east1"
+		zone = "us-east1-b"
+		storage_class = "software"
 		protocol_types = ["NFSv3"]
 		network = "cvs-terraform-vpc"
 		volume_path = "terraform-acceptance-test-paths"
 		size = 1024
-		service_level = "extreme"
+		service_level = "standard"
+		# create fails without this
+		snapshot_policy {
+		    enabled = true
+		}
 	}
 
 	resource "netapp-gcp_volume_backup" "gcp-volume-backup" {
+		provider = netapp-gcp
 		name = "terraform-acceptance-test-1"
-		region = "us-east4"
+		region = "us-east1"
 		volume_name = "${netapp-gcp_volume.gcp-volume-acc.name}"
 		creation_token = "${netapp-gcp_volume.gcp-volume-acc.volume_path}"
 		depends_on = [netapp-gcp_volume.gcp-volume-acc]
-	  }
+	}
   `)
 }

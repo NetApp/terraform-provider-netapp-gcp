@@ -69,9 +69,9 @@ func resourceGCPVolumeBackupCreate(d *schema.ResourceData, meta interface{}) err
 			return err
 		}
 		if volresult.LifeCycleStateDetails != "Available for use" {
-			if retries < 3 {
-				log.Printf("Volume %s is not ready. Wait for 5 seconds and check again.\n", volume.Name)
-				time.Sleep(5 * time.Second)
+			if retries < 30 {
+				log.Printf("Volume %s is not ready. Wait for 10 seconds and check again.\n", volume.Name)
+				time.Sleep(10 * time.Second)
 				retries++
 			} else {
 				log.Printf("Volume %s is not ready.\n", volume.Name)

@@ -278,8 +278,8 @@ cp $GOPATH/bin/terraform-provider-netapp-gcp /tmp/terraform/netapp.com/netapp/ne
 ##### Local installation - mac
 
 ```
-mkdir -p /tmp/terraform/netapp.com/netapp/netapp-gcp/20.10.0/darwin_amd64
-cp $GOPATH/bin/terraform-provider-netapp-gcp /tmp/terraform/netapp.com/netapp/netapp-gcp/20.10.0/darwin_amd64
+mkdir -p ~/.terraform.d/plugins/netapp.com/netapp/netapp-gcp/20.10.0/darwin_amd64
+cp $GOPATH/bin/terraform-provider-netapp-gcp ~/.terraform.d/plugins/netapp.com/netapp/netapp-gcp/20.10.0/darwin_amd64
 ```
 
 ##### Check the provider can be loaded

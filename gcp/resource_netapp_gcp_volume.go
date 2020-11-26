@@ -271,8 +271,9 @@ func resourceGCPVolume() *schema.Resource {
 				Optional: true,
 			},
 			"storage_class": {
-				Type:     schema.TypeString,
-				Optional: true,
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"software", "hardware"}, true),
 			},
 		},
 	}
@@ -358,6 +359,13 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if v, ok := d.GetOk("storage_class"); ok {
 		volume.StorageClass = v.(string)
 	}
+
+	// If storage class is 'software', zone is mandatory
+	if volume.StorageClass == "software" && volume.Zone == "" {
+		log.Print("Error creating volume")
+		return fmt.Errorf("If storage_class is software, zone is mandatory")
+	}
+
 	var res createVolumeResult
 	var err error
 	res, err = client.createVolume(&volume, volType)
@@ -424,16 +432,23 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	return resourceGCPVolumeRead(d, meta)
 }
 
-// Wait 5 minutes for volume creation to complete.
+// Wait up to 15 minutes for volume creation to complete.
 func waitForVolumeCreationComplete(client *Client, volumeRes volumeResult) (volumeResult, error) {
-	waitSeconds := 300
+	waitSeconds := 900	// first volume creation can take 11 minutes
+	threshold := 900 -60	// when to warn
+	elapsed := time.Duration(0)
 	var err error
 	for waitSeconds > 0 && volumeRes.LifeCycleState == "creating" {
-		timeSleep := time.Duration(nextRandomInt(20, 30)) * time.Second
-		time.Sleep(timeSleep)
+		timeSleep := time.Duration(nextRandomInt(20, 30))
+		time.Sleep(timeSleep * time.Second)
+		elapsed = elapsed + timeSleep
 		volumeRes, err = client.getVolumeByID(volumeRequest{Region: volumeRes.Region, VolumeID: volumeRes.VolumeID})
 		if err != nil {
 			return volumeResult{}, err
+		}
+		if waitSeconds < threshold {
+			threshold = threshold - 60
+			log.Printf("Volume creation still in progress after %d seconds.\n", elapsed)
 		}
 		waitSeconds = waitSeconds - int(timeSleep)
 	}
