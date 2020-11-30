@@ -134,7 +134,18 @@ type mountPoints struct {
 
 func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 
-	baseURL := fmt.Sprintf("%s/Volumes/%s", volume.Region, volume.VolumeID)
+	// make it work for terraform import
+	// import will only provide VolumeID, but no region
+	var baseURL string
+	if volume.Region == "" {
+		volumeRes, err := c.findRegionbyID(volume.VolumeID)
+		if err != nil {
+			return volumeRes, err
+		}
+		volume.Region = volumeRes.Region
+	}
+
+	baseURL = fmt.Sprintf("%s/Volumes/%s", volume.Region, volume.VolumeID)
 
 	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
@@ -174,6 +185,45 @@ func (c *Client) getVolumeByRegion(region string) ([]volumeResult, error) {
 		return volumes, err
 	}
 	return volumes, nil
+}
+
+func (c *Client) findRegionbyID(VolumeID string) (volumeResult, error) {
+
+	baseURL := fmt.Sprintf("-/Volumes")
+
+	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
+	if err != nil {
+		log.Print("ListVolumesByName request failed")
+		return volumeResult{}, err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "findRegionbyID")
+	if responseError != nil {
+		return volumeResult{}, responseError
+	}
+
+	var result []volumeResult
+	if err := json.Unmarshal(response, &result); err != nil {
+		log.Print("Failed to unmarshall response from findRegionbyID")
+		return volumeResult{}, err
+	}
+
+	var count = 0
+	var resultVolume volumeResult
+	for _, eachVolume := range result {
+		if eachVolume.VolumeID == VolumeID {
+			count = count + 1
+			resultVolume = eachVolume
+		}
+	}
+
+	if count > 1 {
+		return volumeResult{}, fmt.Errorf("Found more than one volume for VolumeID: %v", VolumeID)
+	} else if count == 0 {
+		return volumeResult{}, fmt.Errorf("No volume found for VolumeID: %v", VolumeID)
+	}
+
+	return resultVolume, nil
 }
 
 func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeResult, error) {

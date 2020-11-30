@@ -434,8 +434,8 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 // Wait up to 15 minutes for volume creation to complete.
 func waitForVolumeCreationComplete(client *Client, volumeRes volumeResult) (volumeResult, error) {
-	waitSeconds := 900	// first volume creation can take 11 minutes
-	threshold := 900 -60	// when to warn
+	waitSeconds := 900    // first volume creation can take 11 minutes
+	threshold := 900 - 60 // when to warn
 	elapsed := time.Duration(0)
 	var err error
 	for waitSeconds > 0 && volumeRes.LifeCycleState == "creating" {
@@ -520,6 +520,10 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	} else if res.LifeCycleState == "deleted" {
 		d.SetId("")
 		return nil
+	}
+
+	if err := d.Set("name", res.Name); err != nil {
+		return fmt.Errorf("Error reading volume name: %s", err)
 	}
 
 	if err := d.Set("size", res.Size/GiBToBytes); err != nil {
