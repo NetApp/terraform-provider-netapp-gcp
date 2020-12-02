@@ -24,20 +24,28 @@ resource "netapp-gcp_volume" "gcp-volume-nfs" {
   # up to 5 export rules
   export_policy {
     rule {
-      allowed_clients = "0.0.0.0/0"
-      access= "ReadOnly"
+      allowed_clients = "10.10.7.0/24"
+      access = "ReadWrite"
+      has_root_access = true
+      kerberos5_readonly = false
+      kerberos5_readwrite = false
+      kerberos5i_readonly = false
+      kerberos5i_readwrite = false
+      kerberos5p_readonly = false
+      kerberos5p_readwrite = false
       nfsv3 {
-        checked =  true
+        checked = true
       }
       nfsv4 {
         checked = false
       }
     }
     rule {
-      allowed_clients = "10.10.20.0/24"
-      access= "ReadWrite"
+      allowed_clients = "0.0.0.0/0"
+      access = "ReadOnly"
+      has_root_access = false
       nfsv3 {
-        checked =  true
+        checked = true
       }
       nfsv4 {
         checked = false
