@@ -219,7 +219,7 @@ func resourceGCPVolume() *schema.Resource {
 				Elem: &schema.Resource{
 					Schema: map[string]*schema.Schema{
 						"rule": {
-							Type:     schema.TypeSet,
+							Type:     schema.TypeList,
 							Optional: true,
 							Elem: &schema.Resource{
 								Schema: map[string]*schema.Schema{
@@ -230,6 +230,41 @@ func resourceGCPVolume() *schema.Resource {
 									"allowed_clients": {
 										Type:     schema.TypeString,
 										Optional: true,
+									},
+									"has_root_access": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  true,
+									},
+									"kerberos5_readonly": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5_readwrite": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5i_readonly": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5i_readwrite": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5p_readonly": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
+									},
+									"kerberos5p_readwrite": {
+										Type:     schema.TypeBool,
+										Optional: true,
+										Default:  false,
 									},
 									"nfsv3": {
 										Type:     schema.TypeSet,
