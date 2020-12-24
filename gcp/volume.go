@@ -187,48 +187,30 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 	return result, nil
 }
 
-func (c *Client) getVolumeByRegion(region string) ([]volumeResult, error) {
+// refactored, but commented, since no code is using it currently
+// func (c *Client) getVolumeByRegion(region string) ([]volumeResult, error) {
+// 	return c.getVolumes(region)
+// }
+
+// Returns volumes of the project. region = "-" for all regions
+func (c *Client) getVolumes(region string) ([]volumeResult, error) {
 
 	baseURL := fmt.Sprintf("%s/Volumes", region)
-	var volumes []volumeResult
-
-	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
-	if err != nil {
-		log.Print("ListVolumes request failed")
-		return volumes, err
-	}
-
-	responseError := apiResponseChecker(statusCode, response, "getVolumeByRegion")
-	if responseError != nil {
-		return volumes, responseError
-	}
-
-	if err := json.Unmarshal(response, &volumes); err != nil {
-		log.Print("Failed to unmarshall response from getVolumeByRegion")
-		return volumes, err
-	}
-	return volumes, nil
-}
-
-// Returns all volumes of the project
-func (c *Client) getAllVolumes() ([]volumeResult, error) {
-
-	baseURL := fmt.Sprintf("-/Volumes")
 	var result []volumeResult
 
 	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
-		log.Print("getAllVolumes request failed")
+		log.Print("getVolumes request failed")
 		return result, err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "getAllVolumes")
+	responseError := apiResponseChecker(statusCode, response, "getVolumes")
 	if responseError != nil {
 		return result, responseError
 	}
 
 	if err := json.Unmarshal(response, &result); err != nil {
-		log.Print("Failed to unmarshall response from getAllVolumes")
+		log.Print("Failed to unmarshall response from getVolumes")
 		return result, err
 	}
 	return result, nil
@@ -239,7 +221,7 @@ func (c *Client) getAllVolumes() ([]volumeResult, error) {
 func (c *Client) filterAllVolumes(f func(volumeResult) bool) ([]volumeResult, error) {
 	filteredVolumes := make([]volumeResult, 0)
 
-	vols, err := c.getAllVolumes()
+	vols, err := c.getVolumes("-")
 	if err != nil {
 		return filteredVolumes, err
 	}
