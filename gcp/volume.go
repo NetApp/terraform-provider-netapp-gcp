@@ -146,11 +146,26 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 	// import will only provide VolumeID, but no region
 	var baseURL string
 	if volume.Region == "" {
-		volumeRes, err := c.findRegionbyID(volume.VolumeID)
+		// volumeID in unique per region, but might exist in multiple regions of project (very unlikely)
+		// find all volumes with given volumeID
+		volumes, err := c.filterAllVolumes(func(v volumeResult) bool {
+			return v.VolumeID == volume.VolumeID
+		})
 		if err != nil {
-			return volumeRes, err
+			return volumeResult{}, err
 		}
-		volume.Region = volumeRes.Region
+
+		if len(volumes) == 1 {
+			volume.Region = volumes[0].Region
+		} else {
+			if len(volumes) == 0 {
+				return volumeResult{}, fmt.Errorf("getVolumeByRegion: No volume found with ID %s", volume.VolumeID)
+			}
+			if len(volumes) > 1 {
+				return volumeResult{}, fmt.Errorf("getVolumeByRegion: More than one volume found with ID %s", volume.VolumeID)
+			}
+			return volumeResult{}, fmt.Errorf("getVolumeByRegion: WTF error with volume ID %s", volume.VolumeID)
+		}
 	}
 
 	baseURL = fmt.Sprintf("%s/Volumes/%s", volume.Region, volume.VolumeID)
@@ -195,43 +210,46 @@ func (c *Client) getVolumeByRegion(region string) ([]volumeResult, error) {
 	return volumes, nil
 }
 
-func (c *Client) findRegionbyID(VolumeID string) (volumeResult, error) {
+// Returns all volumes of the project
+func (c *Client) getAllVolumes() ([]volumeResult, error) {
 
 	baseURL := fmt.Sprintf("-/Volumes")
+	var result []volumeResult
 
 	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
-		log.Print("ListVolumesByName request failed")
-		return volumeResult{}, err
+		log.Print("getAllVolumes request failed")
+		return result, err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "findRegionbyID")
+	responseError := apiResponseChecker(statusCode, response, "getAllVolumes")
 	if responseError != nil {
-		return volumeResult{}, responseError
+		return result, responseError
 	}
 
-	var result []volumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
-		log.Print("Failed to unmarshall response from findRegionbyID")
-		return volumeResult{}, err
+		log.Print("Failed to unmarshall response from getAllVolumes")
+		return result, err
+	}
+	return result, nil
+}
+
+// Filter all volumes of the project by applying a filter function
+// Example filter function: func(v volumeResult) bool { return v.VolumeID == "1234-5678-90" }
+func (c *Client) filterAllVolumes(f func(volumeResult) bool) ([]volumeResult, error) {
+	filteredVolumes := make([]volumeResult, 0)
+
+	vols, err := c.getAllVolumes()
+	if err != nil {
+		return filteredVolumes, err
 	}
 
-	var count = 0
-	var resultVolume volumeResult
-	for _, eachVolume := range result {
-		if eachVolume.VolumeID == VolumeID {
-			count = count + 1
-			resultVolume = eachVolume
+	for _, v := range vols {
+		if f(v) {
+			filteredVolumes = append(filteredVolumes, v)
 		}
 	}
-
-	if count > 1 {
-		return volumeResult{}, fmt.Errorf("Found more than one volume for VolumeID: %v", VolumeID)
-	} else if count == 0 {
-		return volumeResult{}, fmt.Errorf("No volume found for VolumeID: %v", VolumeID)
-	}
-
-	return resultVolume, nil
+	return filteredVolumes, nil
 }
 
 func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeResult, error) {
