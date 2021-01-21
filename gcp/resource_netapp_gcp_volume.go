@@ -595,18 +595,21 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("volume_path", res.CreationToken); err != nil {
 		return fmt.Errorf("Error reading volume path or Creation Token: %s", err)
 	}
-	// res.Network either contains network name (for standalone project) or
-	// projects/${HOST_PROJECT_ID}/global/networks/${SHARED_VPC_NAME} for shared VPC
+	// res.Network either contains simple network name or
+	// projects/${HOST_PROJECT_ID}/global/networks/${SHARED_VPC_NAME}, usually (but not exclusively) for shared VPC
 	nws := strings.Split(res.Network, "/")
 	var network string
 	if len(nws) == 1 {
 		// standalone project network
 		network = nws[0]
 	} else if len(nws) == 5 {
-		// shared VPC network
+		// long network path
 		network = nws[4]
-		if err := d.Set("shared_vpc_project_number", nws[1]); err != nil {
-			return fmt.Errorf("Error reading shared_vpc_project_number: %s", err)
+		// if network path contains different projectId than our project, it is shared-VPC
+		if nws[1] != client.Project {
+			if err := d.Set("shared_vpc_project_number", nws[1]); err != nil {
+				return fmt.Errorf("Error reading shared_vpc_project_number: %s", err)
+			}
 		}
 	} else {
 		return fmt.Errorf("Error returned network path invalid: %s", res.Network)
