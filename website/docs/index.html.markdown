@@ -111,7 +111,7 @@ resource "netapp-gcp_volume_backup" "gcp-volume-backup" {
 
 The following arguments are used to configure the NetApp_GCP Provider:
 
-* `project` - (Required) This is the project number for NetApp_GCP API operations.
+* `project` - (Required) This is the project number or project ID for NetApp_GCP API operations
 * `service_account` - (Required) This is the path of service_account for NetApp_GCP API operations.
 
 ## Required Privileges

@@ -1,6 +1,6 @@
 # Specify the provider and access details
 provider "netapp-gcp" {
-  # numerical project number (not project ID)
+  # numerical project number or project ID xxx-xxx-xxx
   # alternatively, set GCP_PROJECT environment variable
   # project         = "123456890"
   
