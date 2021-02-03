@@ -166,20 +166,18 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 			return volumeResult{}, err
 		}
 
+		if len(volumes) == 0 {
+			return volumeResult{}, fmt.Errorf("getVolumeByID: No volume found with ID %s", volume.VolumeID)
+		}
+		if len(volumes) > 1 {
+			// return error message which tells user to rerun with ID = <volumeID>:<region> format
+			return volumeResult{}, fmt.Errorf(`getVolumeByID: More than one volume found with ID %s. \n
+			If this happend while running terraform import, please use \n
+			terraform import ADDR ID, with ID using <volumeID>:<region_name> format`, volume.VolumeID)
+		}
 		if len(volumes) == 1 {
 			// we found the right volume to import
 			volume.Region = volumes[0].Region
-		} else {
-			if len(volumes) == 0 {
-				return volumeResult{}, fmt.Errorf("getVolumeByID: No volume found with ID %s", volume.VolumeID)
-			}
-			if len(volumes) > 1 {
-				// return error message which tells user to rerun with ID = <volumeID>:<region> format
-				return volumeResult{}, fmt.Errorf(`getVolumeByID: More than one volume found with ID %s. \n
-				If this happend while running terraform import, please use \n
-				terraform import ADDR ID, with ID using <volumeID>:<region_name> format`, volume.VolumeID)
-			}
-			return volumeResult{}, fmt.Errorf("getVolumeByID: WTF error with volume ID %s", volume.VolumeID)
 		}
 	}
 
