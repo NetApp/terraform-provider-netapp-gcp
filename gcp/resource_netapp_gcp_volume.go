@@ -469,8 +469,8 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 // Wait up to 15 minutes for volume creation to complete.
 func waitForVolumeCreationComplete(client *Client, volumeRes volumeResult) (volumeResult, error) {
-	waitSeconds := 900	// first volume creation can take 11 minutes
-	threshold := 900 -60	// when to warn
+	waitSeconds := 900    // first volume creation can take 11 minutes
+	threshold := 900 - 60 // when to warn
 	elapsed := time.Duration(0)
 	var err error
 	for waitSeconds > 0 && volumeRes.LifeCycleState == "creating" {
@@ -557,6 +557,10 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 		return nil
 	}
 
+	if err := d.Set("name", res.Name); err != nil {
+		return fmt.Errorf("Error reading volume name: %s", err)
+	}
+
 	if err := d.Set("size", res.Size/GiBToBytes); err != nil {
 		return fmt.Errorf("Error reading volume size: %s", err)
 	}
@@ -591,10 +595,24 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("volume_path", res.CreationToken); err != nil {
 		return fmt.Errorf("Error reading volume path or Creation Token: %s", err)
 	}
-	network := res.Network
-	index := strings.Index(network, "networks/")
-	if index > -1 {
-		network = network[index+len("networks/"):]
+	// res.Network either contains simple network name or
+	// projects/${HOST_PROJECT_ID}/global/networks/${SHARED_VPC_NAME}, usually (but not exclusively) for shared VPC
+	nws := strings.Split(res.Network, "/")
+	var network string
+	if len(nws) == 1 {
+		// standalone project network
+		network = nws[0]
+	} else if len(nws) == 5 {
+		// long network path
+		network = nws[4]
+		// if network path contains different projectId than our project, it is shared-VPC
+		if nws[1] != client.Project {
+			if err := d.Set("shared_vpc_project_number", nws[1]); err != nil {
+				return fmt.Errorf("Error reading shared_vpc_project_number: %s", err)
+			}
+		}
+	} else {
+		return fmt.Errorf("Error returned network path invalid: %s", res.Network)
 	}
 	if err := d.Set("network", network); err != nil {
 		return fmt.Errorf("Error reading volume network: %s", err)

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/fatih/structs"
@@ -141,8 +142,46 @@ type mountPoints struct {
 }
 
 func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
+	var baseURL string
+	var originalID string = ""
 
-	baseURL := fmt.Sprintf("%s/Volumes/%s", volume.Region, volume.VolumeID)
+	// terraform import will specify volumeID.
+	// Issue is, that volumeID is unqiue per region, but might exist in different regions in same project.
+	// For that case, we will support a special ID format for terraform import ADDR ID.
+	// ID = <volumeID>:<region>
+	s := strings.Split(volume.VolumeID, ":")
+	if len(s) == 2 {
+		originalID = volume.VolumeID
+		volume.VolumeID = s[0]
+		volume.Region = s[1]
+	}
+
+	if volume.Region == "" {
+		// terraform import: ID = <volumeID> and no region specified
+		// find all volumes which match VolumeID
+		volumes, err := c.filterAllVolumes(func(v volumeResult) bool {
+			return v.VolumeID == volume.VolumeID
+		})
+		if err != nil {
+			return volumeResult{}, err
+		}
+
+		if len(volumes) == 0 {
+			return volumeResult{}, fmt.Errorf("getVolumeByID: No volume found with ID %s", volume.VolumeID)
+		}
+		if len(volumes) > 1 {
+			// return error message which tells user to rerun with ID = <volumeID>:<region> format
+			return volumeResult{}, fmt.Errorf(`getVolumeByID: More than one volume found with ID %s. \n
+			If this happend while running terraform import, please use \n
+			terraform import ADDR ID, with ID using <volumeID>:<region_name> format`, volume.VolumeID)
+		}
+		if len(volumes) == 1 {
+			// we found the right volume to import
+			volume.Region = volumes[0].Region
+		}
+	}
+
+	baseURL = fmt.Sprintf("%s/Volumes/%s", volume.Region, volume.VolumeID)
 
 	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
@@ -158,30 +197,59 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 		log.Print("Failed to unmarshall response from getVolumeByID")
 		return volumeResult{}, err
 	}
+
+	// volumeID is verified by Terraform. If we use ID = <volumeID>:<region>, we need to revert our ID changes
+	if originalID != "" {
+		result.VolumeID = originalID
+	}
 	return result, nil
 }
 
-func (c *Client) getVolumeByRegion(region string) ([]volumeResult, error) {
+// refactored, but commented, since no code is using it currently
+// func (c *Client) getVolumeByRegion(region string) ([]volumeResult, error) {
+// 	return c.getVolumes(region)
+// }
+
+// Returns volumes of the project. region = "-" for all regions
+func (c *Client) getVolumes(region string) ([]volumeResult, error) {
 
 	baseURL := fmt.Sprintf("%s/Volumes", region)
-	var volumes []volumeResult
+	var result []volumeResult
 
 	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
-		log.Print("ListVolumes request failed")
-		return volumes, err
+		log.Print("getVolumes request failed")
+		return result, err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "getVolumeByRegion")
+	responseError := apiResponseChecker(statusCode, response, "getVolumes")
 	if responseError != nil {
-		return volumes, responseError
+		return result, responseError
 	}
 
-	if err := json.Unmarshal(response, &volumes); err != nil {
-		log.Print("Failed to unmarshall response from getVolumeByRegion")
-		return volumes, err
+	if err := json.Unmarshal(response, &result); err != nil {
+		log.Print("Failed to unmarshall response from getVolumes")
+		return result, err
 	}
-	return volumes, nil
+	return result, nil
+}
+
+// Filter all volumes of the project by applying a filter function
+// Example filter function: func(v volumeResult) bool { return v.VolumeID == "1234-5678-90" }
+func (c *Client) filterAllVolumes(f func(volumeResult) bool) ([]volumeResult, error) {
+	filteredVolumes := make([]volumeResult, 0)
+
+	vols, err := c.getVolumes("-")
+	if err != nil {
+		return filteredVolumes, err
+	}
+
+	for _, v := range vols {
+		if f(v) {
+			filteredVolumes = append(filteredVolumes, v)
+		}
+	}
+	return filteredVolumes, nil
 }
 
 func (c *Client) getVolumeByNameOrCreationToken(volume volumeRequest) (volumeResult, error) {
