@@ -15,10 +15,10 @@ resource "netapp-gcp_volume" "myvolume" {
 ```bash
 terraform import netapp-gcp_volume.myvolume 1bc88bc6-cc7d-5fe3-3737-8e635fe2f996
 ```
-Since IDs are region specific, there is very minimal chance that two volumes with the same ID exist.
+Since IDs are region specific, there is a very minimal chance that two volumes with the same ID exist. If the ID is no unique, the import will fail and propose another import syntax to use ID:region instead (e.g. 1bc88bc6-cc7d-5fe3-3737-8e635fe2f996:us-central1).
 
 4. Export the output of `terraform show` into a new tf file and remove the `id` line. E.g:
 ```bash
-terraform show -no-color > myvolume.tf
+terraform show -no-color | sed '/^[[:blank:]]*id /d' > myvolume.tf
 ```
-5. Use `terraform plan` to verify the resource file against the deployed volume. It should report no changes.
+5. Use `terraform plan` to verify the resources file against the deployed volume. It should report no changes.
