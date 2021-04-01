@@ -116,6 +116,7 @@ The `export_policy` block supports:
 The `rule` block supports:
 * `access` - (Optional) Defines the access type for clients matching the 'allowedClients' specification.
 * `allowed_clients` - (Optional) Defines the client ingress specification (allowed clients) as a comma seperated string with IPv4 CIDRs, IPv4 host addresses and host names.
+* `has_root_access` - (Optional) If enabled (true or on) the rule defines that no_root_squash is set, else if it is disable (false or off) root_squash is set and user ID mapped to anonymous user.
 * `nfsv3` - (Optional) If enabled (true) the rule allows NFSv3 protocol for clients matching the 'allowedClients' specification.
 * `nfsv4` - (Optional) If enabled (true) the rule allows NFSv4 protocol for clients matching the 'allowedClients' specification.
 

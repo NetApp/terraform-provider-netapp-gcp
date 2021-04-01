@@ -112,7 +112,7 @@ type apiResponseCodeMessage struct {
 type simpleExportPolicyRule struct {
 	Access              string  `structs:"access"`
 	AllowedClients      string  `structs:"allowedClients"`
-	HasRootAccess       bool    `structs:"hasRootAccess"`
+	HasRootAccess       string  `structs:"hasRootAccess"`
 	Kerberos5ReadOnly   checked `structs:"kerberos5ReadOnly"`
 	Kerberos5ReadWrite  checked `structs:"kerberos5ReadWrite"`
 	Kerberos5iReadOnly  checked `structs:"kerberos5iReadOnly"`
@@ -334,7 +334,7 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 		if err := json.Unmarshal(response, &responseErrorContent); err != nil {
 			return createVolumeResult{}, fmt.Errorf(responseContent)
 		}
-		if responseErrorContent.Code == 500 {
+		if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
 			if responseErrorContent.Message == spawnJobCreationErrorMessage {
 				retries := 10
 				for retries > 0 {
@@ -357,7 +357,7 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 						}
 						return result, nil
 					}
-					if spawnJobResponseErrorContent.Code != 500 {
+					if spawnJobResponseErrorContent.Message != spawnJobCreationErrorMessage {
 						return createVolumeResult{}, responseError
 					}
 					retries--
@@ -384,7 +384,7 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 						}
 						return result, nil
 					}
-					if contextDeadlineResponseErrorContent.Code != 500 {
+					if contextDeadlineResponseErrorContent.Message != contextDeadlineExceededErrorMessage {
 						return createVolumeResult{}, responseError
 					}
 					retries--
@@ -392,9 +392,6 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 			} else {
 				return createVolumeResult{}, responseError
 			}
-		}
-		if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
-			return createVolumeResult{}, responseError
 		}
 	}
 
@@ -423,7 +420,7 @@ func (c *Client) deleteVolume(request volumeRequest) error {
 		if err := json.Unmarshal(response, &responseErrorContent); err != nil {
 			return fmt.Errorf(responseContent)
 		}
-		if responseErrorContent.Code == 500 {
+		if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
 			if responseErrorContent.Message == spawnJobDeletionErrorMessage {
 				retries := 10
 				for retries > 0 {
@@ -446,7 +443,7 @@ func (c *Client) deleteVolume(request volumeRequest) error {
 						}
 						return nil
 					}
-					if deleteJobResponseErrorContent.Code != 500 {
+					if deleteJobResponseErrorContent.Message != spawnJobDeletionErrorMessage {
 						return responseError
 					}
 					retries--
@@ -455,9 +452,6 @@ func (c *Client) deleteVolume(request volumeRequest) error {
 			} else {
 				return responseError
 			}
-		}
-		if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
-			return responseError
 		}
 	}
 
@@ -650,7 +644,7 @@ func expandExportPolicy(set *schema.Set) exportPolicy {
 			ruleConfig := x.(map[string]interface{})
 			exportPolicyRule.Access = ruleConfig["access"].(string)
 			exportPolicyRule.AllowedClients = ruleConfig["allowed_clients"].(string)
-			exportPolicyRule.HasRootAccess = ruleConfig["has_root_access"].(bool)
+			exportPolicyRule.HasRootAccess = ruleConfig["has_root_access"].(string)
 			exportPolicyRule.Kerberos5ReadOnly.Checked = ruleConfig["kerberos5_readonly"].(bool)
 			exportPolicyRule.Kerberos5ReadWrite.Checked = ruleConfig["kerberos5_readwrite"].(bool)
 			exportPolicyRule.Kerberos5iReadOnly.Checked = ruleConfig["kerberos5i_readonly"].(bool)

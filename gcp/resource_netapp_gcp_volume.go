@@ -232,9 +232,10 @@ func resourceGCPVolume() *schema.Resource {
 										Optional: true,
 									},
 									"has_root_access": {
-										Type:     schema.TypeBool,
-										Optional: true,
-										Default:  true,
+										Type:         schema.TypeString,
+										Optional:     true,
+										Default:      "true",
+										ValidateFunc: validation.StringInSlice([]string{"true", "false", "on", "off"}, true),
 									},
 									"kerberos5_readonly": {
 										Type:     schema.TypeBool,
