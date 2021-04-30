@@ -31,6 +31,7 @@ type volumeRequest struct {
 	VolumeID               string         `structs:"volumeId,omitempty"`
 	Zone                   string         `structs:"zone,omitempty"`
 	StorageClass           string         `structs:"storageClass,omitempty"`
+	regionalHa             bool           `structs:"regionalHA"`
 	SharedVpcProjectNumber string
 }
 

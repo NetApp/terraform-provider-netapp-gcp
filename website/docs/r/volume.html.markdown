@@ -82,6 +82,7 @@ The following arguments are supported:
 * `delete_on_creation_error` - (Optional) Delete volume if volume is in error state after creation. Default is false.
 * `zone` - (Optional) The desired zone for the resource. If storage_class is set to 'software', zone is required.
 * `storage_class` - (Optional) Storage Class to be provisioned. Allows the user to choose between hardware based or software based.
+* `regional_ha` - (Optional) Flag indicating if the volume is regional, applicable only for software volumes.
 
 The `snapshot_policy` block supports:
 * `enabled` - (Optional) If enabled, make snapshots automatically according to the schedules. Default is false.

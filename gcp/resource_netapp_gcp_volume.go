@@ -28,7 +28,7 @@ func resourceGCPVolume() *schema.Resource {
 		Importer: &schema.ResourceImporter{
 			State: schema.ImportStatePassthrough,
 		},
-
+		CustomizeDiff: resourceVolumeCustomizeDiff,
 		Schema: map[string]*schema.Schema{
 			"name": {
 				Type:     schema.TypeString,
@@ -61,7 +61,7 @@ func resourceGCPVolume() *schema.Resource {
 			"service_level": {
 				Type:         schema.TypeString,
 				Optional:     true,
-				Default:      "medium",
+				Default:      "standard",
 				ValidateFunc: validation.StringInSlice([]string{"standard", "premium", "extreme"}, true),
 			},
 			"volume_path": {
@@ -311,6 +311,10 @@ func resourceGCPVolume() *schema.Resource {
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"software", "hardware"}, true),
 			},
+			"regional_ha": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -394,6 +398,10 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if v, ok := d.GetOk("storage_class"); ok {
 		volume.StorageClass = v.(string)
+	}
+
+	if v, ok := d.GetOk("regional_ha"); ok {
+		volume.regionalHa = v.(bool)
 	}
 
 	// If storage class is 'software', zone is mandatory
@@ -799,4 +807,24 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	return resourceGCPVolumeRead(d, meta)
+}
+
+func resourceVolumeCustomizeDiff(diff *schema.ResourceDiff, v interface{}) error {
+	if diff.HasChange("storage_class") {
+		current, expect := diff.GetChange("storage_class")
+		if current.(string) == "" {
+			if expect.(string) == "software" {
+				if diff.Get("service_level").(string) != "standard" {
+					return fmt.Errorf("service_level must be standard when storage_class is software")
+				}
+			} else if expect.(string) == "hardware" {
+				if v, ok := diff.GetOk("regional_ha"); ok {
+					if v.(bool) == true {
+						return fmt.Errorf("regional_ha is not supported when storage_class is hardware")
+					}
+				}
+			}
+		}
+	}
+	return nil
 }
