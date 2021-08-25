@@ -3,6 +3,8 @@
 resource "netapp-gcp_volume" "gcp-volume" {
   provider = netapp-gcp
   name = var.volume_name
+  # When working with shared VPC, specify project number of host project
+  # shared_vpc_project_number = "<hosting_project_number>"
   region = var.region
   protocol_types = var.protocol
   network = var.network

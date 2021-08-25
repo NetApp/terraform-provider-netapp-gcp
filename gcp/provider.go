@@ -23,7 +23,7 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("GCP_PROJECT", nil),
 				ValidateFunc: validation.StringMatch(regexp.MustCompile("^[0-9]+$|^[a-z][a-z0-9-]+[a-z0-9]$"),
 					"Project format is not correct. It should be either numberical project number or project ID in xxx-xxx-xxx format."),
-				Description: "The project number for GCP API operations.",
+				Description: "The project number or project ID for GCP API operations.",
 			},
 			"service_account": {
 				Type:        schema.TypeString,

@@ -21,6 +21,8 @@ resource "netapp-gcp_volume" "gcp-volumes-batch" {
   region = local.volumes[count.index].region
   protocol_types = ["NFSv3"]
   network = local.network
+  # When working with shared VPC, specify project number of host project
+  # shared_vpc_project_number = "<hosting_project_number>"
   size = local.volumes[count.index].size
   service_level = local.volumes[count.index].service_level
   # storage_class: choose "software for CVS, choose "hardware" for CVS-Performance
