@@ -2,7 +2,6 @@ package gcp
 
 import (
 	"fmt"
-	"log"
 	"strings"
 	"testing"
 	"time"
@@ -299,7 +298,6 @@ func testCheckResourceAttr(name string, key string, value string) resource.TestC
 	// Becuase the volume is still in transition between states thus not ready to delete yet.
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[name]
-		log.Printf("rsrs rsrsrs rsrs: %#v", rs.Primary)
 		if !ok {
 			return fmt.Errorf("Not found: %s", name)
 		}

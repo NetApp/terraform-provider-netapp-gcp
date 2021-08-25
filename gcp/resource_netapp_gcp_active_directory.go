@@ -57,6 +57,39 @@ func resourceGCPActiveDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"aes_encryption": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"backup_operators": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
+			"security_operators": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
+			"allow_local_nfs_users_with_ldap": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
+			"kdc_ip": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"ldap_signing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -89,6 +122,30 @@ func resourceGCPActiveDirectoryCreate(d *schema.ResourceData, meta interface{}) 
 		activeDirectory.Site = v.(string)
 	}
 	activeDirectory.Region = d.Get("region").(string)
+
+	activeDirectory.AesEncryption = d.Get("aes_encryption").(bool)
+	activeDirectory.LdapSigning = d.Get("ldap_signing").(bool)
+	activeDirectory.AllowLocalNFSUsersWithLdap = d.Get("allow_local_nfs_users_with_ldap").(bool)
+
+	if v, ok := d.GetOk("backup_operators"); ok {
+		backupOperators := make([]string, 0)
+		for _, y := range v.(*schema.Set).List() {
+			backupOperators = append(backupOperators, y.(string))
+		}
+		activeDirectory.BackupOperators = backupOperators
+	}
+
+	if v, ok := d.GetOk("security_operators"); ok {
+		securityOperators := make([]string, 0)
+		for _, y := range v.(*schema.Set).List() {
+			securityOperators = append(securityOperators, y.(string))
+		}
+		activeDirectory.SecurityOperators = securityOperators
+	}
+
+	if v, ok := d.GetOk("kdc_ip"); ok {
+		activeDirectory.KdcIP = v.(string)
+	}
 
 	res, err := client.createActiveDirectory(&activeDirectory)
 	if err != nil {
@@ -144,6 +201,30 @@ func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) er
 
 	if err := d.Set("region", res.Region); err != nil {
 		return fmt.Errorf("Error reading active directory region: %s", err)
+	}
+
+	if err := d.Set("aes_encryption", res.AesEncryption); err != nil {
+		return fmt.Errorf("Error reading active directory aes_encryption: %s", err)
+	}
+
+	if err := d.Set("ldap_signing", res.LdapSigning); err != nil {
+		return fmt.Errorf("Error reading active directory ldap_signing: %s", err)
+	}
+
+	if err := d.Set("allow_local_nfs_users_with_ldap", res.AllowLocalNFSUsersWithLdap); err != nil {
+		return fmt.Errorf("Error reading active directory allow_local_nfs_users_with_ldap: %s", err)
+	}
+
+	if err := d.Set("security_operators", res.SecurityOperators); err != nil {
+		return fmt.Errorf("Error reading active directory security_operators: %s", err)
+	}
+
+	if err := d.Set("backup_operators", res.BackupOperators); err != nil {
+		return fmt.Errorf("Error reading active directory backup_operators: %s", err)
+	}
+
+	if err := d.Set("kdc_ip", res.KdcIP); err != nil {
+		return fmt.Errorf("Error reading active directory kdc_ip: %s", err)
 	}
 
 	return nil
@@ -204,6 +285,33 @@ func resourceGCPActiveDirectoryUpdate(d *schema.ResourceData, meta interface{}) 
 	activeDirectory.Site = d.Get("site").(string)
 	activeDirectory.Region = d.Get("region").(string)
 	activeDirectory.UUID = d.Get("uuid").(string)
+
+	activeDirectory.AesEncryption = d.Get("aes_encryption").(bool)
+
+	if v, ok := d.GetOk("backup_operators"); ok {
+		backupOperators := make([]string, 0)
+		for _, y := range v.(*schema.Set).List() {
+			backupOperators = append(backupOperators, y.(string))
+		}
+		activeDirectory.BackupOperators = backupOperators
+	}
+
+	if v, ok := d.GetOk("security_operators"); ok {
+		securityOperators := make([]string, 0)
+		for _, y := range v.(*schema.Set).List() {
+			securityOperators = append(securityOperators, y.(string))
+		}
+		activeDirectory.SecurityOperators = securityOperators
+	}
+
+	activeDirectory.AllowLocalNFSUsersWithLdap = d.Get("allow_local_nfs_users_with_ldap").(bool)
+
+	if d.HasChange("kdc_ip") {
+		activeDirectory.KdcIP = d.Get("kdc_ip").(string)
+	}
+
+	activeDirectory.LdapSigning = d.Get("ldap_signing").(bool)
+
 	err := client.updateActiveDirectory(activeDirectory)
 	if err != nil {
 		return err

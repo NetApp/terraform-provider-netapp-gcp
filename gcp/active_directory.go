@@ -10,15 +10,21 @@ import (
 
 // operateActiveDirectoryRequest requests the user's input for creating/updating an active directory
 type operateActiveDirectoryRequest struct {
-	Username           string `structs:"username"`
-	Password           string `structs:"password"`
-	Region             string `structs:"region"`
-	Domain             string `structs:"domain"`
-	DNS                string `structs:"DNS"`
-	NetBIOS            string `structs:"netBIOS"`
-	OrganizationalUnit string `structs:"organizationalUnit"`
-	Site               string `structs:"site"`
-	UUID               string `structs:"UUID"`
+	Username                   string   `structs:"username"`
+	Password                   string   `structs:"password"`
+	Region                     string   `structs:"region"`
+	Domain                     string   `structs:"domain"`
+	DNS                        string   `structs:"DNS"`
+	NetBIOS                    string   `structs:"netBIOS"`
+	OrganizationalUnit         string   `structs:"organizationalUnit"`
+	Site                       string   `structs:"site"`
+	UUID                       string   `structs:"UUID"`
+	LdapSigning                bool     `structs:"ldapSigning"`
+	KdcIP                      string   `structs:"kdcIP"`
+	AllowLocalNFSUsersWithLdap bool     `structs:"allowLocalNFSUsersWithLdap"`
+	SecurityOperators          []string `structs:"securityOperators"`
+	BackupOperators            []string `structs:"backupOperators"`
+	AesEncryption              bool     `structs:"aesEncryption"`
 }
 
 // operateActiveDirectoryResult returns the api response for creating/updating an active directory
@@ -35,15 +41,21 @@ type listActiveDirectoryRequest struct {
 
 // listActiveDirectoryResult lists the active directory for given ID
 type listActiveDirectoryResult struct {
-	Username           string `json:"username"`
-	Password           string `json:"password"`
-	Region             string `json:"region"`
-	Domain             string `json:"domain"`
-	DNS                string `json:"DNS"`
-	NetBIOS            string `json:"netBIOS"`
-	OrganizationalUnit string `structs:"organizationalUnit"`
-	Site               string `structs:"site"`
-	UUID               string `json:"UUID"`
+	Username                   string   `json:"username"`
+	Password                   string   `json:"password"`
+	Region                     string   `json:"region"`
+	Domain                     string   `json:"domain"`
+	DNS                        string   `json:"DNS"`
+	NetBIOS                    string   `json:"netBIOS"`
+	OrganizationalUnit         string   `structs:"organizationalUnit"`
+	Site                       string   `structs:"site"`
+	UUID                       string   `json:"UUID"`
+	LdapSigning                bool     `json:"ldapSigning"`
+	KdcIP                      string   `json:"kdcIP"`
+	AllowLocalNFSUsersWithLdap bool     `json:"allowLocalNFSUsersWithLdap"`
+	SecurityOperators          []string `json:"securityOperators"`
+	BackupOperators            []string `json:"backupOperators"`
+	AesEncryption              bool     `json:"aesEncryption"`
 }
 
 type listActiveDirectoryAPIResult struct {

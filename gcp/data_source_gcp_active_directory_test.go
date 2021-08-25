@@ -2,12 +2,15 @@ package gcp
 
 import (
 	"fmt"
-	"github.com/hashicorp/terraform/helper/resource"
 	"testing"
+
+	"github.com/hashicorp/terraform/helper/resource"
 )
 
 func TestAccDataSourceActiveDirectory_basic(t *testing.T) {
 	datasourceName := "data.netapp-gcp_active_directory.ad-us-west2"
+
+	var activeDirectory listActiveDirectoryResult
 
 	resource.Test(t, resource.TestCase{
 		PreCheck: func() {
@@ -17,18 +20,18 @@ func TestAccDataSourceActiveDirectory_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			// if create a new active directory before creating the data source, the acceptance test passes locally but fails on Jekins server.
 			// Currently, data source is created based on existing active directory.
-			// {
-			// 	Config: testAccActiveDirectorResource(),
-			// 	Check: resource.ComposeTestCheckFunc(
-			// 		testAccCheckGCPActiveDirectoryExists("netapp-gcp_active_directory.terraform-acceptance-test-1", &activeDirectory),
-			// 	),
-			// },
+			{
+				Config: testAccActiveDirectorResource(),
+				Check: resource.ComposeTestCheckFunc(
+					testAccCheckGCPActiveDirectoryExists("netapp-gcp_active_directory.terraform-acceptance-test-1", &activeDirectory),
+				),
+			},
 			{
 				Config: testAccActiveDirectoryDataResource(),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(datasourceName, "username", "bsuhas"),
-					resource.TestCheckResourceAttr(datasourceName, "dns_server", "10.168.0.6"),
-					resource.TestCheckResourceAttr(datasourceName, "netbios", "cvs-smb"),
+					resource.TestCheckResourceAttr(datasourceName, "username", "test_user"),
+					resource.TestCheckResourceAttr(datasourceName, "dns_server", "10.0.0.0"),
+					resource.TestCheckResourceAttr(datasourceName, "netbios", "cvserver"),
 				),
 			},
 		},
@@ -39,9 +42,9 @@ func testAccActiveDirectorResource() string {
 	return fmt.Sprintf(`
 	resource "netapp-gcp_active_directory" "terraform-acceptance-test-1" {
 		provider = netapp-gcp
-		region = "us-central1"
-		  username = "test_user"
-		  password = "netapp"
+		region = "us-west2"
+		username = "test_user"
+		password = "netapp"
 		domain = "example.com"
 		dns_server = "10.0.0.0"
 		net_bios = "cvserver"

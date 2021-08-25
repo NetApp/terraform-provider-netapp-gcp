@@ -68,25 +68,27 @@ resource "netapp-gcp_volume" "gcp-volume" {
 
 The following arguments are supported:
 
+* `delete_on_creation_error` - (Optional) Delete volume if volume is in error state after creation. Default is false.
 * `export_policy` - (Optional) The set of Export Policy attributes for volume.
 * `name` - (Required) The name of the NetApp_GCP volume.
 * `network` - (Required) The network VPC of the volume.
 * `protocol_types` - (Required) The protocol_type of the volume. For NFS use 'NFSv3' or 'NFSv4' and for SMB use 'CIFS' or 'SMB'.
 * `region` - (Required) The region where the NetApp_GCP volume to be created.
-* `service_level` - (Optional) The performance of the service level of volume. Must be one of "standard", "premium", "extreme", default is "premium".
-* `shared_vpc_project_number` - (Optional) The host project number when deploying in a shared VPC service project.
-* `size` - (Required) The size of volume is between 1024 GiB to 102400 GiB inclusive.
-* `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
-* `volume_path` - (Optional) The name of the volume path for volume.
-* `type_dp` - (Optional) The type of the volume to be DP.
-* `delete_on_creation_error` - (Optional) Delete volume if volume is in error state after creation. Default is false.
-* `zone` - (Optional) The desired zone for the resource. If storage_class is set to 'software', zone is required.
-* `storage_class` - (Optional) Storage Class to be provisioned. Allows the user to choose between hardware based or software based.
 * `regional_ha` - (Optional) Flag indicating if the volume is regional, applicable only for software volumes.
+* `service_level` - (Optional) The performance of the service level of volume. Must be one of "standard", "premium", "extreme", default is "premium".
+* `size` - (Required) The size of volume is between 1024 GiB to 102400 GiB inclusive.
+* `shared_vpc_project_number` - (Optional) The host project number when deploying in a shared VPC service project.
+* `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
+* `snapshot_directory` - (Optional) If enabled, the volume will contain a read-only .snapshot directory which provides access to each of the volume's snapshots. Default is true.
+* `snap_reserve` - (Optional) Percentage of volume storage reserved for snapshot storage. Default is 0 percent.
+* `storage_class` - (Optional) Storage Class to be provisioned. Allows the user to choose between hardware based or software based.
+* `type_dp` - (Optional) The type of the volume to be DP.
+* `volume_path` - (Optional) The name of the volume path for volume.
+* `zone` - (Optional) The desired zone for the resource. If storage_class is set to 'software', zone is required.
 
 The `snapshot_policy` block supports:
-* `enabled` - (Optional) If enabled, make snapshots automatically according to the schedules. Default is false.
 * `daily_schedule` - (Optional) If enabled, make a snapshot every day. Defaults to midnight.
+* `enabled` - (Optional) If enabled, make snapshots automatically according to the schedules. Default is false.
 * `hourly_schedule` - (Optional) If enabled, make a snapshot every hour e.g. at 04:00, 05:00, 06:00.
 * `monthly_schedule` - (Optional) If enabled, make a snapshot every month at a specific day or days, defaults to the first day of the month at midnight
 * `weekly_schedule` - (Optional) If enabled, make a snapshot every week at a specific day or days, defaults to Sunday at midnight.

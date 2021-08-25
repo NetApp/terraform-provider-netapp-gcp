@@ -32,6 +32,8 @@ type volumeRequest struct {
 	Zone                   string         `structs:"zone,omitempty"`
 	StorageClass           string         `structs:"storageClass,omitempty"`
 	regionalHa             bool           `structs:"regionalHA"`
+	SnapReserve            int            `structs:"snapReserve"`
+	SnapshotDirectory      bool           `structs:"snapshotDirectory"`
 	SharedVpcProjectNumber string
 }
 
@@ -53,6 +55,8 @@ type volumeResult struct {
 	Zone                  string         `json:"zone,omitempty"`
 	StorageClass          string         `json:"storageClass,omitempty"`
 	TypeDP                bool           `json:"isDataProtection,omitempty"`
+	SnapReserve           int            `json:"snapReserve,omitempty"`
+	SnapshotDirectory     bool           `json:"snapshotDirectory,omitempty"`
 }
 
 // createVolumeResult the api response for creating a volume

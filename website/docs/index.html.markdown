@@ -18,8 +18,7 @@ Use the navigation to the left to read about the available resources.
 and therefore may undergo significant changes as the community improves it.
 
 ## Example Usage
-Please see our [example][tf-example].
-[tf-example]: https://github.com/NetApp/terraform-provider-netapp-gcp/tree/master/examples/gcp
+Please see our [examples on GitHub](https://github.com/NetApp/terraform-provider-netapp-gcp/tree/master/examples/gcp)
 
 ```
 # Install provider from terraform register, only available for version 0.13 and above.
