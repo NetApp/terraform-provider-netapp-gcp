@@ -556,7 +556,7 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if res.LifeCycleState == "error" {
-		return fmt.Errorf("Volume with name: %v and id: %v is in error state. Please manually delete the volume, make sure the config is correct and run terraform apply agian. LifeCycleStateDetails: %v",
+		return fmt.Errorf("Volume with name: %v and id: %v is in error state. Please manually delete the volume, make sure the config is correct and run terraform apply again. LifeCycleStateDetails: %v",
 			res.Name, res.VolumeID, res.LifeCycleStateDetails)
 	} else if res.LifeCycleState == "disabled" {
 		return fmt.Errorf("Volume with name: %v and id: %v is in disabled state. Please manually enable the volume and runn terraform apply again. LifeCycleStateDetails: %v",
