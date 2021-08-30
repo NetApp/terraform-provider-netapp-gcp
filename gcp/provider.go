@@ -40,10 +40,11 @@ func Provider() terraform.ResourceProvider {
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
-			"netapp-gcp_volume":           resourceGCPVolume(),
-			"netapp-gcp_active_directory": resourceGCPActiveDirectory(),
-			"netapp-gcp_snapshot":         resourceGCPSnapshot(),
-			"netapp-gcp_volume_backup":    resourceGCPVolumeBackup(),
+			"netapp-gcp_volume":             resourceGCPVolume(),
+			"netapp-gcp_active_directory":   resourceGCPActiveDirectory(),
+			"netapp-gcp_snapshot":           resourceGCPSnapshot(),
+			"netapp-gcp_volume_backup":      resourceGCPVolumeBackup(),
+			"netapp-gcp_volume_replication": resourceGCPVolumeReplication(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
