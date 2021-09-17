@@ -34,6 +34,7 @@ type volumeRequest struct {
 	regionalHa             bool           `structs:"regionalHA"`
 	SnapReserve            int            `structs:"snapReserve"`
 	SnapshotDirectory      bool           `structs:"snapshotDirectory"`
+	UnixPermissions        string         `structs:"unixPermissions,omitempty"`
 	SharedVpcProjectNumber string
 }
 
@@ -57,6 +58,7 @@ type volumeResult struct {
 	TypeDP                bool           `json:"isDataProtection,omitempty"`
 	SnapReserve           int            `json:"snapReserve,omitempty"`
 	SnapshotDirectory     bool           `json:"snapshotDirectory,omitempty"`
+	UnixPermissions       string         `json:"unixPermissions,omitempty"`
 }
 
 // createVolumeResult the api response for creating a volume
@@ -193,6 +195,7 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 		return volumeResult{}, responseError
 	}
 
+	log.Printf("get get get: %#v", bytes.NewBuffer(response).String())
 	var result volumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
 		log.Print("Failed to unmarshall response from getVolumeByID")

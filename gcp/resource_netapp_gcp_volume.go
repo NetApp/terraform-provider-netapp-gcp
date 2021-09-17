@@ -325,6 +325,10 @@ func resourceGCPVolume() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"unix_permissions": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -422,6 +426,10 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if v, ok := d.GetOk("snap_reserve"); ok {
 		volume.SnapReserve = v.(int)
+	}
+
+	if v, ok := d.GetOk("unix_permissions"); ok {
+		volume.UnixPermissions = v.(string)
 	}
 
 	volume.SnapshotDirectory = d.Get("snapshot_directory").(bool)
@@ -680,6 +688,12 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("snapshot_directory", res.SnapshotDirectory); err != nil {
 		return fmt.Errorf("Error reading volume snapshot_directory: %s", err)
 	}
+	if _, ok := d.GetOk("unix_permissions"); ok {
+		if err := d.Set("unix_permissions", res.UnixPermissions); err != nil {
+			return fmt.Errorf("Error reading volume unix_permissions: %S", err)
+		}
+	}
+
 	return nil
 }
 
@@ -825,6 +839,11 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 		log.Printf("Updating volume: service_level old=%v new=%v\n", oslevel, slevel)
 		volume.ServiceLevel = TranslateServiceLevelState2API(slevel)
 		makechange = 1
+	}
+
+	if d.HasChange("unix_permissions") {
+		makechange = 1
+		volume.UnixPermissions = d.Get("unix_permissions").(string)
 	}
 
 	if makechange == 1 {
