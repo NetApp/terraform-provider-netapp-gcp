@@ -415,13 +415,13 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if v, ok := d.GetOk("regional_ha"); ok {
-		volume.regionalHa = v.(bool)
+		volume.RegionalHA = v.(bool)
 	}
 
-	// If storage class is 'software', zone is mandatory
-	if volume.StorageClass == "software" && volume.Zone == "" {
+	// If storage class is 'software', zone or regionalHA is mandatory
+	if volume.StorageClass == "software" && ((volume.Zone == "" && volume.RegionalHA == false) || (volume.Zone != "" && volume.RegionalHA == true)) {
 		log.Print("Error creating volume")
-		return fmt.Errorf("If storage_class is software, zone is mandatory")
+		return fmt.Errorf("If storage_class is software, zone or RegionalHA is mandatory")
 	}
 
 	if v, ok := d.GetOk("snap_reserve"); ok {

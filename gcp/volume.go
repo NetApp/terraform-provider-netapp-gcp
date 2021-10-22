@@ -31,7 +31,7 @@ type volumeRequest struct {
 	VolumeID               string         `structs:"volumeId,omitempty"`
 	Zone                   string         `structs:"zone,omitempty"`
 	StorageClass           string         `structs:"storageClass,omitempty"`
-	regionalHa             bool           `structs:"regionalHA"`
+	RegionalHA             bool           `structs:"regionalHA,omitempty"`
 	SnapReserve            int            `structs:"snapReserve"`
 	SnapshotDirectory      bool           `structs:"snapshotDirectory"`
 	UnixPermissions        string         `structs:"unixPermissions,omitempty"`
@@ -55,6 +55,7 @@ type volumeResult struct {
 	MountPoints           []mountPoints  `json:"mountPoints,omitempty"`
 	Zone                  string         `json:"zone,omitempty"`
 	StorageClass          string         `json:"storageClass,omitempty"`
+	RegionalHA            bool           `json:"regionalHA,omitempty"`
 	TypeDP                bool           `json:"isDataProtection,omitempty"`
 	SnapReserve           int            `json:"snapReserve,omitempty"`
 	SnapshotDirectory     bool           `json:"snapshotDirectory,omitempty"`

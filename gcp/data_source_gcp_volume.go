@@ -243,6 +243,10 @@ func dataSourceGCPVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"regional_ha": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"storage_class": {
 				Type:     schema.TypeString,
 				Computed: true,
@@ -331,6 +335,9 @@ func dataSourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if err := d.Set("zone", res.Zone); err != nil {
 		return fmt.Errorf("Error reading zone: %s", err)
+	}
+	if err := d.Set("regional_ha", res.RegionalHA); err != nil {
+		return fmt.Errorf("Error reading regional_ha: %s", err)
 	}
 	if err := d.Set("storage_class", res.StorageClass); err != nil {
 		return fmt.Errorf("Error reading storage_class: %s", err)
