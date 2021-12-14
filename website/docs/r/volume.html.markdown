@@ -80,7 +80,6 @@ The following arguments are supported:
 * `shared_vpc_project_number` - (Optional) The host project number when deploying in a shared VPC service project.
 * `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
 * `snapshot_directory` - (Optional) If enabled, the volume will contain a read-only .snapshot directory which provides access to each of the volume's snapshots. Default is true.
-* `snap_reserve` - (Optional) Percentage of volume storage reserved for snapshot storage. Default is 0 percent.
 * `storage_class` - (Optional) Storage Class to be provisioned. Allows the user to choose between hardware based or software based.
 * `type_dp` - (Optional) The type of the volume to be DP.
 * `unix_permissions` - (Optional) UNIX permissions for NFS volume accepted in octal 4 digit format. First digit selects the set user ID(4), set group ID (2) and sticky (1) attributes. Second digit selects permission for the owner of the file: read (4), write (2) and execute (1). Third selects permissions for other users in the same group. the fourth for other users not in the group. "0755" - gives read/write/execute permissions to owner and read/execute to group and other users.
