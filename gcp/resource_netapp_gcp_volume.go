@@ -325,6 +325,14 @@ func resourceGCPVolume() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"smb_share_settings": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Schema{
+					Type:         schema.TypeString,
+					ValidateFunc: validation.StringInSlice([]string{"encrypt_data", "browsable", "changenotify", "non_browsable", "oplocks", "showsnapshot", "show_previous_versions", "continuously_available", "access_based_enumeration"}, true),
+				},
+			},
 			"unix_permissions": {
 				Type:     schema.TypeString,
 				Optional: true,
@@ -433,6 +441,12 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	volume.SnapshotDirectory = d.Get("snapshot_directory").(bool)
+
+	if v, ok := d.GetOk("smb_share_settings"); ok {
+		for _, setting := range v.(*schema.Set).List() {
+			volume.SmbShareSettings = append(volume.SmbShareSettings, setting.(string))
+		}
+	}
 
 	var res createVolumeResult
 	var err error
@@ -688,12 +702,32 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("snapshot_directory", res.SnapshotDirectory); err != nil {
 		return fmt.Errorf("Error reading volume snapshot_directory: %s", err)
 	}
+	if v, ok := d.GetOk("smb_share_settings"); ok {
+		// There are a few default values in API, which means the API sets these values even they aren't specified in creation.
+		// The default values: "oplocks", "changenotify", "showsnapshot", "show_previous_versions", "browsable".
+		// Also note: If "continuously_available" is specified and "changenotify" is not, changenotify won't be set.
+		// but it doesn't mean they are mutually exclusive. "changenotify" can still be specified.
+		// "browserable" and "non_browserable" are mutually exclusive.
+		// It's reasonable that Users only care about the smb_share_settings they specifed. The not specified smb_share_settings
+		// are ignored no matter enabled or not.
+		// Compare the smb_share_settings in local config and the API response, then set the intersection of the two lists.
+		currentSmbSettings := make([]string, 0)
+		for _, localSmbSetting := range v.(*schema.Set).List() {
+			for _, apiSmbSetting := range res.SmbShareSettings {
+				if localSmbSetting.(string) == apiSmbSetting {
+					currentSmbSettings = append(currentSmbSettings, apiSmbSetting)
+				}
+			}
+		}
+		if err := d.Set("smb_share_settings", currentSmbSettings); err != nil {
+			return fmt.Errorf("Error reading volume smb_share_settings: %s", err)
+		}
+	}
 	if _, ok := d.GetOk("unix_permissions"); ok {
 		if err := d.Set("unix_permissions", res.UnixPermissions); err != nil {
 			return fmt.Errorf("Error reading volume unix_permissions: %S", err)
 		}
 	}
-
 	return nil
 }
 
@@ -838,6 +872,15 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
 		log.Printf("Updating volume: service_level old=%v new=%v\n", oslevel, slevel)
 		volume.ServiceLevel = TranslateServiceLevelState2API(slevel)
+		makechange = 1
+	}
+
+	if d.HasChange("smb_share_settings") {
+		if v, ok := d.GetOk("smb_share_settings"); ok {
+			for _, setting := range v.(*schema.Set).List() {
+				volume.SmbShareSettings = append(volume.SmbShareSettings, setting.(string))
+			}
+		}
 		makechange = 1
 	}
 

@@ -36,6 +36,7 @@ type volumeRequest struct {
 	SnapshotDirectory      bool           `structs:"snapshotDirectory"`
 	UnixPermissions        string         `structs:"unixPermissions,omitempty"`
 	SharedVpcProjectNumber string
+	SmbShareSettings       []string `structs:"smbShareSettings,omitempty"`
 }
 
 // volumeRequest retrieves the volume attributes from API and convert to struct
@@ -59,6 +60,7 @@ type volumeResult struct {
 	TypeDP                bool           `json:"isDataProtection,omitempty"`
 	SnapReserve           int            `json:"snapReserve,omitempty"`
 	SnapshotDirectory     bool           `json:"snapshotDirectory,omitempty"`
+	SmbShareSettings      []string       `json:"smbShareSettings,omitempty"`
 	UnixPermissions       string         `json:"unixPermissions,omitempty"`
 }
 
