@@ -578,8 +578,8 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err != nil {
 		return err
 	}
-
-	waitSeconds := 300
+	// Wait for 20 minutes if the volume is still in operation.
+	waitSeconds := 1200
 	for waitSeconds > 0 && (res.LifeCycleState == "creating" || res.LifeCycleState == "deleting" || res.LifeCycleState == "updating") {
 		time.Sleep(20)
 		res, err = client.getVolumeByID(volumeRequest{Region: volume.Region, VolumeID: id})
