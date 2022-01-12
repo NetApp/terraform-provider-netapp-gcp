@@ -36,7 +36,8 @@ type volumeRequest struct {
 	SnapshotDirectory      bool           `structs:"snapshotDirectory"`
 	UnixPermissions        string         `structs:"unixPermissions,omitempty"`
 	SharedVpcProjectNumber string
-	SmbShareSettings       []string `structs:"smbShareSettings,omitempty"`
+	SmbShareSettings       []string       `structs:"smbShareSettings,omitempty"`
+	BillingLabels          []billingLabel `structs:"billingLabels"`
 }
 
 // volumeRequest retrieves the volume attributes from API and convert to struct
@@ -62,6 +63,12 @@ type volumeResult struct {
 	SnapshotDirectory     bool           `json:"snapshotDirectory,omitempty"`
 	SmbShareSettings      []string       `json:"smbShareSettings,omitempty"`
 	UnixPermissions       string         `json:"unixPermissions,omitempty"`
+	BillingLabels         []billingLabel `json:"billingLabels,omitempty"`
+}
+
+type billingLabel struct {
+	Key   string `structs:"key,omitempty"`
+	Value string `structs:"value,omitempty"`
 }
 
 // createVolumeResult the api response for creating a volume
@@ -723,4 +730,27 @@ func flattenMountPoints(v []mountPoints) interface{} {
 		mps = append(mps, mpmap)
 	}
 	return mps
+}
+
+func flattenBillingLabel(v []billingLabel) interface{} {
+	labels := make([]map[string]interface{}, 0, len(v))
+	for _, l := range v {
+		labelMap := make(map[string]interface{})
+		labelMap["key"] = l.Key
+		labelMap["value"] = l.Value
+		labels = append(labels, labelMap)
+	}
+	return labels
+}
+
+func expandBillingLabel(set *schema.Set) []billingLabel {
+	var billingLabels []billingLabel
+	for _, v := range set.List() {
+		billingLabel := billingLabel{}
+		blabel := v.(map[string]interface{})
+		billingLabel.Key = blabel["key"].(string)
+		billingLabel.Value = blabel["value"].(string)
+		billingLabels = append(billingLabels, billingLabel)
+	}
+	return billingLabels
 }

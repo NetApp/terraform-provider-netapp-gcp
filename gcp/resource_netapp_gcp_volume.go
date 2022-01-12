@@ -337,6 +337,22 @@ func resourceGCPVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"billing_label": {
+				Type:     schema.TypeSet,
+				Optional: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Required: true,
+						},
+					},
+				},
+			},
 		},
 	}
 }
@@ -445,6 +461,17 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if v, ok := d.GetOk("smb_share_settings"); ok {
 		for _, setting := range v.(*schema.Set).List() {
 			volume.SmbShareSettings = append(volume.SmbShareSettings, setting.(string))
+		}
+	}
+
+	if v, ok := d.GetOk("billing_label"); ok {
+		values := v.(*schema.Set)
+		if values.Len() > 0 {
+			labels := make([]billingLabel, 0, values.Len())
+			for _, v := range expandBillingLabel(values) {
+				labels = append(labels, v)
+			}
+			volume.BillingLabels = labels
 		}
 	}
 
@@ -728,6 +755,12 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 			return fmt.Errorf("Error reading volume unix_permissions: %S", err)
 		}
 	}
+	if _, ok := d.GetOk("billing_label"); ok {
+		labels := flattenBillingLabel(res.BillingLabels)
+		if err := d.Set("billing_label", labels); err != nil {
+			return fmt.Errorf("Error reading volume billing_label: %s", err)
+		}
+	}
 	return nil
 }
 
@@ -887,6 +920,12 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("unix_permissions") {
 		makechange = 1
 		volume.UnixPermissions = d.Get("unix_permissions").(string)
+	}
+
+	if d.HasChange("billing_label") {
+		makechange = 1
+		labels := d.Get("billing_label").(*schema.Set)
+		volume.BillingLabels = expandBillingLabel(labels)
 	}
 
 	if makechange == 1 {

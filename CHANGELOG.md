@@ -1,3 +1,8 @@
+## 22.1.1
+ENHANCEMENTS:
+
+* resource/volume: add billing_label option.
+
 ## 20.10.0 (Oct 2020)
 
 * **New DataSource:** netapp-gcp_active_directory
