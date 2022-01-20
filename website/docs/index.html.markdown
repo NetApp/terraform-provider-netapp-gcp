@@ -34,7 +34,7 @@ terraform {
 # Configure the NetApp_GCP Provider
 provider "netapp-gcp" {
   project         = "YOUR_PROJECT_NUMBER"
-  service_account = "ABSOLUT_PATH_TO_JSON_KEY_FILE"
+  service_account = "ABSOLUTE_PATH_TO_JSON_KEY_FILE"
   # credentials = '{ "type": "service_account", .... }'
 }
 
@@ -112,7 +112,7 @@ resource "netapp-gcp_volume_backup" "gcp-volume-backup" {
 The following arguments are used to configure the NetApp_GCP Provider:
 
 * `project` - (Required) This is the project number or project ID for NetApp_GCP API operations. Using project ID requires resourcemanager.projects.get permissions.
-* `service_account` - (Required) This is the *path* to a JSON key of a service account with roles/netappcloudvolume.* permissions. See [documentation].( https://cloud.google.com/architecture/partners/netapp-cloud-volumes/api?hl=en_US#creating_your_service_account_and_private_key)
+* `service_account` - (Required) This is the *absolute path* to a JSON key of a service account with roles/netappcloudvolume.* permissions. See [documentation].( https://cloud.google.com/architecture/partners/netapp-cloud-volumes/api?hl=en_US#creating_your_service_account_and_private_key)
 * `credentials` - (Optional) The *content* of a JSON key of a service account with roles/netappcloudvolume.* permissions.
 
 `credentials` offers an alternative way to pass credentials`. Either `credentials` or `service_account` needs to be provided.
