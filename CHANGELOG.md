@@ -1,3 +1,8 @@
+## 22.1.2
+BUG FIXES:
+
+* Fix use default credentials when providing project ID. 
+
 ## 22.1.1
 ENHANCEMENTS:
 

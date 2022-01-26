@@ -2,6 +2,7 @@ package gcp
 
 import (
 	"context"
+	"io/ioutil"
 	"log"
 	"regexp"
 	"strconv"
@@ -9,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/hashicorp/terraform/terraform"
+	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/cloudresourcemanager/v1"
 )
@@ -56,9 +58,24 @@ func Provider() terraform.ResourceProvider {
 	}
 }
 
-func getProjectNumber(p string) (string, error) {
+func getProjectNumber(p string, d *schema.ResourceData) (string, error) {
 	ctx := context.Background()
-	c, err := google.DefaultClient(ctx, cloudresourcemanager.CloudPlatformScope)
+	var ts *google.Credentials
+	var b []byte
+	if v, ok := d.GetOk("service_account"); ok {
+		var err error
+		b, err = ioutil.ReadFile(v.(string))
+		if err != nil {
+			return "", err
+		}
+	} else if v, ok := d.GetOk("credentials"); ok {
+		b = []byte(v.(string))
+	}
+	ts, err := google.CredentialsFromJSON(ctx, b, cloudresourcemanager.CloudPlatformScope)
+	if err != nil {
+		return "", err
+	}
+	c := oauth2.NewClient(ctx, ts.TokenSource)
 	if err != nil {
 		log.Printf("getProjectNumber: Not able to get client (%s)", err)
 		return "", err
@@ -88,7 +105,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	if !isProjectNumber {
 		isProjectID, err := regexp.MatchString("^[a-z][a-z0-9-]+[a-z0-9]+$", project)
 		if isProjectID {
-			projectNumber, err = getProjectNumber(project)
+			projectNumber, err = getProjectNumber(project, d)
 			if err != nil {
 				log.Printf("providerConfigure: Cannot find project number (%s)", err)
 				return nil, err
