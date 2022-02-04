@@ -1,4 +1,8 @@
 ## 22.1.2
+ENHANCEMENTS:
+
+* resource/volume: add pool_id option.
+
 BUG FIXES:
 
 * Fix use default credentials when providing project ID. 

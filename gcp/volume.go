@@ -29,6 +29,7 @@ type volumeRequest struct {
 	SnapshotPolicy         snapshotPolicy `structs:"snapshotPolicy,omitempty"`
 	ExportPolicy           exportPolicy   `structs:"exportPolicy"`
 	VolumeID               string         `structs:"volumeId,omitempty"`
+	PoolID                 string         `structs:"poolId,omitempty"`
 	Zone                   string         `structs:"zone,omitempty"`
 	StorageClass           string         `structs:"storageClass,omitempty"`
 	RegionalHA             bool           `structs:"regionalHA,omitempty"`
@@ -52,6 +53,7 @@ type volumeResult struct {
 	SnapshotPolicy        snapshotPolicy `json:"snapshotPolicy,omitempty"`
 	ExportPolicy          exportPolicy   `json:"exportPolicy,omitempty"`
 	VolumeID              string         `json:"volumeId,omitempty"`
+	PoolID                string         `json:"poolId,omitempty"`
 	LifeCycleState        string         `json:"lifeCycleState"`
 	LifeCycleStateDetails string         `json:"lifeCycleStateDetails"`
 	MountPoints           []mountPoints  `json:"mountPoints,omitempty"`

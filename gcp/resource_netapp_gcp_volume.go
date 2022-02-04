@@ -325,6 +325,10 @@ func resourceGCPVolume() *schema.Resource {
 				Optional: true,
 				Default:  true,
 			},
+			"pool_id": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 			"smb_share_settings": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -408,6 +412,10 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if v, ok := d.GetOk("volume_path"); ok {
 		volume.CreationToken = v.(string)
+	}
+
+	if v, ok := d.GetOk("pool_id"); ok {
+		volume.PoolID = v.(string)
 	}
 
 	var volType string
@@ -657,6 +665,9 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 
 	if err := d.Set("service_level", slevel); err != nil {
 		return fmt.Errorf("Error reading volume service_level: %s", err)
+	}
+	if err := d.Set("pool_id", res.PoolID); err != nil {
+		return fmt.Errorf("Error reading volume pool_id: %s", err)
 	}
 	for i, protocol := range res.ProtocolTypes {
 		if protocol == "CIFS" {
