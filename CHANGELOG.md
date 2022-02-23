@@ -2,6 +2,7 @@
 ENHANCEMENTS:
 
 * resource/volume: add pool_id option.
+* Support service account principal name when using service account impersonation.
 
 BUG FIXES:
 

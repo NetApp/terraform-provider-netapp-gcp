@@ -7,6 +7,7 @@ type configStuct struct {
 	Project        string
 	ServiceAccount string
 	Credentials    string
+	TokenDuration  int
 }
 
 // Client is the main function to connect to the APi
@@ -19,6 +20,7 @@ func (c *configStuct) clientFun() (*Client, error) {
 	client.SetServiceAccount(c.ServiceAccount)
 	client.SetCredentials(c.Credentials)
 	client.SetProjectID(c.Project)
+	client.SetTokenDuration(c.TokenDuration)
 
 	return client, nil
 }

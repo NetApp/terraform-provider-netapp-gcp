@@ -17,6 +17,12 @@ provider "netapp-gcp" {
   # attribute. This is often used in Terraform Enterprise environments
 
   # credentials = "${base64decode(data.vault_generic_secret.gcp_key.data["private_key"])}"
+
+  # Auth option 3: using service account impersonation
+  # Cloud Function running as attached service account.
+  # To make service account impersonation work, the ADC user (e.g. the gcloud user) needs roles/iam.serviceAccountTokenCreator permission for that service account.
+
+  # service_account = "<service account name>@<project_id>.iam.gserviceaccount.com"
 }
 
 terraform {

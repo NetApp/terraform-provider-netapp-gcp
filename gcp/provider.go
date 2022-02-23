@@ -39,6 +39,12 @@ func Provider() terraform.ResourceProvider {
 				DefaultFunc: schema.EnvDefaultFunc("GCP_CREDENTIALS", nil),
 				Description: "The credentials for GCP API operations.",
 			},
+			"token_duration": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				DefaultFunc: schema.EnvDefaultFunc("GCP_TOKEN_DURATION", nil),
+				Description: "The token duration in minutes from service account name for GCP API operations.",
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
@@ -62,15 +68,33 @@ func getProjectNumber(p string, d *schema.ResourceData) (string, error) {
 	ctx := context.Background()
 	var ts *google.Credentials
 	var b []byte
+
+	re := regexp.MustCompile(`^[[a-z]([-a-z0-9]*[a-z0-9])@[a-z0-9-]+\.iam\.gserviceaccount\.com$`)
+
 	if v, ok := d.GetOk("service_account"); ok {
+		serviceAccount := v.(string)
+		if re.MatchString(serviceAccount) {
+			cloudresourcemanagerService, err := cloudresourcemanager.NewService(ctx)
+			if err != nil {
+				log.Printf("getProjectNumber: Cannot get cloud resource manager service(%s)", err)
+				return "", err
+			}
+			resp, err := cloudresourcemanagerService.Projects.Get(p).Context(ctx).Do()
+			if err != nil {
+				log.Printf("getProjectNumber: Cannot find project number (%s)", err)
+				return "", err
+			}
+			return strconv.FormatInt(resp.ProjectNumber, 10), nil
+		}
 		var err error
-		b, err = ioutil.ReadFile(v.(string))
+		b, err = ioutil.ReadFile(serviceAccount)
 		if err != nil {
 			return "", err
 		}
 	} else if v, ok := d.GetOk("credentials"); ok {
 		b = []byte(v.(string))
 	}
+
 	ts, err := google.CredentialsFromJSON(ctx, b, cloudresourcemanager.CloudPlatformScope)
 	if err != nil {
 		return "", err
@@ -98,6 +122,8 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 	project := d.Get("project").(string)
 	serviceAccount := d.Get("service_account").(string)
 	credentials := d.Get("credentials").(string)
+	tokenDuration := d.Get("token_duration").(int)
+
 	// check if project is project number or project ID
 	// project number is a string with numbers
 	// project ID must be 6 to 30 lowercase letters, digits, or hyphens. It must start with a letter. Trailing hyphens are prohibited
@@ -110,6 +136,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 				log.Printf("providerConfigure: Cannot find project number (%s)", err)
 				return nil, err
 			}
+			log.Printf("**** Project number %v", projectNumber)
 		} else {
 			log.Printf("providerConfigure: Project %s format is not correct. It should be either numerical project number or project ID in xxx-xxx-xxxx format.", project)
 			return nil, err
@@ -121,6 +148,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 		Project:        projectNumber,
 		ServiceAccount: serviceAccount,
 		Credentials:    credentials,
+		TokenDuration:  tokenDuration,
 	}
 
 	return config.clientFun()

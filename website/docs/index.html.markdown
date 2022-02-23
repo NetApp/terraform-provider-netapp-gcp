@@ -110,8 +110,13 @@ resource "netapp-gcp_volume_backup" "gcp-volume-backup" {
 
 The following arguments are used to configure the NetApp_GCP Provider:
 
-* `project` - (Required) This is the project number or project ID for NetApp_GCP API operations
-* `service_account` - (Required) This is the path of service_account for NetApp_GCP API operations.
+* `project` - (Required) This is the project number or project ID for NetApp_GCP API operations.
+* There are three ways for the NetApp_GCP API operation authentication. One of them should be used in the provider.
+* `credentials` - (Optional) JSON key as base64-encoded string of the account for NetApp_GCP API operations.
+* `service_account` - (Optional) There are two ways to be used:
+  - Using the service account key file for the authentication. This is the JSON file path of the service_account with the "roles/netappcloudvolumes.admin" privileges.
+  - Using the service account impersonation for the authentication. This is the service account email address service-account-name@the-project-id.iam.gserviceaccount.com using the impersonation for NetApp_GCP API operations. The account running the terraform needs be attached to this service account with "role/serviceAccountTokenCreator". The service account needs to have "roles/netappcloudvolumes.admin" privileges.
+* `token_duration` - (Optional) The token life duration in minutes in the service account impersonation case. Default is 60.
 
 ## Required Privileges
 

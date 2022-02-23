@@ -20,6 +20,7 @@ type Client struct {
 	Credentials           string
 	Project               string
 	Audience              string
+	TokenDuration         int
 
 	initOnce      sync.Once
 	restapiClient *restapi.Client
@@ -64,6 +65,7 @@ func (c *Client) init() {
 		ServiceAccount: c.ServiceAccount,
 		Credentials:    c.Credentials,
 		Audience:       c.Audience,
+		TokenDuration:  c.TokenDuration,
 	}
 }
 
@@ -75,6 +77,16 @@ func (c *Client) SetServiceAccount(serviceAccount string) {
 // GetServiceAccount returns the API version that will be used for GCP API requests
 func (c *Client) GetServiceAccount() string {
 	return c.ServiceAccount
+}
+
+// SetTokenDuration for API token duration in minutes
+func (c *Client) SetTokenDuration(tokenDuration int) {
+	c.TokenDuration = tokenDuration
+}
+
+// GetTokenDuration for API token duration in minutes
+func (c *Client) GetTokenDuration() int {
+	return c.TokenDuration
 }
 
 // SetCredentials for the client to use for requests to the GCP API

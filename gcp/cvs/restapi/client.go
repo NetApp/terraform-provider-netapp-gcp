@@ -9,22 +9,22 @@ import (
 
 // Client represents a client for interaction with a GCP REST API
 type Client struct {
-	Host           string
-	ServiceAccount string
-	Credentials    string
-	Audience       string
-
-	httpClient http.Client
+	Host                string
+	ServiceAccount      string
+	Credentials         string
+	Audience            string
+	Token               string
+	TokenDuration       int
+	TokenExpirationTime int64
+	httpClient          http.Client
 }
 
 // Do sends the API Request, parses the response as JSON, and returns the HTTP status code as int, the "result" value as byte
 func (c *Client) Do(baseURL string, req *Request) (int, []byte, error) {
-
-	httpReq, err := req.BuildHTTPReq(c.Host, c.ServiceAccount, c.Credentials, c.Audience, baseURL)
+	httpReq, err := req.BuildHTTPReq(c, baseURL)
 	if err != nil {
 		return 0, nil, err
 	}
-
 	httpRes, err := c.httpClient.Do(httpReq)
 	if err != nil {
 		log.Print("HTTP req failed")
