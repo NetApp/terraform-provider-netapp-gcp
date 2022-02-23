@@ -326,7 +326,7 @@ func resourceGCPVolume() *schema.Resource {
 				Default:  true,
 			},
 			"pool_id": {
-				Type:     schema.TypeBool,
+				Type:     schema.TypeString,
 				Optional: true,
 			},
 			"smb_share_settings": {
@@ -763,7 +763,7 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	}
 	if _, ok := d.GetOk("unix_permissions"); ok {
 		if err := d.Set("unix_permissions", res.UnixPermissions); err != nil {
-			return fmt.Errorf("Error reading volume unix_permissions: %S", err)
+			return fmt.Errorf("Error reading volume unix_permissions: %s", err)
 		}
 	}
 	if _, ok := d.GetOk("billing_label"); ok {
