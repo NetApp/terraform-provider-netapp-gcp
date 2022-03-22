@@ -1,4 +1,9 @@
-## 22.1.2
+## 22.3.0
+NEW FEATURES:
+
+* resource/kms: create,update and delete kms config.
+
+## 22.2.0
 ENHANCEMENTS:
 
 * resource/volume: add pool_id option.
