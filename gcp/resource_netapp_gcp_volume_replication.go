@@ -37,7 +37,6 @@ func resourceGCPVolumeReplication() *schema.Resource {
 			"endpoint_type": {
 				Type:     schema.TypeString,
 				Required: true,
-				Default:  "dst",
 			},
 			"region": {
 				Type:     schema.TypeString,
