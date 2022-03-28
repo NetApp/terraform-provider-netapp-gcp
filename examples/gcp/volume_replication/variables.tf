@@ -8,5 +8,4 @@ variable "gcp_service_account" {
 
 variable "network" {
   type = string
-  default = "default"
 }

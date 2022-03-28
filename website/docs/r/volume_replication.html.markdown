@@ -10,7 +10,7 @@ description: |-
 
 Provides an NetApp_GCP volume replication resource. This can be used to create a new volume replication relationship on the GCP-CVS.
 
-Destinations pull from source. `source_volume_uuid` in `remote_region` is replicated to `destination_volume_id` in `region`. 
+Destinations pull from source. `source_volume_uuid` in `remote_region` is replicated to `destination_volume_id` in `region`.
 
 ## Example Usages
 
