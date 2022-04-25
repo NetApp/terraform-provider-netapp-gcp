@@ -231,4 +231,5 @@ func (c *Client) getJobByID(region string, jobID string) (job, error) {
 type job struct {
 	State        string `json:"state"`
 	StateDetails string `json:"stateDetails"`
+	JobID        string `json:"jobId"`
 }

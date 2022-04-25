@@ -54,6 +54,7 @@ func Provider() terraform.ResourceProvider {
 			"netapp-gcp_volume_backup":      resourceGCPVolumeBackup(),
 			"netapp-gcp_volume_replication": resourceGCPVolumeReplication(),
 			"netapp-gcp_kms_config":         resourceGCPKMSConfig(),
+			"netapp-gcp_storage_pool":       resourceGCPStoragePool(),
 		},
 
 		DataSourcesMap: map[string]*schema.Resource{
