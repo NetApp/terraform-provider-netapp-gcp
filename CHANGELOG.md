@@ -3,6 +3,10 @@ NEW FEATURES:
 
 * resource/kms: create,update and delete kms config.
 
+ENHANCEMENTS:
+
+* resource/volume: remove `snap_reserve` option.
+
 ## 22.2.0
 ENHANCEMENTS:
 

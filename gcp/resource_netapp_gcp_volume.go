@@ -315,11 +315,6 @@ func resourceGCPVolume() *schema.Resource {
 				Type:     schema.TypeBool,
 				Optional: true,
 			},
-			"snap_reserve": {
-				Type:     schema.TypeInt,
-				Optional: true,
-				Default:  0,
-			},
 			"snapshot_directory": {
 				Type:     schema.TypeBool,
 				Optional: true,
@@ -454,10 +449,6 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if volume.StorageClass == "software" && ((volume.Zone == "" && volume.RegionalHA == false) || (volume.Zone != "" && volume.RegionalHA == true)) {
 		log.Print("Error creating volume")
 		return fmt.Errorf("If storage_class is software, zone or RegionalHA is mandatory")
-	}
-
-	if v, ok := d.GetOk("snap_reserve"); ok {
-		volume.SnapReserve = v.(int)
 	}
 
 	if v, ok := d.GetOk("unix_permissions"); ok {
@@ -734,9 +725,6 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 			return fmt.Errorf("Error reading volume storage_class: %s", err)
 		}
 	}
-	if err := d.Set("snap_reserve", res.SnapReserve); err != nil {
-		return fmt.Errorf("Error reading volume snap_reserve: %s", err)
-	}
 	if err := d.Set("snapshot_directory", res.SnapshotDirectory); err != nil {
 		return fmt.Errorf("Error reading volume snapshot_directory: %s", err)
 	}
@@ -876,7 +864,6 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	volume.Name = d.Get("name").(string)
 	// size is always required.
 	volume.Size = d.Get("size").(int) * GiBToBytes
-	volume.SnapReserve = d.Get("snap_reserve").(int)
 	volume.SnapshotDirectory = d.Get("snapshot_directory").(bool)
 
 	if d.HasChange("name") {
@@ -884,10 +871,6 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	}
 
 	if d.HasChange("size") {
-		makechange = 1
-	}
-
-	if d.HasChange("snap_reserve") {
 		makechange = 1
 	}
 

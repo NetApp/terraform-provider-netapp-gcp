@@ -33,7 +33,6 @@ type volumeRequest struct {
 	Zone                   string         `structs:"zone,omitempty"`
 	StorageClass           string         `structs:"storageClass,omitempty"`
 	RegionalHA             bool           `structs:"regionalHA,omitempty"`
-	SnapReserve            int            `structs:"snapReserve"`
 	SnapshotDirectory      bool           `structs:"snapshotDirectory"`
 	UnixPermissions        string         `structs:"unixPermissions,omitempty"`
 	SharedVpcProjectNumber string
@@ -61,7 +60,6 @@ type volumeResult struct {
 	StorageClass          string         `json:"storageClass,omitempty"`
 	RegionalHA            bool           `json:"regionalHA,omitempty"`
 	TypeDP                bool           `json:"isDataProtection,omitempty"`
-	SnapReserve           int            `json:"snapReserve,omitempty"`
 	SnapshotDirectory     bool           `json:"snapshotDirectory,omitempty"`
 	SmbShareSettings      []string       `json:"smbShareSettings,omitempty"`
 	UnixPermissions       string         `json:"unixPermissions,omitempty"`

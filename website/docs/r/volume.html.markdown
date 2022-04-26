@@ -80,7 +80,6 @@ The following arguments are supported:
 * `shared_vpc_project_number` - (Optional) The host project number when deploying in a shared VPC service project.
 * `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
 * `snapshot_directory` - (Optional) If enabled, the volume will contain a read-only .snapshot directory which provides access to each of the volume's snapshots. Default is true.
-* `snap_reserve` - (Optional) Percentage of volume storage reserved for snapshot storage. Default is 0 percent.
 * `storage_class` - (Optional) Storage Class to be provisioned. Allows the user to choose between hardware based or software based.
 * `type_dp` - (Optional) The type of the volume to be DP.
 * `pool_id` - (Optional) UUID of the PoolId under which volumes get created.
