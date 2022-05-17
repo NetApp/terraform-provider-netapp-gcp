@@ -650,7 +650,7 @@ func flattenExportPolicy(v exportPolicy) interface{} {
 }
 
 // expandExportPolicy converts set to exportPolicy struct
-func expandExportPolicy(set *schema.Set) exportPolicy {
+func expandExportPolicy(set *schema.Set) (exportPolicy, error) {
 	exportPolicyObj := exportPolicy{}
 
 	for _, v := range set.List() {
@@ -679,11 +679,14 @@ func expandExportPolicy(set *schema.Set) exportPolicy {
 				nfsv4Config := z.(map[string]interface{})
 				exportPolicyRule.Nfsv4.Checked = nfsv4Config["checked"].(bool)
 			}
+			if !exportPolicyRule.Nfsv3.Checked && !exportPolicyRule.Nfsv4.Checked {
+				return exportPolicy{}, fmt.Errorf("At least one of nfsv3 or nfsv4 needs to be true in protocol type of the export policy rule")
+			}
 			ruleConfigs = append(ruleConfigs, exportPolicyRule)
 		}
 		exportPolicyObj.Rules = ruleConfigs
 	}
-	return exportPolicyObj
+	return exportPolicyObj, nil
 }
 
 // flattenSnapshotPolicy converts snapshotPolicy struct to []map[string]interface{}

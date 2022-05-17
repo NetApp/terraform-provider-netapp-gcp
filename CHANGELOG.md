@@ -6,6 +6,7 @@ NEW FEATURES:
 ENHANCEMENTS:
 
 * resource/volume: remove `snap_reserve` option.
+* resource/volume: without either enable NFSv3 or NFSv4, the export rule is invalid.
 
 ## 22.2.0
 ENHANCEMENTS:

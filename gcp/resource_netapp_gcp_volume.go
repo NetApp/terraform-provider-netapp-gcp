@@ -425,7 +425,11 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 	if v, ok := d.GetOk("export_policy"); ok {
 		policy := v.(*schema.Set)
 		if policy.Len() > 0 {
-			volume.ExportPolicy = expandExportPolicy(policy)
+			resp, err := expandExportPolicy(policy)
+			if err != nil {
+				return err
+			}
+			volume.ExportPolicy = resp
 		}
 	}
 
@@ -888,7 +892,11 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("export_policy") {
 		policy := d.Get("export_policy").(*schema.Set)
-		volume.ExportPolicy = expandExportPolicy(policy)
+		resp, err := expandExportPolicy(policy)
+		if err != nil {
+			return err
+		}
+		volume.ExportPolicy = resp
 		makechange = 1
 	}
 
