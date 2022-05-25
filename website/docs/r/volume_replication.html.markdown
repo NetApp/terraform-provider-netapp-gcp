@@ -10,6 +10,8 @@ description: |-
 
 Provides an NetApp_GCP volume replication resource. This can be used to create a new volume replication relationship on the GCP-CVS.
 
+Destinations pull from source. `source_volume_uuid` in `remote_region` is replicated to `destination_volume_id` in `region`.
+
 ## Example Usages
 
 **Create NetApp_GCP volume:**
@@ -30,14 +32,11 @@ resource "netapp-gcp_volume_replication" "gcp-volume-replication" {
 
 The following arguments are supported:
 
-* `bandwidth` - (Optional) Maximum bandwidth that the replication will allow.
-* `destination_volume_uuid` - (Optional) UUID v4 of the destination volume of a volume replication relationship.
-* `endpoint_type` - (Optional) Indicates whether the local volume is the source or destination for the Volume Replication.
 * `name` - (Required) The name of the NetApp_GCP volume replication.
+* `source_volume_uuid` - (Required) UUID v4 of the destination volume of a volume replication relationship.
+* `remote_region` - (Required) The region of the source volume.
+* `destination_volume_id` - (Required) UUID v4 of the source volume of a volume replication relationship.
+* `region` - (Required) The region of the destination volume.
+* `endpoint_type` - (Required) Always set "dst".
+* `schedule` - (Required) Replication_policy ("10minutely", "hourly", "daily")
 * `policy` - (Optional) Replication policy.
-* `region` - (Required) The region where the NetApp_GCP volume replication relationship to be created.
-* `remote_region` - (Optional) The remote region for the other end of the volume replication.
-* `schedule` - (Optional) Replication_policy.
-* `source_volume_uuid` - (Optional) UUID v4 of the source volume of a volume replication relationship.
-
-

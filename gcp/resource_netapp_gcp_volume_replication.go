@@ -24,19 +24,19 @@ func resourceGCPVolumeReplication() *schema.Resource {
 		Schema: map[string]*schema.Schema{
 			"destination_volume_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"source_volume_id": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"remote_region": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"endpoint_type": {
 				Type:     schema.TypeString,
-				Optional: true,
+				Required: true,
 			},
 			"region": {
 				Type:     schema.TypeString,
@@ -53,8 +53,8 @@ func resourceGCPVolumeReplication() *schema.Resource {
 			},
 			"schedule": {
 				Type:         schema.TypeString,
-				Optional:     true,
-				ValidateFunc: validation.StringInSlice([]string{"10minutely", "hourly", "daily", "weekly", "monthly"}, true),
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{"10minutely", "hourly", "daily"}, true),
 			},
 			"bandwidth": {
 				Type:         schema.TypeString,
