@@ -2,7 +2,7 @@
 provider "netapp-gcp" {
   # specify projectID or project number
   # alternatively, set GCP_PROJECT environment variable
-  project         = "cv-solution-architect-lab"
+  # project         = "123456890"
 
   # We support two ways to authenticate. Choose one or the other
 
@@ -10,7 +10,7 @@ provider "netapp-gcp" {
   # path to JSON key file for IAM service account with "roles/netappcloudvolumes.admin" privileges
   # alternatively, set GCP_SERVICE_ACCOUNT environment variable
 
-  service_account = "/Users/gpablo/Documents/cv-solution-architect-lab-2b441b722fef.json"
+  # service_account = "/Users/abc/key.json"
 
   # Auth option 2: provide credentials as text string
   # Basically providing the content of the keyfile of option 1 via the credentials
