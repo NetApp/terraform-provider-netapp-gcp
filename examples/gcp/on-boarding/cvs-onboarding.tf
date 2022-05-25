@@ -8,6 +8,8 @@ locals {
     network = "default"
     address_name = "netapp-addresses-${local.network}"
 
+    # Please consult https://cloud.google.com/architecture/partners/netapp-cloud-volumes/setting-up-private-services-access?hl=en_US#setting_up_private_service_access
+    # for choosing the right address range and prefix length.
     address_ip = "192.168.200.0"   # RFC1918
     address_prefix = "24"
 }
@@ -53,11 +55,6 @@ resource "google_service_networking_connection" "cvs_performance_peering" {
     network                 = data.google_compute_network.myvpc.self_link
     service                 = "cloudvolumesgcp-api-network.netapp.com"
     reserved_peering_ranges = [google_compute_global_address.cvs_address_pool.name]
-}
-
-data "google_compute_network" "remotevpc" {
-    project = local.project
-    name = local.network
 }
 
 # gcloud compute networks peerings update <...> --network=<...> --import-custom-routes --export-custom-routes
