@@ -1,5 +1,5 @@
 # This example creates a volume using an existing zonal Storage Pool
-# The network, region and zone arguments need to match with the Storage Pool values
+# The network, region and zone arguments need to match with the Storage Pool values
 
 # local variables
 locals {
