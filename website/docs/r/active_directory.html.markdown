@@ -38,9 +38,11 @@ resource "netapp-gcp_active_directory" "gcp-active-directory" {
 
 The following arguments are supported:
 
+* `ad_server` - (Optional) Name of the active directory machine. This optional parameter is used only while creating kerberos volume.
 * `aes_encryption` - (Optional) If enabled, AES encryption will be enabled for SMB communication. Default is false.
 * `allow_local_nfs_users_with_ldap` - (Optional) If enabled, allow_local_nfs_users_with_ldap will allow access to local users as well as LDAP users. If access is needed for only LDAP users, it has to be disabled. Default is false.
 * `backup_operators` - (Optional) Users to be added to the Built-in Backup Operator active directory group. The usernames must be unique, and entries cannot include @ or \\. The entire list will be validated and rejected as whole if one or more entries are invalid.
+* `connection_type` - (Required) Either CVS or CVS-Performance service type. CVS is software, CVS-Performance is hardware.
 * `dns_server` - (Required) Comma separated list of DNS server IP addresses for the Active Directory domain.
 * `domain` - (Required) The name of the Active Directory domain.
 * `kdc_ip` - (Optional)  kdc server IP address for the active directory machine. This optional parameter is used only while creating kerberos volume.

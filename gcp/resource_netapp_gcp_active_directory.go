@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform/helper/schema"
+	"github.com/hashicorp/terraform/helper/validation"
 	"github.com/netapp/terraform-provider-netapp-gcp/gcp/cvs/restapi"
 )
 
@@ -90,6 +91,15 @@ func resourceGCPActiveDirectory() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
+			"connection_type": {
+				Type:         schema.TypeString,
+				Required:     true,
+				ValidateFunc: validation.StringInSlice([]string{"software", "hardware"}, true),
+			},
+			"ad_server": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -115,6 +125,7 @@ func resourceGCPActiveDirectoryCreate(d *schema.ResourceData, meta interface{}) 
 	activeDirectory.Domain = d.Get("domain").(string)
 	activeDirectory.DNS = d.Get("dns_server").(string)
 	activeDirectory.NetBIOS = d.Get("net_bios").(string)
+	activeDirectory.Label = d.Get("connection_type").(string)
 	if v, ok := d.GetOk("organizational_unit"); ok {
 		activeDirectory.OrganizationalUnit = v.(string)
 	}
@@ -145,6 +156,10 @@ func resourceGCPActiveDirectoryCreate(d *schema.ResourceData, meta interface{}) 
 
 	if v, ok := d.GetOk("kdc_ip"); ok {
 		activeDirectory.KdcIP = v.(string)
+	}
+
+	if v, ok := d.GetOk("ad_server"); ok {
+		activeDirectory.AdName = v.(string)
 	}
 
 	res, err := client.createActiveDirectory(&activeDirectory)
@@ -227,6 +242,14 @@ func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error reading active directory kdc_ip: %s", err)
 	}
 
+	if err := d.Set("connection_type", res.Label); err != nil {
+		return fmt.Errorf("Error reading active directory connection_type: %s", err)
+	}
+
+	if err := d.Set("ad_server", res.AdName); err != nil {
+		return fmt.Errorf("Error reading active directory ad_server: %s", err)
+	}
+
 	return nil
 }
 
@@ -285,6 +308,7 @@ func resourceGCPActiveDirectoryUpdate(d *schema.ResourceData, meta interface{}) 
 	activeDirectory.Site = d.Get("site").(string)
 	activeDirectory.Region = d.Get("region").(string)
 	activeDirectory.UUID = d.Get("uuid").(string)
+	activeDirectory.Label = d.Get("connection_type").(string)
 
 	activeDirectory.AesEncryption = d.Get("aes_encryption").(bool)
 
@@ -311,6 +335,10 @@ func resourceGCPActiveDirectoryUpdate(d *schema.ResourceData, meta interface{}) 
 	}
 
 	activeDirectory.LdapSigning = d.Get("ldap_signing").(bool)
+
+	if v, ok := d.GetOk("ad_server"); ok {
+		activeDirectory.AdName = v.(string)
+	}
 
 	err := client.updateActiveDirectory(activeDirectory)
 	if err != nil {
