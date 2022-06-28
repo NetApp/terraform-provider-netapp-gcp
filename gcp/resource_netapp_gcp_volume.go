@@ -449,11 +449,12 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		volume.RegionalHA = v.(bool)
 	}
 
-	// If storage class is 'software', zone or regionalHA is mandatory
-	if volume.StorageClass == "software" && ((volume.Zone == "" && volume.RegionalHA == false) || (volume.Zone != "" && volume.RegionalHA == true)) {
-		log.Print("Error creating volume")
-		return fmt.Errorf("If storage_class is software, zone or RegionalHA is mandatory")
-	}
+	// If storage class is 'software', zone or regionalHA is mandatory.
+	// Commented out as temporary fix to accommodate pool volume.
+	// if volume.StorageClass == "software" && ((volume.Zone == "" && volume.RegionalHA == false) || (volume.Zone != "" && volume.RegionalHA == true)) {
+	// 	log.Print("Error creating volume")
+	// 	return fmt.Errorf("If storage_class is software, zone or RegionalHA is mandatory")
+	// }
 
 	if v, ok := d.GetOk("unix_permissions"); ok {
 		volume.UnixPermissions = v.(string)

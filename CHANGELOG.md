@@ -1,12 +1,23 @@
-## 22.3.0
-NEW FEATURES:
+## 22.6.1
+BUG FIXES:
 
-* resource/kms: create,update and delete kms config.
+* resource/volume: remove check for regionalHA and zone when storageClass is software.
 
+## 22.6.0
+ENHANCEMENTS:
+
+* resource/active_directory: add connection_type and ad_server options.
+
+## 22.4.0
 ENHANCEMENTS:
 
 * resource/volume: remove `snap_reserve` option.
 * resource/volume: without either enable NFSv3 or NFSv4, the export rule is invalid.
+
+## 22.3.0
+NEW FEATURES:
+
+* resource/kms: create,update and delete kms config.
 
 ## 22.2.0
 ENHANCEMENTS:
