@@ -71,6 +71,7 @@ The following arguments are supported:
 
 Generic volume settings
 * `region` - (Required) The region where the NetApp_GCP volume to be created.
+
 * `name` - (Required) The name of the NetApp_GCP volume.
 * `volume_path` - (Optional) The name of the export path or share name to be used for the volume.
 * `shared_vpc_project_number` - (Optional) The host project number when deploying in a shared VPC service project.
