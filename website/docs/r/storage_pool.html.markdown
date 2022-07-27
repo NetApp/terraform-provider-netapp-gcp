@@ -8,11 +8,11 @@ description: |-
 
 # netapp_gcp\_storage_pool
 
-Provides a NetApp_GCP storage pool resource. This can be used to create a new storage pool on the GCP-CVS.
+Provides a NetApp_GCP storage pool resource. This can be used to manage storage pools for volumes of service-type CVS.
 
 ## Example Usages
 
-**Create NetApp_GCP storage pool:**
+**Create NetApp_GCP zonal storage pool:**
 
 ```
 resource "netapp-gcp_storage_pool" "test-storage-pool" {
@@ -22,6 +22,25 @@ resource "netapp-gcp_storage_pool" "test-storage-pool" {
   network = "example-vpc"
   size = 1024
   service_level = "StandardSW"
+  storage_class = "software"
+  billing_label {
+      key = "exampleKey"
+      value = "exampleValue"
+    }
+}
+```
+
+**Create NetApp_GCP regional storage pool:**
+
+```
+resource "netapp-gcp_storage_pool" "test-storage-pool" {
+  name = "example_ha_pool"
+  region = "us-east1"
+  zone = "us-east1-b"
+  secondary_zone = "us-east1-c"
+  network = "example-vpc"
+  size = 1024
+  service_level = "ZoneRedundantStandardSW"
   storage_class = "software"
   billing_label {
       key = "exampleKey"

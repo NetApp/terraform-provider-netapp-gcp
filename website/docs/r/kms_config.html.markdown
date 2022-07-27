@@ -8,7 +8,9 @@ description: |-
 
 # netapp_gcp\_kms
 
-Provides a NetApp_GCP kms configuration resource. This can be used to create a new kms on the GCP-CVS.
+Provides a NetApp_GCP kms configuration resource. Volumes are encrypted at rest. The type of key used is determined at volume creation. 
+
+To use Customer-managed Encryption Keys (CMEK), use this resource to specify your CMEK in Google Cloud KMS instead. If no CMEK definition exists for the region, a service-managed key will be used instead.
 
 ## Example Usages
 
@@ -17,9 +19,9 @@ Provides a NetApp_GCP kms configuration resource. This can be used to create a n
 ```
 resource "netapp-gcp_kms_config" "kms-example" {
     provider = netapp-gcp
-	key_ring_location = "us-east4"
-    key_ring_name = "test-kms"
-    key_name = "test-kms-key-"
+    key_ring_location = "us-east4"
+    key_ring_name = "TheOneRing"
+    key_name = "VirginiaKey"
     network = "projects/{projectID}/global/networks/{network}"
 }
 ```
@@ -28,11 +30,11 @@ resource "netapp-gcp_kms_config" "kms-example" {
 
 The following arguments are supported:
 
-* `key_name` - (Required, modifiable) Name of the key to be used for encryption, This key should be in the keyRing mentioned in keyRing field.
-* `key_project_id` - (Optional,modifiable) Project ID of project where the key to be used for encryption is residing.
-* `key_ring_location` - (Required) Location of the keyRing.
+* `key_name` - (Required, modifiable) Name of the key to be used for encryption. This key should be in the keyRing mentioned in keyRing field.
+* `key_project_id` - (Optional,modifiable) Project ID of project where the key to be used for encryption is residing. Use if key is located in different project.
+* `key_ring_location` - (Required) Location/region of the keyRing.
 * `key_ring_name` - (Required, modifiable) Key ring containing the keys to be used for volume encryption.
-* `network` - (Required) The path of the network, for example: "projects/123456789/global/networks/network-to-netapp".
+* `network` - (Required) The path of the VPC the volumes are attached to, for example: "projects/my-host-project/global/networks/my-shared-vpc".
 
   
 ## Attributes Reference
