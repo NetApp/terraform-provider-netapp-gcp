@@ -26,7 +26,7 @@ terraform {
   required_providers {
     netapp-gcp = {
       source = "NetApp/netapp-gcp"
-      version = "20.10.0"
+      version = "22.6.1"
     }
   }
 }
@@ -40,16 +40,17 @@ provider "netapp-gcp" {
 # Create a volume tied to an account
 resource "netapp-gcp_volume" "gcp-volume" {
   provider = netapp-gcp
-  name = "deleteme_asapGO_jusitin"
+  name = "deleteme_asap"
   region = "us-west2"
   protocol_types = ["NFSv3"]
   network = "cvs-terraform-vpc"
   size = 1024
   service_level = "premium"
-  volume_path = "deleteme-asapGO"
+  volume_path = "deleteme-asap"
   snapshot_policy {
     enabled = true
     daily_schedule {
+      snapshotsToKeep = 7
       hour = 10
       minute = 1
     }
@@ -80,9 +81,9 @@ resource "netapp-gcp_volume" "gcp-volume" {
 
 # Create a snapshot tied to an volume
 resource "netapp-gcp_snapshot" "gcp-snapshot" {
-  name = "deleteme_asapGO_jusitin-snapshot"
+  name = "deleteme_asap-snapshot"
   region = "us-west2"
-  volume_name =  "deleteme_asapGO_jusitin"
+  volume_name =  "deleteme_asap"
   # creation_token = "unique-token-number"
 }
 
@@ -90,11 +91,12 @@ resource "netapp-gcp_snapshot" "gcp-snapshot" {
 resource "netapp-gcp_active_directory" "gcp-active-directory" {
   provider = netapp-gcp
   region = "us-west2"
-	username = "test_user"
-	password = "netapp"
+  username = "test_user"
+  password = "netapp"
   domain = "example.com"
-  dns_server = "10.0.0.0"
+  dns_server = "10.0.0.5"
   net_bios = "cvsserver"
+  connection_type = "hardware"
 }
 
 # Create a volume_backup tied to an volume
@@ -115,7 +117,7 @@ The following arguments are used to configure the NetApp_GCP Provider:
 * `credentials` - (Optional) JSON key as base64-encoded string of the account for NetApp_GCP API operations.
 * `service_account` - (Optional) There are two ways to be used:
   - Using the service account key file for the authentication. This is the JSON file path of the service_account with the "roles/netappcloudvolumes.admin" privileges.
-  - Using the service account impersonation for the authentication. This is the service account email address service-account-name@the-project-id.iam.gserviceaccount.com using the impersonation for NetApp_GCP API operations. The account running the terraform needs be attached to this service account with "role/serviceAccountTokenCreator". The service account needs to have "roles/netappcloudvolumes.admin" privileges.
+  - Using the service account impersonation for the authentication. This is the service account email address service-account-name@the-project-id.iam.gserviceaccount.com using the impersonation for NetApp_GCP API operations. The account running the terraform needs be attached to this service account with "role/serviceAccountTokenCreator". The service account needs to have "roles/netappcloudvolumes.admin" privileges. For more information see https://cloud.google.com/architecture/partners/netapp-cloud-volumes/api?hl=en_US#manage_api_authentication.
 * `token_duration` - (Optional) The token life duration in minutes in the service account impersonation case. Default is 60.
 
 ## Required Privileges

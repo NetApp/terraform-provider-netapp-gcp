@@ -8,7 +8,7 @@ description: |-
 
 # netapp_gcp\_snapshot
 
-Provides a NetApp_GCP snapshot resource. This can be used to create a new snapshot on the CVS for GCP.
+Provides a NetApp_GCP snapshot resource. This can be used to manage a volume snapshot.
 
 ## Example Usages
 
@@ -16,7 +16,7 @@ Provides a NetApp_GCP snapshot resource. This can be used to create a new snapsh
 
 ```
 resource "netapp-gcp_snapshot" "gcp-snapshot" {
-  name = "main-snapshot"
+  name = "my-snapshot-name"
   region = "us-west2"
   volume_name =  "main-volume"
   creation_token = "unique-token-number"

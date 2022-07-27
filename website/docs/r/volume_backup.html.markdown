@@ -8,7 +8,7 @@ description: |-
 
 # netapp_gcp\_volume_backup
 
-Provides a NetApp_GCP volume_backup resource. This can be used to create a new volume_backup for required volume on the CVS for GCP.
+Provides a NetApp_GCP volume_backup resource. This can be used to create a new volume_backup for a specified GCP-CVS volume.
 
 ## Example Usages
 
