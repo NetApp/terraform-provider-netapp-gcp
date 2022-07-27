@@ -76,7 +76,7 @@ The following arguments are supported:
 * `region` - (Required) The region where the NetApp_GCP volume to be created.
 * `regional_ha` - (Optional) Flag indicating if the volume is regional, applicable only for software volumes.
 * `service_level` - (Optional) The performance of the service level of volume. Must be one of "standard", "premium", "extreme", default is "premium".
-* `size` - (Required) The size of volume is between 1024 GiB to 102400 GiB inclusive.
+* `size` - (Required) The size of volume is between 1 GiB to 102400 GiB inclusive.
 * `shared_vpc_project_number` - (Optional) The host project number when deploying in a shared VPC service project.
 * `snapshot_policy` - (Optional) The set of Snapshot Policy attributes for volume.
 * `snapshot_directory` - (Optional) If enabled, the volume will contain a read-only .snapshot directory which provides access to each of the volume's snapshots. Default is true.
