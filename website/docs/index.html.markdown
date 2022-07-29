@@ -125,4 +125,3 @@ The following arguments are used to configure the NetApp_GCP Provider:
 These settings were tested with GCP Google Cloud SDK 274.0.0.
 For additional information on roles and permissions, please refer to official
 NetApp_GCP documentation.
-
