@@ -2,6 +2,7 @@
 BUG FIXES:
 
 * resource/volume: remove check for regionalHA and zone when storageClass is software.
+* resource/volume: update the create and delete volume error message verification.
 
 ## 22.6.0
 ENHANCEMENTS:

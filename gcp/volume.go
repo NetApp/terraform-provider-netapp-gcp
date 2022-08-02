@@ -13,8 +13,6 @@ import (
 )
 
 const contextDeadlineExceededErrorMessage = "Post http://cloud-volumes-service.sde.svc.cluster.local/v2/Volumes: context deadline exceeded"
-const spawnJobCreationErrorMessage = "Error creating volume - Cannot spawn additional jobs. Please wait for the ongoing jobs to finish and try again"
-const spawnJobDeletionErrorMessage = "Error deleting volume - Cannot spawn additional jobs. Please wait for the ongoing jobs to finish and try again"
 
 // volumeRequest the users input for creating,requesting,updateing a Volume
 // exportPolicy can't set to omitempty because it could be deleted during update.
@@ -353,9 +351,12 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 			return createVolumeResult{}, fmt.Errorf(responseContent)
 		}
 		if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
+			spawnJobCreationErrorMessage := fmt.Sprintf("Error creating volume - Cannot spawn additional jobs in %s for this network . Please wait for the ongoing jobs to finish in zone %s and try again", request.Zone, request.Zone)
+			log.Printf("* Response error message on createVolume: %v", responseErrorContent.Message)
 			if responseErrorContent.Message == spawnJobCreationErrorMessage {
 				retries := 10
 				for retries > 0 {
+					log.Printf("* Retries %v", retries)
 					var spawnJobResponseErrorContent apiErrorResponse
 					time.Sleep(time.Duration(nextRandomInt(30, 50)) * time.Second)
 					statusCode, response, err = c.CallAPIMethod("POST", baseURL, params)
@@ -376,6 +377,7 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 						return result, nil
 					}
 					if spawnJobResponseErrorContent.Message != spawnJobCreationErrorMessage {
+						log.Printf("Retry failed spawnJobResponseErrorContent: %v", spawnJobResponseErrorContent.Message)
 						return createVolumeResult{}, responseError
 					}
 					retries--
@@ -423,7 +425,7 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 }
 
 func (c *Client) deleteVolume(request volumeRequest) error {
-
+	log.Print("deleteVolume...")
 	baseURL := fmt.Sprintf("%s/Volumes/%s", request.Region, request.VolumeID)
 	statusCode, response, err := c.CallAPIMethod("DELETE", baseURL, nil)
 	if err != nil {
@@ -439,9 +441,12 @@ func (c *Client) deleteVolume(request volumeRequest) error {
 			return fmt.Errorf(responseContent)
 		}
 		if responseErrorContent.Code >= 300 || responseErrorContent.Code < 200 {
+			spawnJobDeletionErrorMessage := fmt.Sprintf("Error deleting volume - Cannot spawn additional jobs in %s for this network . Please wait for the ongoing jobs to finish in zone %s and try again", request.Zone, request.Zone)
+			log.Printf("* Response error message on deleteVolume: %v", responseErrorContent.Message)
 			if responseErrorContent.Message == spawnJobDeletionErrorMessage {
 				retries := 10
 				for retries > 0 {
+					log.Printf("retries %v", retries)
 					var deleteJobResponseErrorContent apiErrorResponse
 					time.Sleep(time.Duration(nextRandomInt(30, 50)) * time.Second)
 					statusCode, response, err = c.CallAPIMethod("DELETE", baseURL, nil)
@@ -462,6 +467,7 @@ func (c *Client) deleteVolume(request volumeRequest) error {
 						return nil
 					}
 					if deleteJobResponseErrorContent.Message != spawnJobDeletionErrorMessage {
+						log.Printf("Retry failed deleteJobResponseErrorContent: %v", deleteJobResponseErrorContent.Message)
 						return responseError
 					}
 					retries--
