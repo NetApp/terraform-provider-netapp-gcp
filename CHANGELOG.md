@@ -1,8 +1,16 @@
+## 22.8.0
+BUG FIXES:
+* resource/volume: update the create and delete volume error message verification.
+* resource/volume: Updated Volume size from 1 Gib. ([#67](https://github.com/NetApp/terraform-provider-netapp-gcp/pull/67))
+
+ENHANCEMENTS:
+* Improvement on documentations. ([#68](https://github.com/NetApp/terraform-provider-netapp-gcp/pull/68))
+
 ## 22.6.1
 BUG FIXES:
 
 * resource/volume: remove check for regionalHA and zone when storageClass is software.
-* resource/volume: update the create and delete volume error message verification.
+
 
 ## 22.6.0
 ENHANCEMENTS:
