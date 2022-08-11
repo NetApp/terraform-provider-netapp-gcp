@@ -21,6 +21,7 @@ type storagePool struct {
 	StorageClass           string         `json:"storageClass"`
 	Jobs                   []job          `json:"jobs"`
 	BillingLabels          []billingLabel `json:"billingLabels"`
+	State                  string         `json:"state"`
 	SharedVpcProjectNumber string
 }
 

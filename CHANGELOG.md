@@ -1,3 +1,7 @@
+## 22.8.1
+BUG FIXES:
+* resource/storage_pool: Fix creation error with shared vpc. ([#69](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/69))
+
 ## 22.8.0
 BUG FIXES:
 * resource/volume: update the create and delete volume error message verification.

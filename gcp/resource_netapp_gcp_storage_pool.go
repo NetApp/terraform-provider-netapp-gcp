@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 	"github.com/hashicorp/terraform/helper/validation"
@@ -116,6 +117,10 @@ func resourceGCPStoragePoolCreate(d *schema.ResourceData, meta interface{}) erro
 		}
 	}
 
+	if v, ok := d.GetOk("shared_vpc_project_number"); ok {
+		pool.SharedVpcProjectNumber = v.(string)
+	}
+
 	res, err := client.createStoragePool(&pool)
 	if err != nil {
 		log.Printf("Error creating storage pool: %#v", err)
@@ -139,6 +144,10 @@ func resourceGCPStoragePoolRead(d *schema.ResourceData, meta interface{}) error 
 	if err != nil {
 		return err
 	}
+	if strings.ToLower(res.State) == "deleted" {
+		d.SetId("")
+		return nil
+	}
 	if res.PoolID != id {
 		return fmt.Errorf("Expected storage pool with id: %v, Response contained storage pool with id: %v",
 			d.Id(), res.PoolID)
@@ -160,6 +169,28 @@ func resourceGCPStoragePoolRead(d *schema.ResourceData, meta interface{}) error 
 		if err := d.Set("billing_label", labels); err != nil {
 			return fmt.Errorf("Error reading storage pool billing_label: %s", err)
 		}
+	}
+	// res.Network either contains simple network name or
+	// projects/${HOST_PROJECT_ID}/global/networks/${SHARED_VPC_NAME}, usually (but not exclusively) for shared VPC
+	nws := strings.Split(res.Network, "/")
+	var network string
+	if len(nws) == 1 {
+		// standalone project network
+		network = nws[0]
+	} else if len(nws) == 5 {
+		// long network path
+		network = nws[4]
+		// if network path contains different projectId than our project, it is shared-VPC
+		if nws[1] != client.Project {
+			if err := d.Set("shared_vpc_project_number", nws[1]); err != nil {
+				return fmt.Errorf("Error reading shared_vpc_project_number: %s", err)
+			}
+		}
+	} else {
+		return fmt.Errorf("Network path %s is invalid", res.Network)
+	}
+	if err := d.Set("network", network); err != nil {
+		return fmt.Errorf("Error reading volume network: %s", err)
 	}
 
 	return nil
