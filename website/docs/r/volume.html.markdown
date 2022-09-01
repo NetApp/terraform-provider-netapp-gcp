@@ -73,7 +73,7 @@ Generic volume settings
 * `region` - (Required) The region where the NetApp_GCP volume to be created.
 
 * `name` - (Required) The name of the NetApp_GCP volume.
-* `volume_path` - (Optional) The name of the export path or share name to be used for the volume.
+* `volume_path` - (Optional) The name of the export path or share name to be used for the volume. Must be unique per region.
 * `shared_vpc_project_number` - (Optional) The host project number when deploying in a shared VPC service project.
 * `network` - (Required) Name of VPC network for the volume.
 * `size` - (Required) The size of volume. 100-102400 GiB for CVS-Performance, 1-102400 GiB for CVS on Storage Pools
