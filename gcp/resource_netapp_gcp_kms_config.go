@@ -38,6 +38,10 @@ func resourceGCPKMSConfig() *schema.Resource {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"region": {
+				Type:     schema.TypeString,
+				Required: true,
+			},
 		},
 	}
 }
@@ -50,6 +54,7 @@ func resourceGCPKMSConfigCreate(d *schema.ResourceData, meta interface{}) error 
 	kms.KeyName = d.Get("key_name").(string)
 	kms.KeyRingLocation = d.Get("key_ring_location").(string)
 	kms.Network = d.Get("network").(string)
+	kms.Region = d.Get("region").(string)
 
 	if v, ok := d.GetOk("key_project_id"); ok {
 		kms.KeyProjectID = v.(string)
@@ -62,7 +67,7 @@ func resourceGCPKMSConfigCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	d.SetId(res.ID)
 
-	log.Printf("Created KMS in region: %v", kms.KeyRingLocation)
+	log.Printf("Created KMS in region: %v", kms.Region)
 
 	return resourceGCPKMSConfigRead(d, meta)
 }
@@ -71,7 +76,7 @@ func resourceGCPKMSConfigRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
 	id := d.Id()
 	kmsConfig := kmsConfig{}
-	kmsConfig.KeyRingLocation = d.Get("key_ring_location").(string)
+	kmsConfig.Region = d.Get("region").(string)
 	kmsConfig.ID = d.Id()
 	res, err := client.getKMSConfig(&kmsConfig)
 	if err != nil {
@@ -94,7 +99,7 @@ func resourceGCPKMSConfigRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error reading key ring location: %s", err)
 	}
 
-	if _, ok := d.GetOk("key_projet_id"); ok {
+	if _, ok := d.GetOk("key_project_id"); ok {
 		if err := d.Set("key_project_id", res.KeyProjectID); err != nil {
 			return fmt.Errorf("Error reading key project id: %s", err)
 		}
@@ -104,6 +109,10 @@ func resourceGCPKMSConfigRead(d *schema.ResourceData, meta interface{}) error {
 		return fmt.Errorf("Error reading network id: %s", err)
 	}
 
+	if err := d.Set("region", res.Region); err != nil {
+		return fmt.Errorf("Error reading region: %s", err)
+	}
+
 	return nil
 }
 
@@ -111,7 +120,7 @@ func resourceGCPKMSConfigDelete(d *schema.ResourceData, meta interface{}) error 
 	log.Printf("Deleting kms: %#v", d)
 	client := meta.(*Client)
 	kms := kmsConfig{}
-	kms.KeyRingLocation = d.Get("key_ring_location").(string)
+	kms.Region = d.Get("region").(string)
 	kms.ID = d.Id()
 	_, deleteErr := client.deleteKMSConfig(&kms)
 	if deleteErr != nil {
@@ -131,6 +140,7 @@ func resourceGCPKMSConfigUpdate(d *schema.ResourceData, meta interface{}) error 
 	kms.KeyRing = d.Get("key_ring_name").(string)
 	kms.KeyRingLocation = d.Get("key_ring_location").(string)
 	kms.Network = d.Get("network").(string)
+	kms.Region = d.Get("region").(string)
 	kms.ID = d.Id()
 
 	if v, ok := d.GetOk("key_project_id"); ok {

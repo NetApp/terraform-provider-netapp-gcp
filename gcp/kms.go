@@ -15,11 +15,12 @@ type kmsConfig struct {
 	ID              string `json:"UUID"`
 	KeyProjectID    string `json:"keyProjectID"`
 	Network         string `json:"network"`
+	Region          string `json:"region"`
 }
 
 func (c *Client) createKMSConfig(request *kmsConfig) (kmsConfig, error) {
 	params := structs.Map(request)
-	baseURL := fmt.Sprintf("%s/Storage/KmsConfig", request.KeyRingLocation)
+	baseURL := fmt.Sprintf("%s/Storage/KmsConfig", request.Region)
 	log.Printf("params: %#v", params)
 	statusCode, response, err := c.CallAPIMethod("POST", baseURL, params)
 	if err != nil {
@@ -43,7 +44,7 @@ func (c *Client) createKMSConfig(request *kmsConfig) (kmsConfig, error) {
 
 func (c *Client) getKMSConfig(request *kmsConfig) (kmsConfig, error) {
 	params := structs.Map(request)
-	baseURL := fmt.Sprintf("%s/Storage/KmsConfig/%s", request.KeyRingLocation, request.ID)
+	baseURL := fmt.Sprintf("%s/Storage/KmsConfig/%s", request.Region, request.ID)
 	statusCode, response, err := c.CallAPIMethod("GET", baseURL, params)
 	if err != nil {
 		log.Print("getKMSConfig request failed")
@@ -64,7 +65,7 @@ func (c *Client) getKMSConfig(request *kmsConfig) (kmsConfig, error) {
 
 func (c *Client) updateKMSConfig(request *kmsConfig) (kmsConfig, error) {
 	params := structs.Map(request)
-	baseURL := fmt.Sprintf("%s/Storage/KmsConfig/%s", request.KeyRingLocation, request.ID)
+	baseURL := fmt.Sprintf("%s/Storage/KmsConfig/%s", request.Region, request.ID)
 	statusCode, response, err := c.CallAPIMethod("PUT", baseURL, params)
 	if err != nil {
 		log.Print("updateKMSConfig request failed")
@@ -87,14 +88,14 @@ func (c *Client) updateKMSConfig(request *kmsConfig) (kmsConfig, error) {
 
 func (c *Client) deleteKMSConfig(request *kmsConfig) (kmsConfig, error) {
 	params := structs.Map(request)
-	baseURL := fmt.Sprintf("%s/Storage/KmsConfig/%s", request.KeyRingLocation, request.ID)
+	baseURL := fmt.Sprintf("%s/Storage/KmsConfig/%s", request.Region, request.ID)
 	statusCode, response, err := c.CallAPIMethod("DELETE", baseURL, params)
 	if err != nil {
 		log.Print("deleteKMSConfig request failed")
 		return kmsConfig{}, err
 	}
 
-	responseError := apiResponseChecker(statusCode, response, "deletteKMSConfig")
+	responseError := apiResponseChecker(statusCode, response, "deleteKMSConfig")
 	if responseError != nil {
 		return kmsConfig{}, responseError
 	}
