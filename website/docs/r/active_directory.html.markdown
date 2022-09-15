@@ -52,6 +52,7 @@ AD connection specific settings:
 * `net_bios` - (Required) NetBIOS prefix name of the server that will be created. A random 5-digit suffix is appended automatically (e.g. -A579).
 * `aes_encryption` - (Optional) Enables AES-128 and AES-256 encryption for Kerberos-based communication with Active Directory. Default is false.
 * `ldap_signing` - (Optional) Enables LDAP siging. Default is false.
+* `managed_ad` - (Optional) Flags this configuration as Google ManagedAD configuration. Please see https://cloud.google.com/architecture/partners/netapp-cloud-volumes/managing-active-directory-connections?hl=en_US#connect_to_managed_microsoft_ad
 
 User credentials for Domain join:
 * `username` - (Required) Username of an account permitted to create computer objects in your Active Directory.

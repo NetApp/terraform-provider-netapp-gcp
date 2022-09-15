@@ -100,6 +100,11 @@ func resourceGCPActiveDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"managed_ad": {
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
+			},
 		},
 	}
 }
@@ -162,6 +167,8 @@ func resourceGCPActiveDirectoryCreate(d *schema.ResourceData, meta interface{}) 
 		activeDirectory.AdName = v.(string)
 	}
 
+	activeDirectory.ManagedAD = d.Get("managed_ad").(bool)
+
 	res, err := client.createActiveDirectory(&activeDirectory)
 	if err != nil {
 		log.Print("Error creating active directory")
@@ -176,7 +183,6 @@ func resourceGCPActiveDirectoryCreate(d *schema.ResourceData, meta interface{}) 
 
 func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) error {
 	client := meta.(*Client)
-	id := d.Id()
 	activeDirectory := listActiveDirectoryRequest{}
 	activeDirectory.Region = d.Get("region").(string)
 	var res listActiveDirectoryResult
@@ -184,10 +190,13 @@ func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) er
 	if err != nil {
 		return err
 	}
-	if res.UUID != id {
-		return fmt.Errorf("Expected active directory with id: %v, Response contained active directory with id: %v",
-			d.Get("uuid").(string), res.UUID)
-	}
+	// Disabling, since it would fail for call from dataSourceGCPVolumeRead
+	// Unclear if this sanity check is required
+	// if res.UUID != d.id {
+	// 	return fmt.Errorf("Expected active directory with id: %v, Response contained active directory with id: %v",
+	// 		d.Get("uuid").(string), res.UUID)
+	// }
+	d.SetId(res.UUID)
 	d.Set("uuid", res.UUID)
 
 	if err := d.Set("domain", res.Domain); err != nil {
@@ -250,6 +259,9 @@ func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) er
 		return fmt.Errorf("Error reading active directory ad_server: %s", err)
 	}
 
+	if err := d.Set("managed_ad", res.ManagedAD); err != nil {
+		return fmt.Errorf("Error reading active directory managed_ad: %s", err)
+	}
 	return nil
 }
 
@@ -339,6 +351,8 @@ func resourceGCPActiveDirectoryUpdate(d *schema.ResourceData, meta interface{}) 
 	if v, ok := d.GetOk("ad_server"); ok {
 		activeDirectory.AdName = v.(string)
 	}
+
+	activeDirectory.ManagedAD = d.Get("managed_ad").(bool)
 
 	err := client.updateActiveDirectory(activeDirectory)
 	if err != nil {
