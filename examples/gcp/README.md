@@ -3,7 +3,7 @@
 This folder contains examples for the resources (ActiveDirectory, Volumes, Snapshots) and
 the data sources (Volumes, ActiveDirectory(future)) the provider supports.
 
-Each example is self-contained and doen't require files from other folders (provider.tf
+Each example is self-contained and doesn't require files from other folders (provider.tf
 might be an exception). The tf-file named after the resource of interest in the example
 contains a short example description a comments. Intended for copy/paste for your resources.
 
