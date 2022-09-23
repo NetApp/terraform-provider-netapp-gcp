@@ -163,8 +163,8 @@ func (c *Client) waitForJobCompletion(region string, jobID string, timeout int, 
 			return fmt.Errorf(jobDetail.StateDetails)
 		}
 	}
-	log.Printf("Job is still onging, return after maximum wait time is reached.")
-	return nil
+	log.Printf("Job is still ongoing, return after maximum wait time is reached.")
+	return fmt.Errorf("job timed out after %d seconds", timeout)
 }
 
 func (c *Client) deleteVolumeReplication(replica *volumeReplicationRequest) error {

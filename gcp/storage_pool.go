@@ -60,7 +60,7 @@ func (c *Client) createStoragePool(request *storagePool) (storagePool, error) {
 		log.Printf("Failed to unmarshall response from createStoragePool: %#v", err)
 		return storagePool{}, err
 	}
-	err = c.waitForJobCompletion(result.Region, result.Jobs[0].JobID, 300, 10, false)
+	err = c.waitForJobCompletion(result.Region, result.Jobs[0].JobID, 20*60, 10, false)
 	if err != nil {
 		return storagePool{}, err
 	}
