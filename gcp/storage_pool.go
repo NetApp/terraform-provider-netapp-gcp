@@ -60,7 +60,7 @@ func (c *Client) createStoragePool(request *storagePool) (storagePool, error) {
 		log.Printf("Failed to unmarshall response from createStoragePool: %#v", err)
 		return storagePool{}, err
 	}
-	err = c.waitForJobCompletion(result.Region, result.Jobs[0].JobID, 300, 10, false)
+	err = c.waitForJobCompletion(result.Region, result.Jobs[0].JobID, 1200, 20, false)
 	if err != nil {
 		return storagePool{}, err
 	}
@@ -151,7 +151,7 @@ func (c *Client) updateStoragePool(request *storagePool) error {
 		log.Printf("Failed to unmarshall response from updateStoragePool: %#v", err)
 		return err
 	}
-	err = c.waitForJobCompletion(result.Region, result.Jobs[0].JobID, 300, 10, false)
+	err = c.waitForJobCompletion(result.Region, result.Jobs[0].JobID, 1200, 20, false)
 	if err != nil {
 		return err
 	}
