@@ -1,8 +1,6 @@
 package gcp
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform/helper/schema"
 )
 
@@ -27,7 +25,7 @@ func dataSourceGCPActiveDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
-			"netbios": {
+			"net_bios": {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
@@ -47,50 +45,52 @@ func dataSourceGCPActiveDirectory() *schema.Resource {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
+			"aes_encryption": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"backup_operators": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
+			"security_operators": {
+				Type: schema.TypeSet,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+				Optional: true,
+			},
+			"allow_local_nfs_users_with_ldap": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"kdc_ip": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"ldap_signing": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
+			"connection_type": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"ad_server": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
+			"managed_ad": {
+				Type:     schema.TypeBool,
+				Optional: true,
+			},
 		},
 	}
 }
 
 func dataSourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) error {
-	client := meta.(*Client)
-	activeDirectory := listActiveDirectoryRequest{}
-	activeDirectory.Region = d.Get("region").(string)
-	var res listActiveDirectoryResult
-	res, err := client.listActiveDirectoryForRegion(activeDirectory)
-	if err != nil {
-		return err
-	}
-	d.SetId(res.UUID)
-
-	if err := d.Set("uuid", res.UUID); err != nil {
-		return fmt.Errorf("Error reading active directory UUID: %s", err)
-	}
-	if err := d.Set("domain", res.Domain); err != nil {
-		return fmt.Errorf("Error reading active directory domain: %s", err)
-	}
-
-	if err := d.Set("netbios", res.NetBIOS); err != nil {
-		return fmt.Errorf("Error reading active directory netbios: %s", err)
-	}
-
-	if err := d.Set("organizational_unit", res.OrganizationalUnit); err != nil {
-		return fmt.Errorf("Error reading active directory organizational_unit: %s", err)
-	}
-
-	if err := d.Set("site", res.Site); err != nil {
-		return fmt.Errorf("Error reading active directory site: %s", err)
-	}
-
-	if err := d.Set("username", res.Username); err != nil {
-		return fmt.Errorf("Error reading active directory username: %s", err)
-	}
-
-	if err := d.Set("dns_server", res.DNS); err != nil {
-		return fmt.Errorf("Error reading active directory dns_server: %s", err)
-	}
-
-	if err := d.Set("region", res.Region); err != nil {
-		return fmt.Errorf("Error reading active directory region: %s", err)
-	}
-	return nil
+	return resourceGCPActiveDirectoryRead(d, meta)
 }

@@ -27,6 +27,7 @@ type operateActiveDirectoryRequest struct {
 	AesEncryption              bool     `structs:"aesEncryption"`
 	Label                      string   `structs:"label"`
 	AdName                     string   `structs:"adName"`
+	ManagedAD                  bool     `structs:"managedAD"`
 }
 
 // operateActiveDirectoryResult returns the api response for creating/updating an active directory
@@ -60,6 +61,7 @@ type listActiveDirectoryResult struct {
 	AesEncryption              bool     `json:"aesEncryption"`
 	Label                      string   `json:"label"`
 	AdName                     string   `json:"adName"`
+	ManagedAD                  bool     `structs:"managedAD"`
 }
 
 type listActiveDirectoryAPIResult struct {
