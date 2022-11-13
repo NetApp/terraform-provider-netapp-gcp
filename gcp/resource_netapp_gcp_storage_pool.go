@@ -46,7 +46,7 @@ func resourceGCPStoragePool() *schema.Resource {
 				Optional:   true,
 				Deprecated: "Please use service_level = StandardSW or ZoneRedundantStandardSW instead",
 			},
-			"global_ilb": {
+			"global_ad_access": {
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
@@ -107,7 +107,7 @@ func resourceGCPStoragePoolCreate(d *schema.ResourceData, meta interface{}) erro
 	if v, ok := d.GetOk("regional_ha"); ok {
 		pool.RegionalHA = v.(bool)
 	}
-	if v, ok := d.GetOk("global_ilb"); ok {
+	if v, ok := d.GetOk("global_ad_access"); ok {
 		pool.GlobalILB = v.(bool)
 	}
 	if v, ok := d.GetOk("zone"); ok {
@@ -204,8 +204,8 @@ func resourceGCPStoragePoolRead(d *schema.ResourceData, meta interface{}) error 
 		return fmt.Errorf("error reading volume network: %s", err)
 	}
 
-	if err := d.Set("global_ilb", res.GlobalILB); err != nil {
-		return fmt.Errorf("error reading storage pool global_ilb flag: %s", err)
+	if err := d.Set("global_ad_access", res.GlobalILB); err != nil {
+		return fmt.Errorf("error reading storage pool global_ad_access flag: %s", err)
 	}
 
 	if err := d.Set("managed_pool", res.ManagedPool); err != nil {
@@ -276,8 +276,8 @@ func resourceGCPStoragePoolUpdate(d *schema.ResourceData, meta interface{}) erro
 		pool.BillingLabels = expandBillingLabel(labels)
 	}
 
-	if d.HasChange("global_ilb") {
-		pool.GlobalILB = d.Get("global_ilb").(bool)
+	if d.HasChange("global_ad_access") {
+		pool.GlobalILB = d.Get("global_ad_access").(bool)
 	}
 
 	if d.HasChange("zone") {

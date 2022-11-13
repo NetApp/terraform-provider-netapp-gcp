@@ -20,7 +20,7 @@ resource "netapp-gcp_storage_pool" "test-storage-pool" {
   region = "us-east1"
   zone = "us-east1-b"
   network = "example-vpc"
-  global_ilb = false
+  global_ad_access = false
   size = 1024
   service_level = "StandardSW"
   storage_class = "software"
@@ -40,7 +40,7 @@ resource "netapp-gcp_storage_pool" "test-storage-pool" {
   zone = "us-east1-b"
   secondary_zone = "us-east1-c"
   network = "example-vpc"
-  global_ilb = true
+  global_ad_access = true
   size = 1024
   service_level = "ZoneRedundantStandardSW"
   storage_class = "software"
@@ -85,7 +85,7 @@ The following arguments are supported:
 * `zone` - (Required) Location of the pool.
 * `size` - (Required, modifiable) Storage pool size.
 * `network` - (Required) Network name.
-* `global_ilb` - (Optional, modifiable) Enables global access to Active Directory controllers outside of the pools region.
+* `global_ad_access` - (Optional, modifiable) Enables global access to Active Directory controllers outside of the pools region.
 * `service_level` - (Required) StandardSW or ZoneRedundantStandardSW.
 * `storage_class` - (Required) Software.
 * `billing_label` - (Optional, modifiable) Key-value pair for billing labels.
@@ -102,3 +102,4 @@ The `billing_label` block supports:
 The following attributes are exported in addition to the arguments listed above:
 
 * `id` - The unique identifier for the storage pool.
+* `managed_pool` - A pool which was automatically created when using creating pre-StoragePool volumes. See [Managed Pools](https://cloud.google.com/architecture/partners/netapp-cloud-volumes/storage-pools?hl=en_US#managed_pools)
