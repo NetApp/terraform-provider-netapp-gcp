@@ -1,9 +1,7 @@
 package gcp
 
 import (
-	"fmt"
 	"log"
-	"strings"
 
 	"github.com/hashicorp/terraform/helper/schema"
 )
@@ -44,6 +42,10 @@ func dataSourceGCPVolume() *schema.Resource {
 				Computed: true,
 			},
 			"volume_path": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"shared_vpc_project_number": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -182,7 +184,7 @@ func dataSourceGCPVolume() *schema.Resource {
 										Computed: true,
 									},
 									"has_root_access": {
-										Type:     schema.TypeBool,
+										Type:     schema.TypeString,
 										Computed: true,
 									},
 									"kerberos5_readonly": {
@@ -239,7 +241,15 @@ func dataSourceGCPVolume() *schema.Resource {
 					},
 				},
 			},
+			"delete_on_creation_error": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
 			"zone": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"storage_class": {
 				Type:     schema.TypeString,
 				Computed: true,
 			},
@@ -247,9 +257,44 @@ func dataSourceGCPVolume() *schema.Resource {
 				Type:     schema.TypeBool,
 				Computed: true,
 			},
-			"storage_class": {
+			"snapshot_directory": {
+				Type:     schema.TypeBool,
+				Computed: true,
+			},
+			"pool_id": {
 				Type:     schema.TypeString,
 				Computed: true,
+			},
+			"smb_share_settings": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Schema{
+					Type: schema.TypeString,
+				},
+			},
+			"unix_permissions": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"security_style": {
+				Type:     schema.TypeString,
+				Computed: true,
+			},
+			"billing_label": {
+				Type:     schema.TypeSet,
+				Computed: true,
+				Elem: &schema.Resource{
+					Schema: map[string]*schema.Schema{
+						"key": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+						"value": {
+							Type:     schema.TypeString,
+							Computed: true,
+						},
+					},
+				},
 			},
 		},
 	}
@@ -264,83 +309,14 @@ func dataSourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	volume.Name = d.Get("name").(string)
 	volume.Region = d.Get("region").(string)
 
+	// Resolve volume name to volume UUID
 	var res volumeResult
 	res, err := client.getVolumeByNameOrCreationToken(volume)
 	if err != nil {
 		return err
 	}
 
-	// GH Issue #31: getVolumeByNameOrCreationToken doesn't return all required attributes
-	// snapshot_policy and export_policy are missing
-	// so we do getVolumeByID with the ID we just determined
-	volume.VolumeID = res.VolumeID
-	res, err = client.getVolumeByID(volume)
-	if err != nil {
-		return err
-	}
-
+	// Set ID to volume UUID and use normal volume read call to do parsing of attributes
 	d.SetId(res.VolumeID)
-	if err := d.Set("name", res.Name); err != nil {
-		return fmt.Errorf("Error reading volume name: %s", err)
-	}
-	if err := d.Set("type_dp", res.TypeDP); err != nil {
-		return fmt.Errorf("Error reading type_dp: %s", err)
-	}
-	if err := d.Set("size", res.Size/GiBToBytes); err != nil {
-		return fmt.Errorf("Error reading volume size: %s", err)
-	}
-	if err := d.Set("service_level", res.ServiceLevel); err != nil {
-		return fmt.Errorf("Error reading volume service_level: %s", err)
-	}
-	for i, protocol := range res.ProtocolTypes {
-		if protocol == "CIFS" {
-			res.ProtocolTypes[i] = "SMB"
-		}
-	}
-	if err := d.Set("protocol_types", res.ProtocolTypes); err != nil {
-		return fmt.Errorf("Error reading volume protocol_types: %s", err)
-	}
-	if err := d.Set("volume_path", res.CreationToken); err != nil {
-		return fmt.Errorf("Error reading volume path or Creation Token: %s", err)
-	}
-	network := res.Network
-	index := strings.Index(network, "networks/")
-	if index > -1 {
-		network = network[index+len("networks/"):]
-	}
-	if err := d.Set("network", network); err != nil {
-		return fmt.Errorf("Error reading volume network: %s", err)
-	}
-	if err := d.Set("region", res.Region); err != nil {
-		return fmt.Errorf("Error reading volume region: %s", err)
-	}
-	snapshotPolicy := flattenSnapshotPolicy(res.SnapshotPolicy)
-	exportPolicy := flattenExportPolicy(res.ExportPolicy)
-	if err := d.Set("snapshot_policy", snapshotPolicy); err != nil {
-		return fmt.Errorf("Error reading volume snapshot_policy: %s", err)
-	}
-	if len(res.ExportPolicy.Rules) > 0 {
-		if err := d.Set("export_policy", exportPolicy); err != nil {
-			return fmt.Errorf("Error reading volume export_policy: %s", err)
-		}
-	} else {
-		a := schema.NewSet(schema.HashString, []interface{}{})
-		if err := d.Set("export_policy", a); err != nil {
-			return fmt.Errorf("Error reading volume export_policy: %s", err)
-		}
-	}
-	mountPoints := flattenMountPoints(res.MountPoints)
-	if err := d.Set("mount_points", mountPoints); err != nil {
-		return fmt.Errorf("Error reading volume mount_points: %s", err)
-	}
-	if err := d.Set("zone", res.Zone); err != nil {
-		return fmt.Errorf("Error reading zone: %s", err)
-	}
-	if err := d.Set("regional_ha", res.RegionalHA); err != nil {
-		return fmt.Errorf("Error reading regional_ha: %s", err)
-	}
-	if err := d.Set("storage_class", res.StorageClass); err != nil {
-		return fmt.Errorf("Error reading storage_class: %s", err)
-	}
-	return nil
+	return resourceGCPVolumeRead(d, meta)
 }

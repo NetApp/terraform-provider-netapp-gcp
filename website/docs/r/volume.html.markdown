@@ -93,6 +93,7 @@ Service-Type CVS specific settings:
 
 Protocol settings:
 * `protocol_types` - (Required) The protocol_type of the volume. For CVS use 'NFSv3' or 'SMB'. For CVS-Performance use 'NFSv3', 'NFSv4' or 'SMB', or a combinations of ['NFSv3', 'NFSv4'], ['SMB', 'NFSv3'] and ['SMB', 'NFSv4'].
+* `security_style` - (Optional) Security style for dual-protocol volumes of protocol_type ['SMB', 'NFSv3'] or ['SMB', 'NFSv4']. Valid choices are 'unix' and 'ntfs'. Pure NFS volumes will always be unix, pure SMB volumes always be ntfs. Setting cannot be changed after volume creation.
 
 SMB protocol specific settings:
 * `smb_share_settings` - (Optional) List of SMB share properties. Must be zero or more of "encrypt_data", "browsable", "changenotify", "non_browsable", "oplocks", "showsnapshot", "show_previous_versions", "continuously_available", "access_based_enumeration".
