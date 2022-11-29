@@ -5,7 +5,7 @@ go 1.17
 require (
 	cloud.google.com/go v0.83.0
 	github.com/fatih/structs v1.1.0
-	github.com/gruntwork-io/terratest v0.41.0
+	github.com/gruntwork-io/terratest v0.41.3
 	github.com/hashicorp/terraform v0.12.28
 	github.com/sirupsen/logrus v1.8.1
 	golang.org/x/oauth2 v0.0.0-20210514164344-f6687ab2804c
