@@ -88,8 +88,8 @@ Service-Type CVS specific settings:
 * `storage_class` - "software" for CVS.
 * `service_level` - "standard" for CVS.
 * `pool_id` - (Required) UUID of the PoolId under which volumes get created.
-* `regional_ha` - (Optional, Legacy) Flag indicating if the volume is regional, applicable only for software volumes. Legacy flag used for pre-Storage Pool volumes. HA is now defined at Pool level.
-* `zone` - (Optional, Legacy) The desired zone for the resource. If storage_class is set to 'software', zone is required. Legacy flag used for pre-Storage Pool volumes. Zone is now defined at Pool level.
+* `regional_ha` - (Required) Flag indicating if the volume is regional, applicable only for software volumes. Set true for zone redundant Storage Pools.
+* `zone` - (Required) The desired zone for the resource. If storage_class is set to 'software', zone is required. 
 
 Protocol settings:
 * `protocol_types` - (Required) The protocol_type of the volume. For CVS use 'NFSv3' or 'SMB'. For CVS-Performance use 'NFSv3', 'NFSv4' or 'SMB', or a combinations of ['NFSv3', 'NFSv4'], ['SMB', 'NFSv3'] and ['SMB', 'NFSv4'].
