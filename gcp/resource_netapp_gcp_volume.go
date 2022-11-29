@@ -336,6 +336,11 @@ func resourceGCPVolume() *schema.Resource {
 				Type:     schema.TypeString,
 				Optional: true,
 			},
+			"security_style": {
+				Type:         schema.TypeString,
+				Optional:     true,
+				ValidateFunc: validation.StringInSlice([]string{"ntfs", "unix"}, true),
+			},
 			"billing_label": {
 				Type:     schema.TypeSet,
 				Optional: true,
@@ -458,6 +463,10 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if v, ok := d.GetOk("unix_permissions"); ok {
 		volume.UnixPermissions = v.(string)
+	}
+
+	if v, ok := d.GetOk("security_style"); ok {
+		volume.SecurityStyle = v.(string)
 	}
 
 	volume.SnapshotDirectory = d.Get("snapshot_directory").(bool)
@@ -759,6 +768,11 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 			return fmt.Errorf("Error reading volume unix_permissions: %s", err)
 		}
 	}
+	if _, ok := d.GetOk("security_style"); ok {
+		if err := d.Set("security_style", res.SecurityStyle); err != nil {
+			return fmt.Errorf("Error reading volume security_style: %s", err)
+		}
+	}
 	if _, ok := d.GetOk("billing_label"); ok {
 		labels := flattenBillingLabel(res.BillingLabels)
 		if err := d.Set("billing_label", labels); err != nil {
@@ -923,6 +937,11 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	if d.HasChange("unix_permissions") {
 		makechange = 1
 		volume.UnixPermissions = d.Get("unix_permissions").(string)
+	}
+
+	if d.HasChange("security_style") {
+		makechange = 1
+		volume.SecurityStyle = d.Get("security_style").(string)
 	}
 
 	if d.HasChange("billing_label") {

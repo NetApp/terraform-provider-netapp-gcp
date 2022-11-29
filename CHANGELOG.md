@@ -1,3 +1,7 @@
+## 22.11.0
+* data_source/volume: update to reflect the change of volume resource. ([#83](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/83))
+* resource/volume: add `security_style` option. ([#83](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/83))
+
 ## 22.10.0
 * resource/active_directory: ([#76](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/76))
 
