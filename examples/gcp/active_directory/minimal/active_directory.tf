@@ -5,6 +5,7 @@
 # local variables
 locals {
   region = "europe-west4"
+  connection_type = "hardware"
   ad_username = "ADjoinuser"
   ad_password = "dont_show_it_to_me"
   ad_domain = "test.example.com"
@@ -17,11 +18,16 @@ locals {
 resource "netapp-gcp_active_directory" "gcp-active-directory" {
   provider = netapp-gcp
   region = local.region
-  username = local.ad_username
-  password = local.ad_password
+  connection_type = local.connection_type
   domain = local.ad_domain
   dns_server = local.ad_dns_server
-  net_bios = local.ad_net_bios
-  organizational_unit = local.ad_organizational_unit
   site = local.ad_site
+  organizational_unit = local.ad_organizational_unit
+  net_bios = local.ad_net_bios
+  aes_encryption = true
+
+  username = local.ad_username
+  password = local.ad_password
+
 }
+

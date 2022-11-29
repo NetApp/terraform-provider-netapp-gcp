@@ -9,12 +9,7 @@ provider "netapp-gcp" {
   # service_account = "/Users/abc/key.json"
 }
 
-terraform {
-  required_version = ">= 0.13"
-  required_providers {
-    netapp-gcp = {
-      source = "NetApp/netapp-gcp"
-      version = "~> 20.10.0"
-    }
-  }
+provider "netapp-gcp" {
+  project         = "775487933698"
+  service_account = "/Users/swenjun/Downloads/cvs-terraform-dev-26fd2c8c8343.json"
 }

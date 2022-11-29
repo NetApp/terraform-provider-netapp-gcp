@@ -33,6 +33,7 @@ type volumeRequest struct {
 	RegionalHA             bool           `structs:"regionalHA,omitempty"`
 	SnapshotDirectory      bool           `structs:"snapshotDirectory"`
 	UnixPermissions        string         `structs:"unixPermissions,omitempty"`
+	SecurityStyle          string         `structs:"securityStyle,omitempty"`
 	SharedVpcProjectNumber string
 	SmbShareSettings       []string       `structs:"smbShareSettings,omitempty"`
 	BillingLabels          []billingLabel `structs:"billingLabels"`
@@ -61,6 +62,7 @@ type volumeResult struct {
 	SnapshotDirectory     bool           `json:"snapshotDirectory,omitempty"`
 	SmbShareSettings      []string       `json:"smbShareSettings,omitempty"`
 	UnixPermissions       string         `json:"unixPermissions,omitempty"`
+	SecurityStyle         string         `json:"securityStyle,omitempty"`
 	BillingLabels         []billingLabel `json:"billingLabels,omitempty"`
 }
 
