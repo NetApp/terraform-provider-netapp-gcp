@@ -37,6 +37,7 @@ type volumeRequest struct {
 	SharedVpcProjectNumber string
 	SmbShareSettings       []string       `structs:"smbShareSettings,omitempty"`
 	BillingLabels          []billingLabel `structs:"billingLabels"`
+	SnapshotID             string         `structs:"snapshotId"`
 }
 
 // volumeRequest retrieves the volume attributes from API and convert to struct
@@ -338,9 +339,7 @@ func (c *Client) createVolume(request *volumeRequest, volType string) (createVol
 	request.Network = fmt.Sprintf("projects/%s/global/networks/%s", projectID, request.Network)
 
 	params := structs.Map(request)
-
 	baseURL := fmt.Sprintf("%s/%s", request.Region, volType)
-	log.Printf("Parameters: %v", params)
 	statusCode, response, err := c.CallAPIMethod("POST", baseURL, params)
 	if err != nil {
 		return createVolumeResult{}, err

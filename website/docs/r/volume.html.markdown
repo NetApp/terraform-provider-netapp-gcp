@@ -83,6 +83,7 @@ Service-Type CVS-Performance specific settings:
 * `storage_class` - "hardware" for CVS-Performance.
 * `service_level` - (Optional) The performance of the service level of volume. Must be one of "standard", "premium", "extreme", default is "premium".
 * `type_dp` - (Optional) True for Volume Replication destination volume, False for normal primary volume.
+* `snapshot_id` - (Optional) The UUID of the snapshot to create volume from.
 
 Service-Type CVS specific settings:
 * `storage_class` - "software" for CVS.

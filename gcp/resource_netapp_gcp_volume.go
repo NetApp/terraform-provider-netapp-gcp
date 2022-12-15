@@ -357,6 +357,10 @@ func resourceGCPVolume() *schema.Resource {
 					},
 				},
 			},
+			"snapshot_id": {
+				Type:     schema.TypeString,
+				Optional: true,
+			},
 		},
 	}
 }
@@ -486,6 +490,10 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 			}
 			volume.BillingLabels = labels
 		}
+	}
+
+	if v, ok := d.GetOk("snapshot_id"); ok {
+		volume.SnapshotID = v.(string)
 	}
 
 	var res createVolumeResult
