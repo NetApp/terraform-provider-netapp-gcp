@@ -15,6 +15,8 @@ type storagePool struct {
 	ServiceLevel           string         `json:"serviceLevel"`
 	SizeInBytes            int            `json:"sizeInBytes"`
 	RegionalHA             bool           `json:"regionalHA"`
+	GlobalILB              bool           `json:"globalILB"`
+	ManagedPool            bool           `json:"managedPool"`
 	SecondaryZone          string         `json:"secondaryZone"`
 	Zone                   string         `json:"zone"`
 	PoolID                 string         `json:"poolId"`

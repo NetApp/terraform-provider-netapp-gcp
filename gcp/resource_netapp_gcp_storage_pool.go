@@ -42,8 +42,18 @@ func resourceGCPStoragePool() *schema.Resource {
 				Required: true,
 			},
 			"regional_ha": {
+				Type:       schema.TypeBool,
+				Optional:   true,
+				Deprecated: "Please use service_level = StandardSW or ZoneRedundantStandardSW instead",
+			},
+			"global_ad_access": {
 				Type:     schema.TypeBool,
 				Optional: true,
+				Default:  false,
+			},
+			"managed_pool": {
+				Type:     schema.TypeBool,
+				Computed: true,
 			},
 			"zone": {
 				Type:     schema.TypeString,
@@ -97,6 +107,9 @@ func resourceGCPStoragePoolCreate(d *schema.ResourceData, meta interface{}) erro
 	if v, ok := d.GetOk("regional_ha"); ok {
 		pool.RegionalHA = v.(bool)
 	}
+	if v, ok := d.GetOk("global_ad_access"); ok {
+		pool.GlobalILB = v.(bool)
+	}
 	if v, ok := d.GetOk("zone"); ok {
 		pool.Zone = v.(string)
 	}
@@ -110,9 +123,7 @@ func resourceGCPStoragePoolCreate(d *schema.ResourceData, meta interface{}) erro
 		values := v.(*schema.Set)
 		if values.Len() > 0 {
 			labels := make([]billingLabel, 0, values.Len())
-			for _, v := range expandBillingLabel(values) {
-				labels = append(labels, v)
-			}
+			labels = append(labels, expandBillingLabel(values)...)
 			pool.BillingLabels = labels
 		}
 	}
@@ -149,25 +160,25 @@ func resourceGCPStoragePoolRead(d *schema.ResourceData, meta interface{}) error 
 		return nil
 	}
 	if res.PoolID != id {
-		return fmt.Errorf("Expected storage pool with id: %v, Response contained storage pool with id: %v",
+		return fmt.Errorf("expected storage pool with id: %v, Response contained storage pool with id: %v",
 			d.Id(), res.PoolID)
 	}
 	if err := d.Set("size", res.SizeInBytes/GiBToBytes); err != nil {
-		return fmt.Errorf("Error reading storage pool size: %s", err)
+		return fmt.Errorf("error reading storage pool size: %s", err)
 	}
 
 	if err := d.Set("region", res.Region); err != nil {
-		return fmt.Errorf("Error reading storage pool region: %s", err)
+		return fmt.Errorf("error reading storage pool region: %s", err)
 	}
 
 	if err := d.Set("name", res.Name); err != nil {
-		return fmt.Errorf("Error reading storage pool name: %s", err)
+		return fmt.Errorf("error reading storage pool name: %s", err)
 	}
 
 	if _, ok := d.GetOk("billing_label"); ok {
 		labels := flattenBillingLabel(res.BillingLabels)
 		if err := d.Set("billing_label", labels); err != nil {
-			return fmt.Errorf("Error reading storage pool billing_label: %s", err)
+			return fmt.Errorf("error reading storage pool billing_label: %s", err)
 		}
 	}
 	// res.Network either contains simple network name or
@@ -183,14 +194,50 @@ func resourceGCPStoragePoolRead(d *schema.ResourceData, meta interface{}) error 
 		// if network path contains different projectId than our project, it is shared-VPC
 		if nws[1] != client.Project {
 			if err := d.Set("shared_vpc_project_number", nws[1]); err != nil {
-				return fmt.Errorf("Error reading shared_vpc_project_number: %s", err)
+				return fmt.Errorf("error reading shared_vpc_project_number: %s", err)
 			}
 		}
 	} else {
-		return fmt.Errorf("Network path %s is invalid", res.Network)
+		return fmt.Errorf("network path %s is invalid", res.Network)
 	}
 	if err := d.Set("network", network); err != nil {
-		return fmt.Errorf("Error reading volume network: %s", err)
+		return fmt.Errorf("error reading volume network: %s", err)
+	}
+
+	if err := d.Set("global_ad_access", res.GlobalILB); err != nil {
+		return fmt.Errorf("error reading storage pool global_ad_access flag: %s", err)
+	}
+
+	if err := d.Set("managed_pool", res.ManagedPool); err != nil {
+		return fmt.Errorf("error reading storage pool managed_pool flag: %s", err)
+	}
+
+	if err := d.Set("zone", res.Zone); err != nil {
+		return fmt.Errorf("error reading storage pool zone: %s", err)
+	}
+
+	if err := d.Set("secondary_zone", res.SecondaryZone); err != nil {
+		return fmt.Errorf("error reading storage pool secondary_zone: %s", err)
+	}
+
+	if err := d.Set("service_level", res.ServiceLevel); err != nil {
+		return fmt.Errorf("error reading storage pool service_level: %s", err)
+	}
+	// RegionalHA is old parameter used in legacy volumes (managed_pool)
+	// It should not be used anymore and is replaced by
+	// service_level = StandardSW or ZoneRedundantStandardSW
+	//
+	// Calculate internal state for virtual parameter RegionalHA
+	res.RegionalHA = false
+	if res.ServiceLevel == "ZoneRedundantStandardSW" {
+		res.RegionalHA = true
+	}
+	// if err := d.Set("regional_ha", res.RegionalHA); err != nil {
+	// 	return fmt.Errorf("error setting storage pool regional_ha: %s", err)
+	// }
+
+	if err := d.Set("storage_class", res.StorageClass); err != nil {
+		return fmt.Errorf("error reading storage pool storage_class: %s", err)
 	}
 
 	return nil
@@ -227,6 +274,14 @@ func resourceGCPStoragePoolUpdate(d *schema.ResourceData, meta interface{}) erro
 	if d.HasChange("billing_label") {
 		labels := d.Get("billing_label").(*schema.Set)
 		pool.BillingLabels = expandBillingLabel(labels)
+	}
+
+	if d.HasChange("global_ad_access") {
+		pool.GlobalILB = d.Get("global_ad_access").(bool)
+	}
+
+	if d.HasChange("zone") {
+		pool.Zone = d.Get("zone").(string)
 	}
 
 	err := client.updateStoragePool(&pool)
