@@ -28,6 +28,4 @@ resource "netapp-gcp_active_directory" "gcp-active-directory" {
 
   username = local.ad_username
   password = local.ad_password
-
 }
-
