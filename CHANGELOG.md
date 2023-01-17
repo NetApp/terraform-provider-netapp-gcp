@@ -1,3 +1,7 @@
+## 23.1.0
+* resource/storage_pool: update and add acceptance test. ([#85](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/85))
+* resource/volume: Fix for API retry timeout. ([#86](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/86))
+
 ## 22.12.0
 * data_source/volume: update to reflect the change of volume resource. ([#83](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/83))
 * resource/volume: add `security_style` option. ([#83](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/83))

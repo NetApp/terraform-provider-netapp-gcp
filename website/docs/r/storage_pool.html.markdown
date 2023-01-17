@@ -103,4 +103,3 @@ The following attributes are exported in addition to the arguments listed above:
 
 * `id` - The unique identifier for the storage pool.
 * `managed_pool` - A pool which was automatically created when using creating pre-StoragePool volumes. See [Managed Pools](https://cloud.google.com/architecture/partners/netapp-cloud-volumes/storage-pools?hl=en_US#managed_pools)
-
