@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/fatih/structs"
 )
@@ -69,11 +70,10 @@ func (c *Client) createStoragePool(request *storagePool) (storagePool, error) {
 	return result, nil
 }
 
-func (c *Client) getStoragePools(request *storagePool) ([]storagePool, error) {
-	params := structs.Map(request)
-	baseURL := fmt.Sprintf("%s/Pools", request.Region)
+func (c *Client) getStoragePools(location string) ([]storagePool, error) {
+	baseURL := fmt.Sprintf("%s/Pools", location)
 	var result []storagePool
-	statusCode, response, err := c.CallAPIMethod("GET", baseURL, params)
+	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
 		log.Printf("getStoragePools request failed: %#v", err)
 		return result, err
@@ -89,7 +89,59 @@ func (c *Client) getStoragePools(request *storagePool) ([]storagePool, error) {
 	return result, nil
 }
 
+// Filter all pools of the project by applying a filter function
+func (c *Client) filterAllPools(f func(storagePool) bool) ([]storagePool, error) {
+	filteredPools := make([]storagePool, 0)
+
+	vols, err := c.getStoragePools("-")
+	if err != nil {
+		return filteredPools, err
+	}
+
+	for _, v := range vols {
+		if f(v) {
+			filteredPools = append(filteredPools, v)
+		}
+	}
+	return filteredPools, nil
+}
+
 func (c *Client) getStoragePoolByID(request *storagePool) (storagePool, error) {
+	var originalID string = ""
+	// terraform import will specify poolID.
+	// ID = <poolID>:<region>
+	s := strings.Split(request.PoolID, ":")
+	if len(s) == 2 {
+		originalID = request.PoolID
+		request.PoolID = s[0]
+		request.Region = s[1]
+	}
+
+	if request.Region == "" {
+		// terraform import: ID = <poolID> and no region specified
+		// find all pools which match poolID
+		pools, err := c.filterAllPools(func(v storagePool) bool {
+			return v.PoolID == request.PoolID
+		})
+		if err != nil {
+			return storagePool{}, err
+		}
+
+		if len(pools) == 0 {
+			return storagePool{}, fmt.Errorf("getStoragePoolByID: No storage pool found with ID %s", request.PoolID)
+		}
+		if len(pools) > 1 {
+			// return error message which tells user to rerun with ID = <poolID>:<region> format
+			return storagePool{}, fmt.Errorf(`getStoragePoolByID: More than one storage found with ID %s. \n
+			If this happend while running terraform import, please use \n
+			terraform import ADDR ID, with ID using <poolID>:<region_name> format`, request.PoolID)
+		}
+		if len(pools) == 1 {
+			// we found the right storage pool to import
+			request.Region = pools[0].Region
+		}
+	}
+
 	params := structs.Map(request)
 	baseURL := fmt.Sprintf("%s/Pools/%s", request.Region, request.PoolID)
 	var result storagePool
@@ -106,7 +158,22 @@ func (c *Client) getStoragePoolByID(request *storagePool) (storagePool, error) {
 		log.Printf("Failed to unmarshall response from getStoragePoolByID: %#v", err)
 		return result, err
 	}
+
+	// poolID is verified by Terraform. If we use ID = <poolID>:<region>, we need to revert our ID changes
+	if originalID != "" {
+		result.PoolID = originalID
+	}
 	return result, nil
+}
+
+func volumeParseID(id string) (string, string, error) {
+	parts := strings.SplitN(id, ":", 2)
+
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		return "", "", fmt.Errorf("unexpected format of ID (%s), expected attribute1:attribute2", id)
+	}
+
+	return parts[0], parts[1], nil
 }
 
 func (c *Client) deleteStoragePool(request *storagePool) error {

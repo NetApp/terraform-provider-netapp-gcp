@@ -1,3 +1,6 @@
+## 23.4.0
+* resource/storage_pool: Support terraform import with "poolID:region". ([#88](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/88))
+
 ## 23.1.0
 * resource/storage_pool: update and add acceptance test. ([#85](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/85))
 * resource/volume: Fix for API retry timeout. ([#86](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/86))
