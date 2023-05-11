@@ -1,3 +1,7 @@
+## 23.5.1
+ENHANCEMENTS:
+* add `security_style` option in volume.html.markdown.
+
 ## 23.4.0
 * resource/storage_pool: Support terraform import with "poolID:region". ([#88](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/88))
 
