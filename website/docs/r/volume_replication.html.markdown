@@ -34,9 +34,9 @@ The following arguments are supported:
 
 * `bandwidth` - (Optional) Maximum bandwidth that the replication will allow.
 * `name` - (Required) The name of the NetApp_GCP volume replication.
-* `source_volume_uuid` - (Required) UUID v4 of the destination volume of a volume replication relationship.
+* `source_volume_id` - (Required) UUID v4 of the destination volume of a volume replication relationship.
 * `remote_region` - (Required) The region of the source volume.
-* `destination_volume_uuid` - (Required) UUID v4 of the source volume of a volume replication relationship.
+* `destination_volume_id` - (Required) UUID v4 of the source volume of a volume replication relationship.
 * `region` - (Required) The region of the destination volume.
 * `endpoint_type` - (Required) Always set "dst".
 * `schedule` - (Required) Replication_policy ("10minutely", "hourly", "daily")

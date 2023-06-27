@@ -71,13 +71,13 @@ The following arguments are supported:
 
 Generic volume settings
 * `region` - (Required) The region where the NetApp_GCP volume to be created.
-
 * `name` - (Required) The name of the NetApp_GCP volume.
 * `volume_path` - (Optional) The name of the export path or share name to be used for the volume. Must be unique per region.
 * `shared_vpc_project_number` - (Optional) The host project number when deploying in a shared VPC service project.
 * `network` - (Required) Name of VPC network for the volume.
 * `size` - (Required) The size of volume. 100-102400 GiB for CVS-Performance, 1-102400 GiB for CVS on Storage Pools
 * `delete_on_creation_error` - (Optional) Automatically delete volume if volume is in error state after creation. Default is false.
+* `mount_points` - (Optional) Mount points for the volume.
 
 Service-Type CVS-Performance specific settings:
 * `storage_class` - "hardware" for CVS-Performance.
@@ -112,6 +112,12 @@ The `rule` block supports:
 * `has_root_access` - (Optional) If enabled (true or on) the rule defines that no_root_squash is set, else if it is disable (false or off) root_squash is set and user ID mapped to anonymous user.
 * `nfsv3` - (Optional) If enabled (true) the rule allows NFSv3 protocol for clients matching the 'allowedClients' specification.
 * `nfsv4` - (Optional) If enabled (true) the rule allows NFSv4 protocol for clients matching the 'allowedClients' specification.
+* `kerberos5_readonly` - (Optional) If enabled (true) the rule defines a read only access for clients matching the 'allowedClients' specification. It enables nfs clients to mount using 'authentication' kerberos security mode.
+* `kerberos5_readwrite` - (Optional) If enabled (true) the rule defines read and write access for clients matching the 'allowedClients' specification. It enables nfs clients to mount using 'authentication' kerberos security mode. The 'kerberos5ReadOnly' value  be ignored if this is enabled.
+* `kerberos5i_readonly` - (Optional) If enabled (true) the rule defines a read only access for clients matching the 'allowedClients' specification. It enables nfs clients to mount using 'integrity' kerberos security mode.
+* `kerberos5i_readwrite` - (Optional) If enabled (true) the rule defines read and write access for clients matching the 'allowedClients' specification. It enables nfs clients to mount using 'integrity' kerberos security mode. The 'kerberos5iReadOnly' value  be ignored if this is enabled.
+* `kerberos5p_readonly` - (Optional) If enabled (true) the rule defines a read only access for clients matching the 'allowedClients' specification. It enables nfs clients to mount using 'privacy' kerberos security mode.
+* `kerberos5p_readwrite` - (Optional) If enabled (true) the rule defines read and write access for clients matching the 'allowedClients' specification. It enables nfs clients to mount using 'privacy' kerberos security mode. The 'kerberos5pReadOnly' value  be ignored if this is enabled.
 
 The `nfsv3` block supports:
 * `checked` - (Optional) Enable NFSv3 protocol.
@@ -137,6 +143,7 @@ The `daily_scheule` block supports:
 
 The `hourly_schedule` block supports:
 * `minute` - (Optional) Set the minute of the hour to start the snapshot (0-59), defaults to the top of the hour (0).
+* `snapshots_to_keep` - (Optional) The maximum number of Snapshots to keep for the hourly schedule.
 
 The `monthly_schedule` block supports:
 * `days_of_month` - (Optional) Set the day or days of the month to make a snapshot (1-31). Accepts a comma delimited string of the day of the month e.g. '1,15,31'. Defaults to '1'.
@@ -154,6 +161,11 @@ The `weekly_schedule` block supports:
 The `billing_label` block supports:
 * `key` - (Required) Must be a minimum length of 1 character and a maximum length of 63 characters, and cannot be empty. Can contain only lowercase letters, numeric characters, underscores, and dashes. All characters must use UTF-8 encoding, and international characters are allowed. Must start with a lowercase letter or international character.
 * `value` - (Required) Can be empty, and have a maximum length of 63 characters. Can contain only lowercase letters, numeric characters, underscores, and dashes. All characters must use UTF-8 encoding, and international characters are allowed.
+
+The `mount_points` block supports:
+* `export` - (Optional) The volume's export path or share name.
+* `server` - (Optional) The volume's server IPv4 address or hostname.
+* `protocol_type` - (Optional) Protocol type through which volume can be accessed.
 
 ## Attributes Reference
 
