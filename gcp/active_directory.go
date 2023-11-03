@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/fatih/structs"
 )
@@ -99,6 +100,41 @@ func (c *Client) createActiveDirectory(request *operateActiveDirectoryRequest) (
 
 func (c *Client) listActiveDirectoryForRegion(request listActiveDirectoryRequest) (listActiveDirectoryResult, error) {
 	// GCP only allows one active directory per region.
+
+	//code for terraform import
+	var originalID string = ""
+	s := strings.Split(request.UUID, ":")
+	if len(s) == 2 {
+		originalID = request.UUID
+		request.UUID = s[0]
+		request.Region = s[1]
+	}
+
+	if request.Region == "" {
+		// terraform import: ID = <activeDirectoryID> and no region specified
+		// find all activeDirectories which match activeDirectoryID
+		activeDirectory, err := c.filterAllActiveDirectories(func(v listActiveDirectoryResult) bool {
+			return v.UUID == request.UUID
+		})
+		if err != nil {
+			return listActiveDirectoryResult{}, err
+		}
+
+		if len(activeDirectory) == 0 {
+			return listActiveDirectoryResult{}, fmt.Errorf("listActiveDirectoryForRegion: No active directory found with ID %s", request.UUID)
+		}
+		if len(activeDirectory) > 1 {
+			// return error message which tells user to rerun with ID = <volumeID>:<region> format
+			return listActiveDirectoryResult{}, fmt.Errorf(`listActiveDirectoryForRegion: More than one active directory found with ID %s. \n
+			If this happend while running terraform import, please use \n
+			terraform import ADDR ID, with ID using <active directory>:<region_name> format`, request.UUID)
+		}
+		if len(activeDirectory) == 1 {
+			// we found the right activeDirectory to import
+			request.Region = activeDirectory[0].Region
+		}
+	}
+
 	baseURL := fmt.Sprintf("%s/Storage/ActiveDirectory", request.Region)
 	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
 	if err != nil {
@@ -116,9 +152,13 @@ func (c *Client) listActiveDirectoryForRegion(request listActiveDirectoryRequest
 		log.Print("Failed to unmarshall response from listActiveDirectoryForRegion")
 		return listActiveDirectoryResult{}, err
 	}
+
 	for _, v := range activeDirectories {
 		// only one active directory is allowed in each region. Region is the unique identifier if uuid doesn't exist yet.
 		if v.Region == request.Region {
+			if originalID != "" {
+				v.UUID = originalID
+			}
 			return v, nil
 		}
 
@@ -164,4 +204,46 @@ func (c *Client) updateActiveDirectory(request operateActiveDirectoryRequest) er
 	}
 
 	return nil
+}
+
+// Returns volumes of the project. region = "-" for all regions
+func (c *Client) getActiveDirectories(region string) ([]listActiveDirectoryResult, error) {
+
+	baseURL := fmt.Sprintf("%s/Storage/ActiveDirectory", region)
+	var result []listActiveDirectoryResult
+
+	statusCode, response, err := c.CallAPIMethod("GET", baseURL, nil)
+	if err != nil {
+		log.Print("getActiveDirectories request failed")
+		return result, err
+	}
+
+	responseError := apiResponseChecker(statusCode, response, "getActiveDirectories")
+	if responseError != nil {
+		return result, responseError
+	}
+
+	if err := json.Unmarshal(response, &result); err != nil {
+		log.Print("Failed to unmarshall response from getActiveDirectories")
+		return result, err
+	}
+	return result, nil
+}
+
+// Filter all volumes of the project by applying a filter function
+// Example filter function: func(v volumeResult) bool { return v.VolumeID == "1234-5678-90" }
+func (c *Client) filterAllActiveDirectories(f func(listActiveDirectoryResult) bool) ([]listActiveDirectoryResult, error) {
+	filteredActiveDirectories := make([]listActiveDirectoryResult, 0)
+
+	vols, err := c.getActiveDirectories("-")
+	if err != nil {
+		return filteredActiveDirectories, err
+	}
+
+	for _, v := range vols {
+		if f(v) {
+			filteredActiveDirectories = append(filteredActiveDirectories, v)
+		}
+	}
+	return filteredActiveDirectories, nil
 }

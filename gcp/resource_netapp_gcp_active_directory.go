@@ -185,6 +185,7 @@ func resourceGCPActiveDirectoryRead(d *schema.ResourceData, meta interface{}) er
 	client := meta.(*Client)
 	activeDirectory := listActiveDirectoryRequest{}
 	activeDirectory.Region = d.Get("region").(string)
+	activeDirectory.UUID = d.Id()
 	var res listActiveDirectoryResult
 	res, err := client.listActiveDirectoryForRegion(activeDirectory)
 	if err != nil {
@@ -284,7 +285,7 @@ func resourceGCPActiveDirectoryExists(d *schema.ResourceData, meta interface{}) 
 	log.Printf("Checking existence of active directory: %#v", d)
 	client := meta.(*Client)
 	activeDirectory := listActiveDirectoryRequest{}
-	activeDirectory.UUID = d.Get("uuid").(string)
+	activeDirectory.UUID = d.Id()
 	activeDirectory.Region = d.Get("region").(string)
 	var res listActiveDirectoryResult
 	res, err := client.listActiveDirectoryForRegion(activeDirectory)

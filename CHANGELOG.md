@@ -1,3 +1,7 @@
+## 23.11.0
+BUG FIXES:
+* resource/active_directory: support terraform import.
+
 ## 23.5.1
 ENHANCEMENTS:
 * add `security_style` option in volume.html.markdown.

@@ -18,6 +18,7 @@ Provides an NetApp_GCP volume resource. This can be used to manage volumes on GC
 data "netapp-gcp_volume" "data-volume" {
   name = "deleteme_asap"
   region = "us-west2"
+}
 ```
 
 **Create NetApp_GCP volume:**
