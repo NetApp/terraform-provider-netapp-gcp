@@ -130,15 +130,15 @@ type apiResponseCodeMessage struct {
 type simpleExportPolicyRule struct {
 	Access              string  `structs:"access"`
 	AllowedClients      string  `structs:"allowedClients"`
-	HasRootAccess       string  `structs:"hasRootAccess"`
-	Kerberos5ReadOnly   checked `structs:"kerberos5ReadOnly"`
-	Kerberos5ReadWrite  checked `structs:"kerberos5ReadWrite"`
-	Kerberos5iReadOnly  checked `structs:"kerberos5iReadOnly"`
-	Kerberos5iReadWrite checked `structs:"kerberos5iReadWrite"`
-	Kerberos5pReadOnly  checked `structs:"kerberos5pReadOnly"`
-	Kerberos5pReadWrite checked `structs:"kerberos5pReadWrite"`
-	Nfsv3               checked `structs:"nfsv3"`
-	Nfsv4               checked `structs:"nfsv4"`
+	HasRootAccess       string  `structs:"hasRootAccess,omitempty"`
+	Kerberos5ReadOnly   checked `structs:"kerberos5ReadOnly,omitempty"`
+	Kerberos5ReadWrite  checked `structs:"kerberos5ReadWrite,omitempty"`
+	Kerberos5iReadOnly  checked `structs:"kerberos5iReadOnly,omitempty"`
+	Kerberos5iReadWrite checked `structs:"kerberos5iReadWrite,omitempty"`
+	Kerberos5pReadOnly  checked `structs:"kerberos5pReadOnly,omitempty"`
+	Kerberos5pReadWrite checked `structs:"kerberos5pReadWrite,omitempty"`
+	Nfsv3               checked `structs:"nfsv3,omitempty"`
+	Nfsv4               checked `structs:"nfsv4,omitempty"`
 }
 
 type exportPolicy struct {
@@ -206,7 +206,6 @@ func (c *Client) getVolumeByID(volume volumeRequest) (volumeResult, error) {
 		return volumeResult{}, responseError
 	}
 
-	log.Printf("get get get: %#v", bytes.NewBuffer(response).String())
 	var result volumeResult
 	if err := json.Unmarshal(response, &result); err != nil {
 		log.Print("Failed to unmarshall response from getVolumeByID")
@@ -669,7 +668,11 @@ func expandExportPolicy(set *schema.Set) (exportPolicy, error) {
 			ruleConfig := x.(map[string]interface{})
 			exportPolicyRule.Access = ruleConfig["access"].(string)
 			exportPolicyRule.AllowedClients = ruleConfig["allowed_clients"].(string)
-			exportPolicyRule.HasRootAccess = ruleConfig["has_root_access"].(string)
+			// has_root_access can not be present in the ruleConfig if it is false when storage is software.
+			// when storage is software, has_root_access is default to true by API if not present in the ruleConfig.
+			if ruleConfig["has_root_access"].(string) == "true" {
+				exportPolicyRule.HasRootAccess = ruleConfig["has_root_access"].(string)
+			}
 			exportPolicyRule.Kerberos5ReadOnly.Checked = ruleConfig["kerberos5_readonly"].(bool)
 			exportPolicyRule.Kerberos5ReadWrite.Checked = ruleConfig["kerberos5_readwrite"].(bool)
 			exportPolicyRule.Kerberos5iReadOnly.Checked = ruleConfig["kerberos5i_readonly"].(bool)
@@ -685,9 +688,6 @@ func expandExportPolicy(set *schema.Set) (exportPolicy, error) {
 			for _, z := range nfsv4Set.List() {
 				nfsv4Config := z.(map[string]interface{})
 				exportPolicyRule.Nfsv4.Checked = nfsv4Config["checked"].(bool)
-			}
-			if !exportPolicyRule.Nfsv3.Checked && !exportPolicyRule.Nfsv4.Checked {
-				return exportPolicy{}, fmt.Errorf("At least one of nfsv3 or nfsv4 needs to be true in protocol type of the export policy rule")
 			}
 			ruleConfigs = append(ruleConfigs, exportPolicyRule)
 		}

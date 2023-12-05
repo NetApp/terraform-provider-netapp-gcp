@@ -1,6 +1,7 @@
 ## 23.11.0
 BUG FIXES:
 * resource/active_directory: support terraform import.
+* resorce/volume: fix root access issue.([#90](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/90))
 
 ## 23.5.1
 ENHANCEMENTS:
