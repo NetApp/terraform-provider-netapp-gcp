@@ -431,10 +431,14 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 		volType = "Volumes"
 	}
 
+	if v, ok := d.GetOk("storage_class"); ok {
+		volume.StorageClass = v.(string)
+	}
+
 	if v, ok := d.GetOk("export_policy"); ok {
 		policy := v.(*schema.Set)
 		if policy.Len() > 0 {
-			resp, err := expandExportPolicy(policy)
+			resp, err := expandExportPolicy(policy, volume.StorageClass)
 			if err != nil {
 				return err
 			}
@@ -448,10 +452,6 @@ func resourceGCPVolumeCreate(d *schema.ResourceData, meta interface{}) error {
 
 	if v, ok := d.GetOk("zone"); ok {
 		volume.Zone = v.(string)
-	}
-
-	if v, ok := d.GetOk("storage_class"); ok {
-		volume.StorageClass = v.(string)
 	}
 
 	if v, ok := d.GetOk("regional_ha"); ok {
@@ -718,6 +718,11 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if err := d.Set("region", res.Region); err != nil {
 		return fmt.Errorf("Error reading volume region: %s", err)
 	}
+	if _, ok := d.GetOk("storage_class"); ok {
+		if err := d.Set("storage_class", res.StorageClass); err != nil {
+			return fmt.Errorf("Error reading volume storage_class: %s", err)
+		}
+	}
 	snapshotPolicy := flattenSnapshotPolicy(res.SnapshotPolicy)
 	exportPolicy := flattenExportPolicy(res.ExportPolicy)
 	if err := d.Set("snapshot_policy", snapshotPolicy); err != nil {
@@ -740,11 +745,6 @@ func resourceGCPVolumeRead(d *schema.ResourceData, meta interface{}) error {
 	if _, ok := d.GetOk("zone"); ok {
 		if err := d.Set("zone", res.Zone); err != nil {
 			return fmt.Errorf("Error reading volume zone: %s", err)
-		}
-	}
-	if _, ok := d.GetOk("storage_class"); ok {
-		if err := d.Set("storage_class", res.StorageClass); err != nil {
-			return fmt.Errorf("Error reading volume storage_class: %s", err)
 		}
 	}
 	if err := d.Set("snapshot_directory", res.SnapshotDirectory); err != nil {
@@ -915,7 +915,7 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 
 	if d.HasChange("export_policy") {
 		policy := d.Get("export_policy").(*schema.Set)
-		resp, err := expandExportPolicy(policy)
+		resp, err := expandExportPolicy(policy, volume.StorageClass)
 		if err != nil {
 			return err
 		}

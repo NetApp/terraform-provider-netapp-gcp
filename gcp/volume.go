@@ -130,7 +130,7 @@ type apiResponseCodeMessage struct {
 type simpleExportPolicyRule struct {
 	Access              string  `structs:"access"`
 	AllowedClients      string  `structs:"allowedClients"`
-	HasRootAccess       string  `structs:"hasRootAccess"`
+	HasRootAccess       string  `structs:"hasRootAccess,omitempty"`
 	Kerberos5ReadOnly   checked `structs:"kerberos5ReadOnly"`
 	Kerberos5ReadWrite  checked `structs:"kerberos5ReadWrite"`
 	Kerberos5iReadOnly  checked `structs:"kerberos5iReadOnly"`
@@ -657,7 +657,7 @@ func flattenExportPolicy(v exportPolicy) interface{} {
 }
 
 // expandExportPolicy converts set to exportPolicy struct
-func expandExportPolicy(set *schema.Set) (exportPolicy, error) {
+func expandExportPolicy(set *schema.Set, storage_class string) (exportPolicy, error) {
 	exportPolicyObj := exportPolicy{}
 
 	for _, v := range set.List() {
@@ -669,7 +669,9 @@ func expandExportPolicy(set *schema.Set) (exportPolicy, error) {
 			ruleConfig := x.(map[string]interface{})
 			exportPolicyRule.Access = ruleConfig["access"].(string)
 			exportPolicyRule.AllowedClients = ruleConfig["allowed_clients"].(string)
-			exportPolicyRule.HasRootAccess = ruleConfig["has_root_access"].(string)
+			if storage_class != "software" {
+				exportPolicyRule.HasRootAccess = ruleConfig["has_root_access"].(string)
+			}
 			exportPolicyRule.Kerberos5ReadOnly.Checked = ruleConfig["kerberos5_readonly"].(bool)
 			exportPolicyRule.Kerberos5ReadWrite.Checked = ruleConfig["kerberos5_readwrite"].(bool)
 			exportPolicyRule.Kerberos5iReadOnly.Checked = ruleConfig["kerberos5i_readonly"].(bool)
