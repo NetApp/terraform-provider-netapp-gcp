@@ -892,6 +892,7 @@ func resourceGCPVolumeUpdate(d *schema.ResourceData, meta interface{}) error {
 	// size is always required.
 	volume.Size = d.Get("size").(int) * GiBToBytes
 	volume.SnapshotDirectory = d.Get("snapshot_directory").(bool)
+	volume.StorageClass = d.Get("storage_class").(string)
 
 	if d.HasChange("name") {
 		makechange = 1
