@@ -657,7 +657,7 @@ func flattenExportPolicy(v exportPolicy) interface{} {
 }
 
 // expandExportPolicy converts set to exportPolicy struct
-func expandExportPolicy(set *schema.Set, storage_class string) (exportPolicy, error) {
+func expandExportPolicy(set *schema.Set, storageClass string) (exportPolicy, error) {
 	exportPolicyObj := exportPolicy{}
 
 	for _, v := range set.List() {
@@ -669,7 +669,7 @@ func expandExportPolicy(set *schema.Set, storage_class string) (exportPolicy, er
 			ruleConfig := x.(map[string]interface{})
 			exportPolicyRule.Access = ruleConfig["access"].(string)
 			exportPolicyRule.AllowedClients = ruleConfig["allowed_clients"].(string)
-			if storage_class != "software" {
+			if storageClass != "software" {
 				exportPolicyRule.HasRootAccess = ruleConfig["has_root_access"].(string)
 			}
 			exportPolicyRule.Kerberos5ReadOnly.Checked = ruleConfig["kerberos5_readonly"].(bool)
