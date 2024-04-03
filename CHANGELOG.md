@@ -1,3 +1,7 @@
+## 24.4.0
+BUG FIXES:
+* resource/volume: ([#90](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/90)), ([#92](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/92))
+
 ## 23.11.0
 BUG FIXES:
 * resource/active_directory: support terraform import.
