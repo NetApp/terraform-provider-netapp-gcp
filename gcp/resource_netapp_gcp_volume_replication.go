@@ -197,7 +197,6 @@ func resourceGCPVolumeReplicationDelete(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-
 	//TODO: Need to wait until replication is really deleted, otherwise follow on volume deletes might fail
 
 	return nil

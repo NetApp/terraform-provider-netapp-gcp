@@ -1,3 +1,7 @@
+## 24.6.0
+BUG FIXES:
+* resource/volume_replication: fix update.
+
 ## 24.4.0
 BUG FIXES:
 * resource/volume: ([#90](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/90)), ([#92](https://github.com/NetApp/terraform-provider-netapp-gcp/issues/92))
