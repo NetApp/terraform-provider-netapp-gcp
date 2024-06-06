@@ -25,6 +25,7 @@ func (c *Client) Do(baseURL string, req *Request) (int, []byte, error) {
 	if err != nil {
 		return 0, nil, err
 	}
+	log.Print("REQUEST: ", httpReq.Method, " ", httpReq.URL)
 	httpRes, err := c.httpClient.Do(httpReq)
 	if err != nil {
 		log.Print("HTTP req failed")

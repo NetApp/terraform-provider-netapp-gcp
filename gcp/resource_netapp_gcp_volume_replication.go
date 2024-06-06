@@ -50,6 +50,7 @@ func resourceGCPVolumeReplication() *schema.Resource {
 				Type:         schema.TypeString,
 				Optional:     true,
 				ValidateFunc: validation.StringInSlice([]string{"MirrorAllSnapshots", "MirrorLatest", "MirrorAndVault"}, true),
+				Default:      "MirrorAllSnapshots",
 			},
 			"schedule": {
 				Type:         schema.TypeString,
@@ -197,6 +198,8 @@ func resourceGCPVolumeReplicationDelete(d *schema.ResourceData, meta interface{}
 		return err
 	}
 
+	//TODO: Need to wait until replication is really deleted, otherwise follow on volume deletes might fail
+
 	return nil
 }
 
@@ -235,6 +238,7 @@ func resourceGCPVolumeReplicationUpdate(d *schema.ResourceData, meta interface{}
 	client := meta.(*Client)
 	replica := volumeReplicationRequest{}
 	replica.ReplicationID = d.Id()
+	replica.Region = d.Get("region").(string)
 
 	if d.HasChange("schedule") {
 		replica.Schedule = d.Get("schedule").(string)
@@ -256,5 +260,5 @@ func resourceGCPVolumeReplicationUpdate(d *schema.ResourceData, meta interface{}
 	if err != nil {
 		return err
 	}
-	return resourceGCPVolumeRead(d, meta)
+	return resourceGCPVolumeReplicationRead(d, meta)
 }
